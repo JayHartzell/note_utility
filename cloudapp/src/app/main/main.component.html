@@ -1,0 +1,233 @@
+<div class="eca-actions">
+  <input type="text" [(ngModel)]="setID" placeholder="Enter Set ID" />
+  <button [disabled]="loading || processingNotes" (click)="fetchSet(setID)">
+    {{ loading ? 'Loading...' : 'Retrieve Set Members' }}
+  </button>
+</div>
+
+<!-- Note management UI -->
+<div *ngIf="users && users.length > 0" class="note-management" style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+  <h3>Note Management</h3>
+  
+  <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+    <!-- Search text -->
+    <div style="flex-grow: 1; min-width: 200px;">
+      <label for="noteSearch">Search for text in notes:</label>
+      <input 
+        type="text" 
+        id="noteSearch" 
+        [(ngModel)]="noteSearch" 
+        placeholder="Enter text to find in notes" 
+        style="width: 100%;"
+      >
+    </div>
+    
+    <!-- Action selection -->
+    <div>
+      <label for="action">Action:</label>
+      <select id="action" [(ngModel)]="action">
+        <option value="view">View matching notes</option>
+        <option value="modify">Modify matching notes</option>
+        <option value="delete">Delete matching notes</option>
+      </select>
+    </div>
+  </div>
+  
+  <!-- Add this after the search and action selection -->
+  <div style="margin-top: 15px; padding: 10px; background-color: #f5f5f5; border-radius: 4px;">
+    <h4>Search Options:</h4>
+    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+      <!-- Case sensitivity -->
+      <div>
+        <label>
+          <input type="checkbox" [(ngModel)]="caseSensitiveSearch"> 
+          Case sensitive search
+        </label>
+      </div>
+<!-- 
+<div>
+  <label>
+    <input type="checkbox" [(ngModel)]="useRegex"> 
+    Use regex pattern
+  </label>
+  <div *ngIf="regexError" style="color: red; font-size: 0.9em;">{{regexError}}</div>
+</div>
+-->
+      
+      <!-- Date range search -->
+      <div>
+        <label>
+          <input type="checkbox" [(ngModel)]="searchByDate"> 
+          Filter by date range
+        </label>
+        <div *ngIf="searchByDate" style="margin-top: 8px;">
+          <div style="display: flex; gap: 10px;">
+            <div>
+              <label for="startDate">From:</label>
+              <input type="date" id="startDate" [(ngModel)]="startDate">
+            </div>
+            <div>
+              <label for="endDate">To:</label>
+              <input type="date" id="endDate" [(ngModel)]="endDate">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modify options -->
+  <div *ngIf="action === 'modify'" style="margin-top: 10px;">
+    <h4>Modification options:</h4>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+      <div>
+        <label>
+          <input type="checkbox" [(ngModel)]="makePopup"> 
+          Make popup note
+        </label>
+      </div>
+      <div>
+        <label>
+          <input type="checkbox" [(ngModel)]="disablePopup"> 
+          Disable popup
+        </label>
+      </div>
+      <div>
+        <label for="noteType">Change note type:</label>
+        <input type="text" id="noteType" [(ngModel)]="noteType" placeholder="New note type">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Delete options -->
+  <div *ngIf="action === 'delete'" style="margin-top: 10px;">
+    <label>
+      <input type="checkbox" [(ngModel)]="deleteMatchingNotes"> 
+      Confirm deletion of notes containing search text
+    </label>
+  </div>
+  
+  <!-- Process button -->
+  <div style="margin-top: 15px;">
+    <button 
+      [disabled]="!noteSearch || loading || processingNotes" 
+      (click)="processUserNotes()"
+      style="background-color: #0077cc; color: white; padding: 8px 15px; border: none; border-radius: 4px;"
+    >
+      Process Notes
+    </button>
+  </div>
+  
+  <!-- Progress -->
+  <div *ngIf="processingNotes" style="margin-top: 15px;">
+    <div style="height: 20px; background-color: #eee; border-radius: 4px; overflow: hidden;">
+      <div 
+        [style.width.%]="percentComplete"
+        style="height: 100%; background-color: #4CAF50; text-align: center; line-height: 20px; color: white;"
+      >
+        {{percentComplete}}%
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User display with note highlighting -->
+<div>
+  <!-- Show user details when available -->
+  <section *ngIf="users && users.length > 0" style="margin-top: 50px;">
+    <h2 style="color: green">User Details</h2>
+    <div *ngFor="let user of users" class="user-card">
+      <h3>{{ user.full_name || user.first_name + ' ' + user.last_name || 'User ' + user.primary_id }}</h3>
+      
+      <!-- Show error if there was an error fetching this user -->
+      <div *ngIf="user.error" class="error-message">
+        {{ user.error }}
+      </div>
+
+      <!-- Show user details if available -->
+      <div *ngIf="!user.error" class="user-details">
+        <p><strong>ID:</strong> {{ user.primary_id }}</p>
+        
+        <!-- Notes section -->
+        <div *ngIf="user.user_note && user.user_note.length > 0">
+          <h4>Notes ({{ user.user_note.length }})</h4>
+          
+          <!-- Display notes that match search text first -->
+          <div *ngFor="let note of findMatchingNotes(user)" style="margin-bottom: 10px; padding: 8px; border-left: 3px solid #4CAF50; background-color: #f8fff8;">
+            <div style="display: flex; justify-content: space-between;">
+              <strong style="color: #4CAF50;">MATCHING NOTE</strong>
+              <span>{{ note.note_type?.desc || 'No type' }}</span>
+            </div>
+            <p>{{ note.note_text }}</p>
+            <small>
+              <strong>Creator:</strong> {{ note.created_by || 'Unknown' }} | 
+              <strong>Popup:</strong> {{ note.popup_note ? 'Yes' : 'No' }}
+            </small>
+          </div>
+          
+          <!-- Display other notes if not searching or if view mode -->
+          <div *ngIf="!noteSearch || action === 'view'">
+            <div *ngFor="let note of user.user_note" style="margin-bottom: 10px; padding: 8px; border-left: 3px solid #ddd; background-color: #f9f9f9;">
+              <div *ngIf="!noteSearch || !note.note_text.toLowerCase().includes(noteSearch.toLowerCase())">
+                <div style="display: flex; justify-content: space-between;">
+                  <strong>{{ note.segment_text || 'General Note' }}</strong>
+                  <span>{{ note.note_type?.desc || 'No type' }}</span>
+                </div>
+                <p>{{ note.note_text }}</p>
+                <small>
+                  <strong>Creator:</strong> {{ note.created_by || 'Unknown' }} | 
+                  <strong>Popup:</strong> {{ note.popup_note ? 'Yes' : 'No' }}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="!user.user_note || user.user_note.length === 0">
+          <p>No notes on this user account.</p>
+        </div>
+        
+        <!-- Expandable section for user details -->
+        <details>
+          <summary>User details</summary>
+          <p><strong>Status:</strong> {{ user.status?.desc }}</p>
+          <p><strong>User Group:</strong> {{ user.user_group?.desc || 'N/A' }}</p>
+          <p><strong>Account Type:</strong> {{ user.account_type?.desc || 'N/A' }}</p>
+          <pre>{{ user | json }}</pre>
+        </details>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Show basic set member info -->
+  <section *ngIf="members && members.length > 0 && (!users || users.length === 0)" style="margin-top: 50px;">
+    <h2 style="color: blue">Set Members</h2>
+    <ul style="padding: 10px">
+      <li style="margin: 5px 0" *ngFor="let member of members">
+        <strong>Name:</strong> {{ member.name }} | 
+        <strong>Id:</strong> {{ member.id }} | 
+        <strong>Description:</strong> {{ member.description }} | 
+        <strong>Link:</strong> <a href="{{member.link}}" target="_blank">{{member.link}}</a>
+      </li>
+    </ul>
+  </section>
+  
+  <!-- Show empty list template when nothing is available -->
+  <section *ngIf="(!members || members.length === 0) && !loading && setID" style="margin-top: 50px;">
+    <ng-container *ngTemplateOutlet="emptyList"></ng-container>
+  </section>
+  
+  <!-- Loading indicator -->
+  <section *ngIf="loading || processingNotes" style="margin-top: 50px;">
+    <div class="loading-indicator">
+      <span>{{ processingNotes ? 'Processing notes...' : 'Loading data...' }}</span>
+    </div>
+  </section>
+  
+  <!-- Empty list template -->
+  <ng-template #emptyList>
+    <div id="emptyList">
+      <span class="uxf-icon uxf-list" style="font-size: 3em;"></span>
+      <div>No items found for this set.</div>
+    </div>
+  </ng-template>
+</div>
