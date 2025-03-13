@@ -41,6 +41,19 @@ interface UserData {
   [key: string]: any; // For other user properties
 }
 
+// Define interfaces for the log entries
+interface NoteLogEntry {
+  before: UserNote;
+  after?: UserNote;
+  deleted: boolean;
+}
+
+interface UserProcessLog {
+  userId: string;
+  noMatchingNotes: boolean;
+  notes: NoteLogEntry[];
+}
+
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
@@ -52,10 +65,10 @@ export class MainComponent implements OnInit, OnDestroy {
   entities$: Observable<Entity[]>;
   setID: string = '';
   userDetails: Array<UserData> = [];
-  private setMembers: Array<{ id: number, name: string, description: string, link: string }> = [];
+  setMembers: Array<{ id: number, name: string, description: string, link: string }> = [];
   noteSearch: string = '';
   deleteMatchingNotes: boolean = false;
-  action: 'view' | 'modify' | 'delete' = 'view';
+  action: 'modify' | 'delete' = 'modify';
   makePopup: boolean = false;
   disablePopup: boolean = false;
   noteType: string = '';
@@ -68,6 +81,7 @@ export class MainComponent implements OnInit, OnDestroy {
   searchByDate: boolean = false;
   startDate: string = '';  // YYYY-MM-DD format 
   endDate: string = '';    // YYYY-MM-DD format
+  processLogs: UserProcessLog[] = [];
 
   constructor(
     private restService: CloudAppRestService,
@@ -87,13 +101,14 @@ export class MainComponent implements OnInit, OnDestroy {
     this.userDetails = [];
     this.noteSearch = '';
     this.deleteMatchingNotes = false;
-    this.action = 'view';
+    this.action = 'modify';
     this.makePopup = false;
     this.disablePopup = false;
     this.noteType = '';
     this.processed = 0;
     this.recordsToProcess = 0;
     this.modifiedUsers = new Set();
+    this.processLogs = [];
   }
 
 // main note matching logic
@@ -140,71 +155,107 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   processUserNotes() {
-    if (!this.userDetails.length || !this.noteSearch) {
+    if (!this.users || !this.users.length || !this.noteSearch) {
       this.alert.error('Please load users and enter search text first');
       return;
     }
     
     this.processingNotes = true;
     this.processed = 0;
-    this.recordsToProcess = this.userDetails.length;
+    this.recordsToProcess = this.users.length;
     this.modifiedUsers.clear();
+    // Clear previous logs
+    this.processLogs = [];
     
     // Process each user
-    from(this.userDetails).pipe(
-      concatMap((user: UserData) => {
+    from(this.users).pipe(
+      concatMap((user: any) => {
         if (!user || user.error) {
           this.processed++;
           return of(null);
         }
         
         const userId = user.primary_id;
-        // Get matching notes using the same logic as in findMatchingNotes
+        // Get matching notes using findMatchingNotes
         const matchingNotes = this.findMatchingNotes(user);
+        
+        // Create a log entry for this user
+        const userLog: UserProcessLog = {
+          userId: userId,
+          noMatchingNotes: matchingNotes.length === 0,
+          notes: []
+        };
         
         // Only continue if we found matching notes
         if (matchingNotes.length === 0) {
           this.processed++;
+          // Add the log even if no notes matched
+          this.processLogs.push(userLog);
           return of(null);
         }
         
         // Apply the requested action
-        
-        // Apply the requested action
-      if (this.action === 'delete' && this.deleteMatchingNotes) {
-        const notesToDelete = new Set<UserNote>(matchingNotes);
-        
-        user.user_note = user.user_note.filter((note: UserNote) => !notesToDelete.has(note));
-        
-        this.modifiedUsers.add(userId);
-      } else if (this.action === 'modify') {
-        let modified = false;
-        
-        const notesToModify = new Set<UserNote>(matchingNotes);
-        
-        user.user_note.forEach((note: UserNote) => {
-          if (notesToModify.has(note)) {
-            // Only modify notes that match our criteria
+        if (this.action === 'delete' && this.deleteMatchingNotes) {
+          const notesToDelete = new Set(matchingNotes);
+          
+          // Log the deletion
+          matchingNotes.forEach(note => {
+            userLog.notes.push({
+              before: {...note},
+              deleted: true
+            });
+          });
+          
+          user.user_note = user.user_note.filter((note: any) => !notesToDelete.has(note));
+          
+          this.modifiedUsers.add(userId);
+        } else if (this.action === 'modify') {
+          let modified = false;
+          
+          const notesToModify = new Set(matchingNotes);
+          
+          user.user_note.forEach((note: any) => {
             if (notesToModify.has(note)) {
-              if (this.makePopup) {
+              // Create a copy of the note before modifications for logging
+              const noteBefore = {...note};
+              let noteChanged = false;
+              
+              // Only modify notes that match our criteria
+              if (this.makePopup && !note.popup_note) {
                 note.popup_note = true;
                 modified = true;
+                noteChanged = true;
               }
-              if (this.disablePopup) {
+              if (this.disablePopup && note.popup_note) {
                 note.popup_note = false;
                 modified = true;
+                noteChanged = true;
               }
-              if (this.noteType) {
+              if (this.noteType && (!note.note_type || note.note_type.value !== this.noteType)) {
                 note.note_type = { value: this.noteType, desc: this.noteType };
                 modified = true;
+                noteChanged = true;
               }
-            }
+              
+              // If note was changed, add to log
+              if (noteChanged) {
+                userLog.notes.push({
+                  before: noteBefore,
+                  after: {...note},
+                  deleted: false
+                });
+              }
             }
           });
           
           if (modified) {
             this.modifiedUsers.add(userId);
           }
+        }
+        
+        // Add the log entry to the logs array
+        if (userLog.notes.length > 0) {
+          this.processLogs.push(userLog);
         }
         
         // Only update if changes were made
