@@ -1,13 +1,64 @@
+<!-- Entity-based set selection -->
 <div class="eca-actions">
-  <input type="text" [(ngModel)]="setID" placeholder="Enter Set ID" />
-  <button [disabled]="loading || processingNotes" (click)="fetchSet(setID)">
-    {{ loading ? 'Loading...' : 'Retrieve Set Members' }}
-  </button>
+
+
+  <!-- Show instruction when no sets are available -->
+  <div *ngIf="!hasValidSets && !loading" class="instruction-message">
+    <div class="instruction-card">
+      <h3>Navigate to a Set Page</h3>
+      <p>
+        To use this tool, please navigate to a page that contains sets (e.g., browse to Alma > Administration > Manage Sets).
+      </p>
+    </div>
+  </div>
+
+  <!-- Show available sets for selection -->
+  <div *ngIf="hasValidSets && !selectedSet" class="set-selection">
+    <h3>Available Sets on This Page</h3>
+    <div>
+      <p>Select a set to load its user members:</p>
+      <div *ngFor="let set of availableSets" class="set-option">
+        <button 
+          class="set-button"
+          (click)="selectSet(set)"
+          [disabled]="loading || processingNotes"
+        >
+          <strong>{{ set.description || 'Set ID: ' + set.id }}</strong>
+          <small>ID: {{ set.id }}</small>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Show selected set info -->
+  <div *ngIf="selectedSet" class="selected-set-info">
+    <div class="selected-set-card">
+      <h3>Selected Set</h3>
+      <p>
+        <strong>{{ selectedSet.description || 'Set ID: ' + selectedSet.id }}</strong>
+      </p>
+      <p>
+        ID: {{ selectedSet.id }}
+      </p>
+      <button 
+        class="change-set-button"
+        (click)="clear()"
+        [disabled]="loading || processingNotes"
+      >
+        Select Different Set
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- Set Member Count Display -->
-<div *ngIf="setMembers && setMembers.length > 0" style="margin-top: 15px; font-weight: bold;">
-  Set contains {{ setMembers.length }} member{{ setMembers.length !== 1 ? 's' : '' }}
+<div *ngIf="selectedSet && setMembers && setMembers.length > 0" class="set-member-count">
+  <div class="success-card">
+    <span class="success-icon">✓</span>
+    <span>Set loaded successfully</span>
+    <br>
+    <span>{{ setMembers.length }} user{{ setMembers.length !== 1 ? 's' : '' }} found in this set</span>
+  </div>
 </div>
 
   <!-- Action selection first -->
@@ -111,9 +162,9 @@
   <!-- Process button -->
   <div style="margin-top: 15px;">
     <button 
+      class="process-button"
       [disabled]="!noteSearch || loading || processingNotes || !action" 
       (click)="processUserNotes()"
-      style="background-color: #0077cc; color: white; padding: 8px 15px; border: none; border-radius: 4px;"
     >
       Process Notes
     </button>
@@ -156,7 +207,7 @@
             <div *ngIf="entry.after">
               <strong>After:</strong>
               <div style="padding: 5px; background-color: #fff; border-left: 3px solid #4CAF50;">
-                <div>Text: {{ entry.after?.note_text }}</div>
+                <div>Text: {{ entry.after.note_text }}</div>
                 <div>Popup: {{ entry.after.popup_note ? 'Yes' : 'No' }}</div>
                 <div>Type: {{ entry.after.note_type?.desc || 'None' }}</div>
               </div>
@@ -274,7 +325,7 @@
 </section>
 
 <!-- Show empty list template when nothing is available -->
-<section *ngIf="(!setMembers || setMembers.length === 0) && !loading && setID" style="margin-top: 50px;">
+<section *ngIf="selectedSet && (!setMembers || setMembers.length === 0) && !loading" style="margin-top: 50px;">
   <ng-container *ngTemplateOutlet="emptyList"></ng-container>
 </section>
 

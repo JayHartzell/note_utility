@@ -44,4 +44,77 @@
         }
       }
   }
+
+  // Set selection components
+  .instruction-message {
+    .instruction-card {
+      background-color: mat.get-theme-color($theme, primary-container);
+      border-left: 4px solid mat.get-theme-color($theme, primary);
+      color: mat.get-theme-color($theme, on-primary-container);
+    }
+  }
+
+  .set-selection {
+    .set-option {
+      .set-button {
+        background-color: mat.get-theme-color($theme, primary);
+        color: mat.get-theme-color($theme, on-primary);
+        border: 1px solid mat.get-theme-color($theme, outline);
+        
+        &:hover:not(:disabled) {
+          background-color: color-mix(in srgb, mat.get-theme-color($theme, primary) 80%, transparent);
+        }
+        
+        &:disabled {
+          background-color: mat.get-theme-color($theme, surface-variant);
+          color: mat.get-theme-color($theme, on-surface-variant);
+        }
+      }
+    }
+  }
+
+  .selected-set-info {
+    .selected-set-card {
+      background-color: mat.get-theme-color($theme, tertiary-container);
+      border-left: 4px solid mat.get-theme-color($theme, tertiary);
+      color: mat.get-theme-color($theme, on-tertiary-container);
+    }
+    
+    .change-set-button {
+      background-color: mat.get-theme-color($theme, outline);
+      color: mat.get-theme-color($theme, on-surface);
+      border: 1px solid mat.get-theme-color($theme, outline-variant);
+      
+      &:hover:not(:disabled) {
+        background-color: color-mix(in srgb, mat.get-theme-color($theme, outline) 80%, transparent);
+      }
+    }
+  }
+
+  .set-member-count {
+    .success-card {
+      background-color: mat.get-theme-color($theme, tertiary-container);
+      color: mat.get-theme-color($theme, on-tertiary-container);
+      border: 1px solid mat.get-theme-color($theme, tertiary);
+    }
+    
+    .success-icon {
+      color: mat.get-theme-color($theme, tertiary);
+    }
+  }
+
+  .process-button {
+    background-color: mat.get-theme-color($theme, primary);
+    color: mat.get-theme-color($theme, on-primary);
+    border: 1px solid mat.get-theme-color($theme, outline);
+    
+    &:hover:not(:disabled) {
+      background-color: color-mix(in srgb, mat.get-theme-color($theme, primary) 90%, transparent);
+    }
+    
+    &:disabled {
+      background-color: mat.get-theme-color($theme, surface-variant);
+      color: mat.get-theme-color($theme, on-surface-variant);
+    }
+  }
 }
