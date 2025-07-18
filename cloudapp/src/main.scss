@@ -4,6 +4,7 @@
 @mixin themed-styles($theme, $typography) {
     /* Include themed component mixins or theme dependent styles here */
     @include main-component-theme($theme, $typography);
+    @include theme-component-theme($theme, $typography);
 }
 
 @mixin global-styles {

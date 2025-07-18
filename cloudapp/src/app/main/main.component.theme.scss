@@ -9,3 +9,39 @@
     font-weight: bolder;
   }
 }
+
+@mixin theme-component-theme($theme, $typgraphy) {
+ .note-management {
+    border: mat.get-theme-color($theme, primary) solid 2px;
+    color: mat.get-theme-color($theme, on-primary-container);
+    background-color: mat.get-theme-color($theme, secondary-container);
+    padding: 5px;
+    font-weight: bolder;
+  }
+
+  .user-card {
+      border-left: 3px solid mat.get-theme-color($theme, outline);
+      background-color: mat.get-theme-color($theme, surface);
+      
+      &.has-success {
+        border-left-color: mat.get-theme-color($theme, primary);
+      }
+      
+      &.has-error {
+        border-left-color: mat.get-theme-color($theme, error);
+      }
+      
+      // Status messages
+      .status {
+        &.success {
+          background-color: mat.get-theme-color($theme, primary-container);
+          color: mat.get-theme-color($theme, on-primary-container);
+        }
+        
+        &.error {
+          background-color: mat.get-theme-color($theme, error-container);
+          color: mat.get-theme-color($theme, on-error-container);
+        }
+      }
+  }
+}

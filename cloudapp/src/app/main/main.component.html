@@ -10,29 +10,35 @@
   Set contains {{ setMembers.length }} member{{ setMembers.length !== 1 ? 's' : '' }}
 </div>
 
+  <!-- Action selection first -->
+<div *ngIf="users && users.length > 0" class="action-select">
+
+<div style="margin-bottom: 15px;">
+  <label for="action" style="font-weight: bold; margin-right: 10px;">Select Action:</label>
+  <select id="action" [(ngModel)]="action" required>
+    <option value="modify">Modify matching notes</option>
+    <option value="delete">Delete matching notes</option>
+  </select>
+</div>
+
+
 <!-- Note management UI -->
-<div *ngIf="users && users.length > 0" class="note-management" style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+<div *ngIf="action" class="note-management" style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
   <h3>Note Management</h3>
   
-  <!-- Action selection first -->
-  <div style="margin-bottom: 15px;">
-    <label for="action" style="font-weight: bold; margin-right: 10px;">Select Action:</label>
-    <select id="action" [(ngModel)]="action" required>
-      <option value="modify">Modify matching notes</option>
-      <option value="delete">Delete matching notes</option>
-    </select>
-  </div>
+
+
   
   <div style="display: flex; gap: 15px; flex-wrap: wrap;">
     <!-- Search text -->
-    <div style="flex-grow: 1; min-width: 200px;">
+    <div style="flex-grow: 1; min-width: 150px;">
       <label for="noteSearch">Search for text in notes:</label>
       <input 
         type="text" 
         id="noteSearch" 
         [(ngModel)]="noteSearch" 
-        placeholder="Enter text to find in notes" 
-        style="width: 100%;"
+        placeholder="text to match" 
+        style="width: 80%;"
       >
     </div>
   </div>
@@ -151,8 +157,8 @@
               <strong>After:</strong>
               <div style="padding: 5px; background-color: #fff; border-left: 3px solid #4CAF50;">
                 <div>Text: {{ entry.after?.note_text }}</div>
-                <div>Popup: {{ entry.after?.popup_note ? 'Yes' : 'No' }}</div>
-                <div>Type: {{ entry.after?.note_type?.desc || 'None' }}</div>
+                <div>Popup: {{ entry.after.popup_note ? 'Yes' : 'No' }}</div>
+                <div>Type: {{ entry.after.note_type?.desc || 'None' }}</div>
               </div>
             </div>
           </div>
@@ -182,11 +188,21 @@
         <!-- Notes section -->
         <div *ngIf="user.user_note && user.user_note.length > 0">
           <h4>Notes ({{ user.user_note.length }})</h4>
+          <div *ngFor="let note of user.user_note">
+            <div style="display: flex; justify-content: space-between; background-color: #EDE0CB;">
+              <span>{{ note.popup_note ? 'POPUP NOTE' : 'NOTE' }}</span>
+              <span>{{ note.note_type?.desc || 'No type' }}</span>
+            </div>
+            <span style="color: #483C32">{{ note.note_text }}</span>
+            <small>
+              <strong>Creator:</strong> {{ note.created_by || 'Unknown' }} | 
+              <strong>Popup:</strong> {{ note.popup_note ? 'Yes' : 'No' }}
+            </small>
           
           <!-- Display notes that match search text first -->
-          <div *ngFor="let note of findMatchingNotes(user)" style="margin-bottom: 10px; padding: 8px; border-left: 3px solid #4CAF50; background-color: #f8fff8;">
+          <div *ngFor="let note of findMatchingNotes(user)" style="margin-bottom: 10px; padding: 8px; border-left: 3px solid #bea227; background-color: #EDE0CB;">
             <div style="display: flex; justify-content: space-between;">
-              <strong style="color: #4CAF50;">MATCHING NOTE</strong>
+              <strong style="color: #EDE0CB;">MATCHING NOTE</strong>
               <span>{{ note.note_type?.desc || 'No type' }}</span>
             </div>
             <p>{{ note.note_text }}</p>
