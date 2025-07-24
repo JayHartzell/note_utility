@@ -17,36 +17,58 @@ export class NoteProcessingService {
       return [];
     }
     
-    // Return empty array if no search text is provided
-    if (!criteria.searchText || criteria.searchText.trim() === '') {
-      return [];
+    // Check if we have any search criteria at all
+    const hasTextSearch = criteria.searchText && criteria.searchText.trim() !== '';
+    const hasDateSearch = criteria.searchByDate && (criteria.startDate || criteria.endDate);
+    
+    if (!hasTextSearch && !hasDateSearch) {
+      return []; // No search criteria provided
     }
     
     // Start with all notes
     let matchingNotes: UserNote[] = [...user.user_note];
     
-    // Filter by text (now we know search text exists)
-    matchingNotes = matchingNotes.filter((note: UserNote) => {
-      if (!note.note_text) return false;
-      
-      const noteText = criteria.caseSensitive ? note.note_text : note.note_text.toLowerCase();
-      const searchText = criteria.caseSensitive ? criteria.searchText : criteria.searchText.toLowerCase();
-      return noteText.includes(searchText);
-    });
+    // Filter by text if text search is provided
+    if (hasTextSearch) {
+      matchingNotes = matchingNotes.filter((note: UserNote) => {
+        if (!note.note_text) return false;
+        
+        const noteText = criteria.caseSensitive ? note.note_text : note.note_text.toLowerCase();
+        const searchText = criteria.caseSensitive ? criteria.searchText : criteria.searchText.toLowerCase();
+        return noteText.includes(searchText);
+      });
+    }
     
     // Additionally filter by date if enabled
     if (criteria.searchByDate && (criteria.startDate || criteria.endDate)) {
-      const startTimestamp = criteria.startDate ? new Date(criteria.startDate).getTime() : 0;
-      const endTimestamp = criteria.endDate ? new Date(criteria.endDate + 'T23:59:59').getTime() : Infinity;
-      
       matchingNotes = matchingNotes.filter((note: UserNote) => {
-        if (!note.creation_date && !note.created_date && !note.note_date) {
+        // Check for the created_date field first (this is the primary field from the system)
+        const dateField = note.created_date || note.creation_date || note.note_date;
+        if (!dateField) {
           return false; // Skip notes without dates
         }
         
-        const dateString = note.creation_date || note.created_date || note.note_date;
-        const noteDate = dateString ? new Date(dateString).getTime() : 0;
-        return noteDate >= startTimestamp && noteDate <= endTimestamp;
+        // Parse the note's date (which comes as ISO string like "2025-07-18T18:14:17.343Z")
+        const noteDate = new Date(dateField);
+        if (isNaN(noteDate.getTime())) {
+          return false; // Skip notes with invalid dates
+        }
+        
+        // Extract just the date part (YYYY-MM-DD) from the note's timestamp
+        const noteDateOnly = noteDate.toISOString().split('T')[0];
+        
+        // Compare with the date range (criteria dates are already in YYYY-MM-DD format)
+        let matchesRange = true;
+        
+        if (criteria.startDate) {
+          matchesRange = matchesRange && (noteDateOnly >= criteria.startDate);
+        }
+        
+        if (criteria.endDate) {
+          matchesRange = matchesRange && (noteDateOnly <= criteria.endDate);
+        }
+        
+        return matchesRange;
       });
     }
     

@@ -4,6 +4,125 @@
   margin: 15px 0;
 }
 
+// New menu-based interface styles
+.job-parameters-window {
+  .parameter-item {
+    transition: all 0.2s ease;
+    
+    &:hover {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  }
+  
+  .execute-job-button {
+    transition: all 0.2s ease;
+    
+    &:hover:not(:disabled) {
+      background-color: #45a049 !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+  
+  .reset-job-button {
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: #1976D2 !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+  }
+}
+
+.menu-options {
+  .menu-option-button {
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    small {
+      transition: color 0.2s ease;
+    }
+    
+    &:hover small {
+      color: rgba(255,255,255,0.8) !important;
+    }
+  }
+  
+  .option-category {
+    h4 {
+      position: relative;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 30px;
+        height: 2px;
+        background-color: currentColor;
+        opacity: 0.3;
+      }
+    }
+  }
+}
+
+// Processing results styles
+.processing-results {
+  .summary-box {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f1f8f1 100%);
+    transition: box-shadow 0.2s ease;
+    
+    &:hover {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  }
+  
+  .user-change-card {
+    transition: all 0.2s ease;
+    
+    &:hover {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transform: translateX(2px);
+    }
+  }
+  
+  .note-entry {
+    transition: all 0.2s ease;
+    
+    &:hover {
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+  }
+  
+  .before-after-box {
+    transition: box-shadow 0.2s ease;
+    
+    &:hover {
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+  }
+}
+
+.instruction-card,
+.selected-set-card,
+.success-card {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+}
+
 textarea {
   padding: 2px;
   border-width: 1px;

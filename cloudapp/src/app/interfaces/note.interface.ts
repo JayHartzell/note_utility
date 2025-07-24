@@ -38,3 +38,31 @@ export interface SetInfo {
   };
   [key: string]: any;
 }
+
+// Define interfaces for the new menu-based job parameters
+export interface JobParameter {
+  id: string;
+  type: 'action' | 'search' | 'modification' | 'dateRange';
+  label: string;
+  value: any;
+  editable: boolean;
+}
+
+export interface MenuOption {
+  id: string;
+  category: 'action' | 'search' | 'modification';
+  label: string;
+  description: string;
+  available: boolean;
+}
+
+export interface SearchCriteria {
+  textSearch?: {
+    text: string;
+    caseSensitive: boolean;
+  };
+  dateRange?: {
+    startDate: string;
+    endDate: string;
+  };
+}

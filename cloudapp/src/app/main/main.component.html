@@ -61,155 +61,298 @@
   </div>
 </div>
 
-  <!-- Action selection first -->
-<div *ngIf="users && users.length > 0" class="action-select">
-
-<div style="margin-bottom: 15px;">
-  <label for="action" style="font-weight: bold; margin-right: 10px;">Select Action:</label>
-  <select id="action" [(ngModel)]="action" required>
-    <option value="modify">Modify matching notes</option>
-    <option value="delete">Delete matching notes</option>
-  </select>
-</div>
-
-
-<!-- Note management UI -->
-<div *ngIf="action" class="note-management" style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
-  <h3>Note Management</h3>
+<!-- New Menu-Based Job Configuration -->
+<div *ngIf="users && users.length > 0" class="job-configuration">
   
-
-
-  
-  <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-    <!-- Search text -->
-    <div style="flex-grow: 1; min-width: 150px;">
-      <label for="noteSearch">Search for text in notes:</label>
-      <input 
-        type="text" 
-        id="noteSearch" 
-        [(ngModel)]="noteSearch" 
-        placeholder="text to match" 
-        style="width: 80%;"
-      >
-    </div>
-  </div>
-  
-  <!-- Search Options -->
-  <div style="margin-top: 15px; padding: 10px; background-color: #f5f5f5; border-radius: 4px;">
-    <h4>Search Options:</h4>
-    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-      <!-- Case sensitivity -->
-      <div>
-        <label>
-          <input type="checkbox" [(ngModel)]="caseSensitiveSearch"> 
-          Case sensitive search
-        </label>
+  <!-- Job Parameters Window -->
+  <div class="job-parameters-window" style="margin-bottom: 20px; padding: 15px; border: 2px solid #4CAF50; border-radius: 8px; background-color: #f9fff9;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="margin-top: 0; color: #2E7D32;">Job Parameters</h3>
+      <div *ngIf="jobExecuted && !processingNotes" style="background: #4CAF50; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+        ✓ EXECUTED
       </div>
-      
-      <!-- Date range search -->
-      <div>
-        <label>
-          <input type="checkbox" [(ngModel)]="searchByDate"> 
-          Filter by date range
-        </label>
-        <div *ngIf="searchByDate" style="margin-top: 8px;">
-          <div style="display: flex; gap: 10px;">
+      <div *ngIf="processingNotes" style="background: #FF9800; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+        ⏳ PROCESSING...
+      </div>
+    </div>
+    
+    <div *ngIf="jobParameters.length === 0" class="empty-parameters" style="color: #666; font-style: italic;">
+      No parameters configured. Select options from the menu below to build your job.
+    </div>
+    
+    <div *ngFor="let parameter of jobParameters" class="parameter-item" style="margin-bottom: 15px; padding: 10px; background-color: white; border: 1px solid #ddd; border-radius: 4px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="flex-grow: 1;">
+          <h4 style="margin: 0 0 10px 0; color: #1976D2;">{{ parameter.label }}</h4>
+          
+          <!-- Action Parameter (non-editable) -->
+          <div *ngIf="parameter.type === 'action'" style="color: #333;">
+            <strong>{{ parameter.value === 'modify' ? 'Modify matching notes' : 'Delete matching notes' }}</strong>
+          </div>
+          
+          <!-- Text Search Parameter -->
+          <div *ngIf="parameter.id === 'textSearch'" style="display: flex; flex-direction: column; gap: 8px;">
             <div>
-              <label for="startDate">From:</label>
-              <input type="date" id="startDate" [(ngModel)]="startDate">
+              <label>Search text:</label>
+              <input 
+                type="text" 
+                [value]="parameter.value.text"
+                (input)="updateJobParameter('textSearch', { text: $any($event.target).value, caseSensitive: parameter.value.caseSensitive })"
+                placeholder="Enter text to search for"
+                style="margin-left: 10px; padding: 4px; width: 200px;"
+                [disabled]="jobExecuted"
+              >
             </div>
             <div>
-              <label for="endDate">To:</label>
-              <input type="date" id="endDate" [(ngModel)]="endDate">
+              <label>
+                <input 
+                  type="checkbox" 
+                  [checked]="parameter.value.caseSensitive"
+                  (change)="updateJobParameter('textSearch', { text: parameter.value.text, caseSensitive: $any($event.target).checked })"
+                  [disabled]="jobExecuted"
+                > 
+                Case sensitive search
+              </label>
             </div>
           </div>
+          
+          <!-- Date Range Parameter -->
+          <div *ngIf="parameter.id === 'dateRange'" style="display: flex; gap: 15px;">
+            <div>
+              <label>From:</label>
+              <input 
+                type="date" 
+                [value]="parameter.value.startDate"
+                (input)="updateJobParameter('dateRange', { startDate: $any($event.target).value, endDate: parameter.value.endDate })"
+                style="margin-left: 5px;"
+                [disabled]="jobExecuted"
+              >
+            </div>
+            <div>
+              <label>To:</label>
+              <input 
+                type="date" 
+                [value]="parameter.value.endDate"
+                (input)="updateJobParameter('dateRange', { startDate: parameter.value.startDate, endDate: $any($event.target).value })"
+                style="margin-left: 5px;"
+                [disabled]="jobExecuted"
+              >
+            </div>
+          </div>
+          
+          <!-- Popup Settings Parameter -->
+          <div *ngIf="parameter.id === 'popupSettings'" style="display: flex; gap: 15px;">
+            <label>
+              <input 
+                type="checkbox" 
+                [checked]="parameter.value.makePopup"
+                (change)="updateJobParameter('popupSettings', { makePopup: $any($event.target).checked, disablePopup: parameter.value.disablePopup })"
+                [disabled]="jobExecuted"
+              > 
+              Make popup note
+            </label>
+            <label>
+              <input 
+                type="checkbox" 
+                [checked]="parameter.value.disablePopup"
+                (change)="updateJobParameter('popupSettings', { makePopup: parameter.value.makePopup, disablePopup: $any($event.target).checked })"
+                [disabled]="jobExecuted"
+              > 
+              Disable popup
+            </label>
+          </div>
+          
+          <!-- Note Type Parameter -->
+          <div *ngIf="parameter.id === 'noteType'">
+            <label>New note type:</label>
+            <input 
+              type="text" 
+              [value]="parameter.value"
+              (input)="updateJobParameter('noteType', $any($event.target).value)"
+              placeholder="Enter note type"
+              style="margin-left: 10px; padding: 4px; width: 200px;"
+              [disabled]="jobExecuted"
+            >
+          </div>
+        </div>
+        
+        <button 
+          *ngIf="!jobExecuted"
+          (click)="removeJobParameter(parameter.id)"
+          style="background: #f44336; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;"
+          title="Remove this parameter"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+    
+    <!-- Execute Job Button (only shown before job execution) -->
+    <div style="margin-top: 20px; text-align: center;">
+      <button 
+        *ngIf="!jobExecuted"
+        class="execute-job-button"
+        [disabled]="!canExecuteJob || loading || processingNotes"
+        (click)="processUserNotes()"
+        style="background: #4CAF50; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold;"
+        [style.opacity]="canExecuteJob ? '1' : '0.5'"
+      >
+        Execute Job
+      </button>
+      
+      <!-- Reset Job Button (shown after job execution) -->
+      <button 
+        *ngIf="jobExecuted && !processingNotes"
+        class="reset-job-button"
+        (click)="resetJob()"
+        style="background: #2196F3; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold;"
+      >
+        Configure New Job
+      </button>
+      
+      <div *ngIf="!canExecuteJob && !jobExecuted" style="margin-top: 8px; color: #666; font-size: 14px;">
+        <span *ngIf="!hasActionParameter">Please select an action (modify or delete).</span>
+        <span *ngIf="hasActionParameter && !hasSearchParameter">Please add search criteria.</span>
+      </div>
+    </div>
+    
+    <!-- Progress Bar -->
+    <div *ngIf="processingNotes" style="margin-top: 15px;">
+      <div style="height: 20px; background-color: #eee; border-radius: 4px; overflow: hidden;">
+        <div 
+          [style.width.%]="percentComplete"
+          style="height: 100%; background-color: #4CAF50; text-align: center; line-height: 20px; color: white;"
+        >
+          {{percentComplete}}%
         </div>
       </div>
-    </div>
-  </div>
-  
-  <!-- Modify options -->
-  <div *ngIf="action === 'modify'" style="margin-top: 10px;">
-    <h4>Modification options:</h4>
-    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-      <div>
-        <label>
-          <input type="checkbox" [(ngModel)]="makePopup"> 
-          Make popup note
-        </label>
-      </div>
-      <div>
-        <label>
-          <input type="checkbox" [(ngModel)]="disablePopup"> 
-          Disable popup
-        </label>
-      </div>
-      <div>
-        <label for="noteType">Change note type:</label>
-        <input type="text" id="noteType" [(ngModel)]="noteType" placeholder="New note type">
+      <div style="text-align: center; margin-top: 5px; color: #666;">
+        Processing {{ processed }} of {{ recordsToProcess }} users...
       </div>
     </div>
   </div>
   
-  <!-- Delete options -->
-  <div *ngIf="action === 'delete'" style="margin-top: 10px;">
-    <label>
-      <input type="checkbox" [(ngModel)]="deleteMatchingNotes"> 
-      Confirm deletion of notes containing search text
-    </label>
-  </div>
-  
-  <!-- Process button -->
-  <div style="margin-top: 15px;">
-    <button 
-      class="process-button"
-      [disabled]="!noteSearch || loading || processingNotes || !action" 
-      (click)="processUserNotes()"
-    >
-      Process Notes
-    </button>
-  </div>
-  
-  <!-- Progress -->
-  <div *ngIf="processingNotes" style="margin-top: 15px;">
-    <div style="height: 20px; background-color: #eee; border-radius: 4px; overflow: hidden;">
-      <div 
-        [style.width.%]="percentComplete"
-        style="height: 100%; background-color: #4CAF50; text-align: center; line-height: 20px; color: white;"
-      >
-        {{percentComplete}}%
+  <!-- Menu Options (hidden after job execution) -->
+  <div *ngIf="!jobExecuted" class="menu-options" style="padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #fafafa;">
+    <h3>Available Options</h3>
+    
+    <div *ngIf="availableMenuOptions.length === 0" style="text-align: center; color: #666; font-style: italic; padding: 20px;">
+      All available options have been added to your job parameters.
+    </div>
+    
+    <div *ngIf="availableMenuOptions.length > 0" class="option-categories">
+      <!-- Action Options -->
+      <div *ngIf="getMenuOptionsByCategory('action').length > 0" class="option-category" style="margin-bottom: 20px;">
+        <h4 style="color: #FF5722; margin-bottom: 10px;">Actions</h4>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button 
+            *ngFor="let option of getMenuOptionsByCategory('action')"
+            (click)="addJobParameter(option.id)"
+            class="menu-option-button"
+            style="padding: 8px 16px; border: 1px solid #FF5722; background: white; color: #FF5722; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
+            onmouseover="this.style.backgroundColor='#FF5722'; this.style.color='white'"
+            onmouseout="this.style.backgroundColor='white'; this.style.color='#FF5722'"
+          >
+            {{ option.label }}
+            <small style="display: block; font-size: 11px; color: #999;">{{ option.description }}</small>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Search Options -->
+      <div *ngIf="getMenuOptionsByCategory('search').length > 0" class="option-category" style="margin-bottom: 20px;">
+        <h4 style="color: #2196F3; margin-bottom: 10px;">Search Criteria</h4>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button 
+            *ngFor="let option of getMenuOptionsByCategory('search')"
+            (click)="addJobParameter(option.id)"
+            class="menu-option-button"
+            style="padding: 8px 16px; border: 1px solid #2196F3; background: white; color: #2196F3; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
+            onmouseover="this.style.backgroundColor='#2196F3'; this.style.color='white'"
+            onmouseout="this.style.backgroundColor='white'; this.style.color='#2196F3'"
+          >
+            {{ option.label }}
+            <small style="display: block; font-size: 11px; color: #999;">{{ option.description }}</small>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Modification Options -->
+      <div *ngIf="getMenuOptionsByCategory('modification').length > 0" class="option-category" style="margin-bottom: 20px;">
+        <h4 style="color: #FF9800; margin-bottom: 10px;">Modification Options</h4>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button 
+            *ngFor="let option of getMenuOptionsByCategory('modification')"
+            (click)="addJobParameter(option.id)"
+            class="menu-option-button"
+            style="padding: 8px 16px; border: 1px solid #FF9800; background: white; color: #FF9800; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
+            onmouseover="this.style.backgroundColor='#FF9800'; this.style.color='white'"
+            onmouseout="this.style.backgroundColor='white'; this.style.color='#FF9800'"
+          >
+            {{ option.label }}
+            <small style="display: block; font-size: 11px; color: #999;">{{ option.description }}</small>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Processing Logs -->
-<div *ngIf="processLogs && processLogs.length > 0" style="margin-top: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+<div *ngIf="processLogs && processLogs.length > 0" class="processing-results" style="margin-top: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
   <h3>Processing Results</h3>
-  <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 10px; background-color: #f9f9f9;">
-    <div *ngFor="let log of processLogs" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ddd;">
-      <h4>User ID: {{ log.userId }}</h4>
-      <div *ngIf="log.noMatchingNotes" style="color: #888;">
-        No matching notes found for this user.
-      </div>
-      <div *ngIf="!log.noMatchingNotes">
-        <div *ngFor="let entry of log.notes" style="margin-top: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
-          <div *ngIf="entry.deleted" style="color: #d32f2f; font-weight: bold;">NOTE DELETED</div>
+  
+  <!-- Summary -->
+  <div class="summary-box" style="margin-bottom: 20px; padding: 10px; background-color: #e8f5e8; border-radius: 4px; border-left: 4px solid #4CAF50;">
+    <div style="font-weight: bold; color: #2E7D32;">Summary:</div>
+    <div>Total users processed: {{ processLogs.length }}</div>
+    <div>Users with changes: {{ processLogsWithChanges.length }}</div>
+    <div>Users with no matching notes: {{ processLogs.length - processLogsWithChanges.length }}</div>
+  </div>
+  
+  <!-- Show message if no users had changes -->
+  <div *ngIf="processLogsWithChanges.length === 0" style="text-align: center; color: #666; font-style: italic; padding: 20px;">
+    No users had notes that were modified or deleted.
+  </div>
+  
+  <!-- Show only users with changes -->
+  <div *ngIf="processLogsWithChanges.length > 0" style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 10px; background-color: #f9f9f9;">
+    <div *ngFor="let log of processLogsWithChanges" class="user-change-card" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ddd;">
+      <h4 style="color: #1976D2; margin-bottom: 10px;">User ID: {{ log.userId }}</h4>
+      <div>
+        <div *ngFor="let entry of log.notes" class="note-entry" style="margin-top: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
+          <div *ngIf="entry.deleted" style="color: #d32f2f; font-weight: bold; margin-bottom: 8px;">📝 NOTE DELETED</div>
+          <div *ngIf="!entry.deleted" style="color: #FF9800; font-weight: bold; margin-bottom: 8px;">📝 NOTE MODIFIED</div>
+          
           <div *ngIf="!entry.deleted">
             <div style="margin-bottom: 8px;">
               <strong>Before:</strong>
-              <div style="padding: 5px; background-color: #fff; border-left: 3px solid #2196f3;">
-                <div>Text: {{ entry.before.note_text }}</div>
-                <div>Popup: {{ entry.before.popup_note ? 'Yes' : 'No' }}</div>
-                <div>Type: {{ entry.before.note_type?.desc || 'None' }}</div>
+              <div class="before-after-box" style="padding: 5px; background-color: #fff; border-left: 3px solid #2196f3; margin-top: 4px;">
+                <div><strong>Text:</strong> {{ entry.before.note_text }}</div>
+                <div><strong>Created:</strong> {{ formatNoteDate(entry.before) }}</div>
+                <div><strong>Popup:</strong> {{ entry.before.popup_note ? 'Yes' : 'No' }}</div>
+                <div><strong>Type:</strong> {{ entry.before.note_type?.desc || 'None' }}</div>
               </div>
             </div>
             <div *ngIf="entry.after">
               <strong>After:</strong>
-              <div style="padding: 5px; background-color: #fff; border-left: 3px solid #4CAF50;">
-                <div>Text: {{ entry.after.note_text }}</div>
-                <div>Popup: {{ entry.after.popup_note ? 'Yes' : 'No' }}</div>
-                <div>Type: {{ entry.after.note_type?.desc || 'None' }}</div>
+              <div class="before-after-box" style="padding: 5px; background-color: #fff; border-left: 3px solid #4CAF50; margin-top: 4px;">
+                <div><strong>Text:</strong> {{ entry.after.note_text }}</div>
+                <div><strong>Created:</strong> {{ formatNoteDate(entry.after) }}</div>
+                <div><strong>Popup:</strong> {{ entry.after.popup_note ? 'Yes' : 'No' }}</div>
+                <div><strong>Type:</strong> {{ entry.after.note_type?.desc || 'None' }}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="entry.deleted">
+            <div style="margin-bottom: 8px;">
+              <strong>Deleted Note:</strong>
+              <div class="before-after-box" style="padding: 5px; background-color: #fff; border-left: 3px solid #d32f2f; margin-top: 4px;">
+                <div><strong>Text:</strong> {{ entry.before.note_text }}</div>
+                <div><strong>Created:</strong> {{ formatNoteDate(entry.before) }}</div>
+                <div><strong>Popup:</strong> {{ entry.before.popup_note ? 'Yes' : 'No' }}</div>
+                <div><strong>Type:</strong> {{ entry.before.note_type?.desc || 'None' }}</div>
               </div>
             </div>
           </div>
@@ -219,8 +362,8 @@
   </div>
 </div>
 
-<!-- User display with note highlighting -->
-<div>
+<!-- User display with note highlighting (hidden after job execution) -->
+<div *ngIf="!jobExecuted">
   <!-- Show user details when available -->
   <section *ngIf="users && users.length > 0" style="margin-top: 50px;">
     <h2 style="color: green">User Details</h2>
@@ -247,6 +390,7 @@
             <span style="color: #483C32">{{ note.note_text }}</span>
             <small>
               <strong>Creator:</strong> {{ note.created_by || 'Unknown' }} | 
+              <strong>Created:</strong> {{ formatNoteDate(note) }} | 
               <strong>Popup:</strong> {{ note.popup_note ? 'Yes' : 'No' }}
             </small>
           
@@ -259,6 +403,7 @@
             <p>{{ note.note_text }}</p>
             <small>
               <strong>Creator:</strong> {{ note.created_by || 'Unknown' }} | 
+              <strong>Created:</strong> {{ formatNoteDate(note) }} | 
               <strong>Popup:</strong> {{ note.popup_note ? 'Yes' : 'No' }}
             </small>
           </div>
