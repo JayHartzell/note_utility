@@ -7,7 +7,7 @@
     <div class="instruction-card">
       <h3>Navigate to a Set Page</h3>
       <p>
-        To use this tool, please navigate to a page that contains sets (e.g., browse to Alma > Administration > Manage Sets).
+        Please navigate to a page that contains a set of users with notes. Once a Users set is selected, the list will populate with user records and you can configure your job parameters.
       </p>
     </div>
   </div>
@@ -310,13 +310,31 @@
     <div>Users with no matching notes: {{ processLogs.length - processLogsWithChanges.length }}</div>
   </div>
   
-  <!-- Show message if no users had changes -->
-  <div *ngIf="processLogsWithChanges.length === 0" style="text-align: center; color: #666; font-style: italic; padding: 20px;">
-    No users had notes that were modified or deleted.
+  <!-- Action Buttons -->
+  <div style="margin-bottom: 20px; display: flex; gap: 10px; justify-content: center;">
+    <button 
+      (click)="showResults = !showResults"
+      style="background: #2196F3; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;"
+    >
+      {{ showResults ? 'Hide Results' : 'View Results' }}
+    </button>
+    <button 
+      (click)="exportResultsToCSV()"
+      style="background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;"
+    >
+      Export to CSV
+    </button>
   </div>
   
-  <!-- Show only users with changes -->
-  <div *ngIf="processLogsWithChanges.length > 0" style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 10px; background-color: #f9f9f9;">
+  <!-- Detailed Results (collapsible) -->
+  <div *ngIf="showResults">
+    <!-- Show message if no users had changes -->
+    <div *ngIf="processLogsWithChanges.length === 0" style="text-align: center; color: #666; font-style: italic; padding: 20px;">
+      No users had notes that were modified or deleted.
+    </div>
+    
+    <!-- Show only users with changes -->
+    <div *ngIf="processLogsWithChanges.length > 0" style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 10px; background-color: #f9f9f9;">
     <div *ngFor="let log of processLogsWithChanges" class="user-change-card" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ddd;">
       <h4 style="color: #1976D2; margin-bottom: 10px;">User ID: {{ log.userId }}</h4>
       <div>
@@ -362,16 +380,34 @@
   </div>
 </div>
 
-<!-- User display with note highlighting (hidden after job execution) -->
-<div *ngIf="!jobExecuted">
-  <!-- Show user details when available -->
-  <section *ngIf="users && users.length > 0" style="margin-top: 50px;">
-    <h2 style="color: green">User Details</h2>
-    <div *ngFor="let user of users" class="user-card">
-      <h3>{{ user.full_name || user.first_name + ' ' + user.last_name || 'User ' + user.primary_id }}</h3>
+<!-- User display with note highlighting -->
+<div>
+  <!-- Debug information -->
+  <div *ngIf="selectedSet" style="background: #f0f0f0; padding: 10px; margin: 10px 0; font-size: 12px;">
+    <strong>Debug Info:</strong><br>
+    Selected Set: {{ selectedSet.id }} ({{ selectedSet.description }})<br>
+    Set Members Count: {{ setMembers.length || 0 }}<br>
+    Users Count: {{ users.length || 0 }}<br>
+    UserDetails Array: {{ userDetails.length || 0 }}<br>
+    Loading: {{ loading }}<br>
+    Job Executed: {{ jobExecuted }}<br>
+    Processing Notes: {{ processingNotes }}<br>
+    Users Available: {{ (users && users.length > 0) ? 'YES' : 'NO' }}
+  </div>
+  
+  <!-- Always show this section if users exist, regardless of job state -->
+  <section *ngIf="users && users.length > 0" style="margin-top: 30px; border: 3px solid #2196F3; padding: 20px; border-radius: 8px; background-color: #f0f8ff;">
+    <h2 style="color: #2196F3; margin-top: 0; background: #2196F3; color: white; padding: 10px; margin: -20px -20px 20px -20px; border-radius: 5px 5px 0 0;">
+      📋 User Records from Set ({{ users.length }} users loaded)
+    </h2>
+    <div style="max-height: 600px; overflow-y: auto; border: 2px solid #ddd; padding: 15px; background-color: white; border-radius: 5px;">
+      <div *ngFor="let user of users; let i = index" class="user-card" style="margin-bottom: 20px; padding: 15px; border: 2px solid #4CAF50; border-radius: 8px; background-color: #f9fff9;">
+        <h3 style="color: #1976D2; margin-top: 0; padding: 8px; background: #e3f2fd; border-radius: 4px;">
+          {{ i + 1 }}. {{ user.full_name || (user.first_name + ' ' + user.last_name) || 'User ' + user.primary_id }}
+        </h3>
       
       <!-- Show error if there was an error fetching this user -->
-      <div *ngIf="user.error" class="error-message">
+      <div *ngIf="user.error" class="error-message" style="color: #d32f2f; font-weight: bold;">
         {{ user.error }}
       </div>
 
@@ -382,51 +418,70 @@
         <!-- Notes section -->
         <div *ngIf="user.user_note && user.user_note.length > 0">
           <h4>Notes ({{ user.user_note.length }})</h4>
-          <div *ngFor="let note of user.user_note">
-            <div style="display: flex; justify-content: space-between; background-color: #EDE0CB;">
+          
+          <!-- Display notes that match search text first (only if search criteria are configured) -->
+          <div *ngIf="hasSearchParameter && !jobExecuted">
+            <div *ngFor="let note of findMatchingNotes(user)" style="margin-bottom: 10px; padding: 8px; border-left: 3px solid #bea227; background-color: #EDE0CB;">
+              <div style="display: flex; justify-content: space-between;">
+                <strong style="color: #483C32;">MATCHING NOTE</strong>
+                <span>{{ note.note_type?.desc || 'No type' }}</span>
+              </div>
+              <p>{{ note.note_text }}</p>
+              <small>
+                <strong>Creator:</strong> {{ note.created_by || 'Unknown' }} | 
+                <strong>Created:</strong> {{ formatNoteDate(note) }} | 
+                <strong>Popup:</strong> {{ note.popup_note ? 'Yes' : 'No' }}
+              </small>
+            </div>
+          </div>
+          
+          <!-- Display all notes -->
+          <div *ngFor="let note of user.user_note" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
+            <div style="display: flex; justify-content: space-between; background-color: #EDE0CB; padding: 4px;">
               <span>{{ note.popup_note ? 'POPUP NOTE' : 'NOTE' }}</span>
               <span>{{ note.note_type?.desc || 'No type' }}</span>
             </div>
-            <span style="color: #483C32">{{ note.note_text }}</span>
-            <small>
-              <strong>Creator:</strong> {{ note.created_by || 'Unknown' }} | 
-              <strong>Created:</strong> {{ formatNoteDate(note) }} | 
-              <strong>Popup:</strong> {{ note.popup_note ? 'Yes' : 'No' }}
-            </small>
-          
-          <!-- Display notes that match search text first -->
-          <div *ngFor="let note of findMatchingNotes(user)" style="margin-bottom: 10px; padding: 8px; border-left: 3px solid #bea227; background-color: #EDE0CB;">
-            <div style="display: flex; justify-content: space-between;">
-              <strong style="color: #EDE0CB;">MATCHING NOTE</strong>
-              <span>{{ note.note_type?.desc || 'No type' }}</span>
+            <div style="padding: 8px;">
+              <p style="color: #483C32; margin: 8px 0;">{{ note.note_text }}</p>
+              <small>
+                <strong>Creator:</strong> {{ note.created_by || 'Unknown' }} | 
+                <strong>Created:</strong> {{ formatNoteDate(note) }} | 
+                <strong>Popup:</strong> {{ note.popup_note ? 'Yes' : 'No' }}
+              </small>
             </div>
-            <p>{{ note.note_text }}</p>
-            <small>
-              <strong>Creator:</strong> {{ note.created_by || 'Unknown' }} | 
-              <strong>Created:</strong> {{ formatNoteDate(note) }} | 
-              <strong>Popup:</strong> {{ note.popup_note ? 'Yes' : 'No' }}
-            </small>
           </div>
-          
-          
+        </div>
         
-        <!-- Expandable section for user details 
-        <details>
-          <summary>User details</summary>
-          <p><strong>Status:</strong> {{ user.status?.desc }}</p>
-          <p><strong>User Group:</strong> {{ user.user_group?.desc || 'N/A' }}</p>
-          <p><strong>Account Type:</strong> {{ user.account_type?.desc || 'N/A' }}</p>
-          <pre>{{ user | json }}</pre>
-        </details>
+        <!-- Show message if user has no notes -->
+        <div *ngIf="!user.user_note || user.user_note.length === 0" style="color: #666; font-style: italic;">
+          This user has no notes.
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+  
+  <!-- Debugging section for when users should exist but don't show -->
+  <section *ngIf="selectedSet && setMembers && setMembers.length > 0 && (!users || users.length === 0) && !loading" style="margin-top: 30px; border: 3px solid #FF9800; padding: 20px; border-radius: 8px; background-color: #fff3e0;">
+    <h2 style="color: #FF9800; margin-top: 0;">⚠️ Debug: Users Not Loading</h2>
+    <p>Set is selected and members are found, but user details are not loading.</p>
+    <p><strong>Set Members Found:</strong> {{ setMembers.length }}</p>
+    <p><strong>User Details Loaded:</strong> {{ userDetails.length || 0 }}</p>
+    <p><strong>Users Getter Result:</strong> {{ users.length || 0 }}</p>
+    <p><strong>Loading State:</strong> {{ loading }}</p>
+    <div style="background: #f5f5f5; padding: 10px; margin-top: 10px;">
+      <strong>First few set members:</strong>
+      <div *ngFor="let member of setMembers.slice(0, 3)">
+        - {{ member.name }} ({{ member.id }})
       </div>
     </div>
   </section>
-  -->
+  
   <!-- Show basic set member info -->
-  <section *ngIf="members && members.length > 0 && (!users || users.length === 0)" style="margin-top: 50px;">
+  <section *ngIf="setMembers && setMembers.length > 0 && (!users || users.length === 0)" style="margin-top: 50px;">
     <h2 style="color: blue">Set Members</h2>
     <ul style="padding: 10px">
-      <li style="margin: 5px 0" *ngFor="let member of members">
+      <li style="margin: 5px 0" *ngFor="let member of setMembers">
         <strong>Name:</strong> {{ member.name }} | 
         <strong>Id:</strong> {{ member.id }} | 
         <strong>Description:</strong> {{ member.description }} | 
@@ -436,7 +491,7 @@
   </section>
   
   <!-- Show empty list template when nothing is available -->
-  <section *ngIf="(!members || members.length === 0) && !loading && setID" style="margin-top: 50px;">
+  <section *ngIf="selectedSet && (!setMembers || setMembers.length === 0) && !loading" style="margin-top: 50px;">
     <ng-container *ngTemplateOutlet="emptyList"></ng-container>
   </section>
   
@@ -455,36 +510,3 @@
     </div>
   </ng-template>
 </div>
-
-<!-- Show basic set member info -->
-<section *ngIf="setMembers && setMembers.length > 0 && (!users || users.length === 0)" style="margin-top: 50px;">
-  <h2 style="color: blue">Set Members</h2>
-  <ul style="padding: 10px">
-    <li style="margin: 5px 0" *ngFor="let member of setMembers">
-      <strong>Name:</strong> {{ member.name }} | 
-      <strong>Id:</strong> {{ member.id }} | 
-      <strong>Description:</strong> {{ member.description }} | 
-      <strong>Link:</strong> <a href="{{member.link}}" target="_blank">{{member.link}}</a>
-    </li>
-  </ul>
-</section>
-
-<!-- Show empty list template when nothing is available -->
-<section *ngIf="selectedSet && (!setMembers || setMembers.length === 0) && !loading" style="margin-top: 50px;">
-  <ng-container *ngTemplateOutlet="emptyList"></ng-container>
-</section>
-
-<!-- Loading indicator -->
-<section *ngIf="loading || processingNotes" style="margin-top: 50px;">
-  <div class="loading-indicator">
-    <span>{{ processingNotes ? 'Processing notes...' : 'Loading data...' }}</span>
-  </div>
-</section>
-
-<!-- Empty list template -->
-<ng-template #emptyList>
-  <div id="emptyList">
-    <span class="uxf-icon uxf-list" style="font-size: 3em;"></span>
-    <div>No items found for this set.</div>
-  </div>
-</ng-template>

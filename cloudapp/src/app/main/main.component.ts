@@ -95,6 +95,12 @@ export class MainComponent implements OnInit, OnDestroy {
   
   // Job execution state
   jobExecuted: boolean = false;
+  showResults: boolean = false;
+  
+  // Job execution metadata for logging
+  jobStartTime: Date | null = null;
+  jobEndTime: Date | null = null;
+  jobConfiguration: any = null;
 
   constructor(
     private eventsService: CloudAppEventsService,
@@ -153,6 +159,10 @@ export class MainComponent implements OnInit, OnDestroy {
     this.startDate = '';
     this.endDate = '';
     this.jobExecuted = false;
+    this.showResults = false;
+    this.jobStartTime = null;
+    this.jobEndTime = null;
+    this.jobConfiguration = null;
   }
 
   // Reset job configuration but keep the set and users loaded
@@ -176,6 +186,10 @@ export class MainComponent implements OnInit, OnDestroy {
     this.startDate = '';
     this.endDate = '';
     this.jobExecuted = false;
+    this.showResults = false;
+    this.jobStartTime = null;
+    this.jobEndTime = null;
+    this.jobConfiguration = null;
   }
 
   // Menu-based job parameter methods
@@ -198,6 +212,11 @@ export class MainComponent implements OnInit, OnDestroy {
         // Make the other action option available
         const deleteOption = this.menuOptions.find(o => o.id === 'action-delete');
         if (deleteOption) deleteOption.available = true;
+        // Make modification options available when modify is selected
+        const modifyPopupOption = this.menuOptions.find(o => o.id === 'modification-popup');
+        const modifyTypeOption = this.menuOptions.find(o => o.id === 'modification-type');
+        if (modifyPopupOption) modifyPopupOption.available = true;
+        if (modifyTypeOption) modifyTypeOption.available = true;
         break;
       case 'action-delete':
         parameter = {
@@ -212,6 +231,11 @@ export class MainComponent implements OnInit, OnDestroy {
         // Make the other action option available
         const modifyOption = this.menuOptions.find(o => o.id === 'action-modify');
         if (modifyOption) modifyOption.available = true;
+        // Hide modification options when delete is selected
+        const deletePopupOption = this.menuOptions.find(o => o.id === 'modification-popup');
+        const deleteTypeOption = this.menuOptions.find(o => o.id === 'modification-type');
+        if (deletePopupOption) deletePopupOption.available = false;
+        if (deleteTypeOption) deleteTypeOption.available = false;
         break;
       case 'search-text':
         parameter = {
@@ -275,6 +299,11 @@ export class MainComponent implements OnInit, OnDestroy {
       const deleteOption = this.menuOptions.find(o => o.id === 'action-delete');
       if (modifyOption) modifyOption.available = true;
       if (deleteOption) deleteOption.available = true;
+      // Make modification options available again when action is removed
+      const popupOption = this.menuOptions.find(o => o.id === 'modification-popup');
+      const typeOption = this.menuOptions.find(o => o.id === 'modification-type');
+      if (popupOption) popupOption.available = true;
+      if (typeOption) typeOption.available = true;
       // Reset delete confirmation
       this.deleteMatchingNotes = false;
     } else {
@@ -385,6 +414,11 @@ export class MainComponent implements OnInit, OnDestroy {
       return;
     }
     
+    // Create modification options from job parameters
+    const actionParam = this.jobParameters.find(p => p.type === 'action');
+    const popupParam = this.jobParameters.find(p => p.id === 'popupSettings');
+    const noteTypeParam = this.jobParameters.find(p => p.id === 'noteType');
+    
     // Set job as executed to hide menu options and user details
     this.jobExecuted = true;
     this.processingNotes = true;
@@ -392,11 +426,23 @@ export class MainComponent implements OnInit, OnDestroy {
     this.recordsToProcess = this.users.length;
     this.modifiedUsers.clear();
     this.processLogs = [];
+    this.showResults = false; // Reset results view
     
-    // Create modification options from job parameters
-    const actionParam = this.jobParameters.find(p => p.type === 'action');
-    const popupParam = this.jobParameters.find(p => p.id === 'popupSettings');
-    const noteTypeParam = this.jobParameters.find(p => p.id === 'noteType');
+    // Capture job metadata for logging
+    this.jobStartTime = new Date();
+    this.jobConfiguration = {
+      action: actionParam?.value || 'modify',
+      searchCriteria: {
+        textSearch: textSearchParam?.value || null,
+        dateRange: dateRangeParam?.value || null
+      },
+      modificationOptions: {
+        popup: popupParam?.value || null,
+        noteType: noteTypeParam?.value || null
+      },
+      setId: this.selectedSet?.id,
+      setDescription: this.selectedSet?.description
+    };
     
     const modificationOptions: NoteModificationOptions = {
       action: actionParam?.value || 'modify',
@@ -450,6 +496,7 @@ export class MainComponent implements OnInit, OnDestroy {
       },
       complete: () => {
         this.processingNotes = false;
+        this.jobEndTime = new Date(); // Capture job completion time
         if (this.modifiedUsers.size > 0) {
           this.alert.success(`Successfully updated notes for ${this.modifiedUsers.size} user${this.modifiedUsers.size !== 1 ? 's' : ''}`);
         } else {
@@ -462,6 +509,128 @@ export class MainComponent implements OnInit, OnDestroy {
   // Helper to get percentage complete for progress bar
   get percentComplete() {
     return Math.round((this.processed / this.recordsToProcess) * 100);
+  }
+
+  // Export processing results to CSV
+  exportResultsToCSV() {
+    if (!this.processLogs || this.processLogs.length === 0) {
+      this.alert.error('No processing results to export');
+      return;
+    }
+
+    const csvData = this.generateCSVData();
+    const csvContent = this.convertToCSV(csvData);
+    this.downloadCSV(csvContent, this.generateFileName());
+  }
+
+  private generateCSVData(): any[] {
+    const csvRows: any[] = [];
+    
+    // Add header information
+    csvRows.push({
+      type: 'JOB_INFO',
+      userId: '',
+      noteAction: '',
+      noteText: '',
+      beforePopup: '',
+      afterPopup: '',
+      beforeType: '',
+      afterType: '',
+      created: '',
+      jobStartTime: this.jobStartTime?.toISOString() || '',
+      jobEndTime: this.jobEndTime?.toISOString() || '',
+      totalUsersProcessed: this.processLogs.length.toString(),
+      usersWithChanges: this.processLogsWithChanges.length.toString(),
+      jobConfiguration: JSON.stringify(this.jobConfiguration || {})
+    });
+
+    // Add detailed note changes
+    this.processLogs.forEach(log => {
+      if (log.noMatchingNotes) {
+        // Add row for users with no matching notes
+        csvRows.push({
+          type: 'NO_MATCHES',
+          userId: log.userId,
+          noteAction: 'No matching notes found',
+          noteText: '',
+          beforePopup: '',
+          afterPopup: '',
+          beforeType: '',
+          afterType: '',
+          created: '',
+          jobStartTime: '',
+          jobEndTime: '',
+          totalUsersProcessed: '',
+          usersWithChanges: '',
+          jobConfiguration: ''
+        });
+      } else {
+        // Add rows for each note change
+        log.notes.forEach(entry => {
+          csvRows.push({
+            type: entry.deleted ? 'NOTE_DELETED' : 'NOTE_MODIFIED',
+            userId: log.userId,
+            noteAction: entry.deleted ? 'Deleted' : 'Modified',
+            noteText: entry.before.note_text || '',
+            beforePopup: entry.before.popup_note ? 'Yes' : 'No',
+            afterPopup: entry.deleted ? '' : (entry.after?.popup_note ? 'Yes' : 'No'),
+            beforeType: entry.before.note_type?.desc || '',
+            afterType: entry.deleted ? '' : (entry.after?.note_type?.desc || ''),
+            created: entry.before.created_date || '',
+            jobStartTime: '',
+            jobEndTime: '',
+            totalUsersProcessed: '',
+            usersWithChanges: '',
+            jobConfiguration: ''
+          });
+        });
+      }
+    });
+
+    return csvRows;
+  }
+
+  private convertToCSV(data: any[]): string {
+    if (data.length === 0) return '';
+    
+    const headers = Object.keys(data[0]);
+    const csvLines = [headers.join(',')];
+    
+    data.forEach(row => {
+      const values = headers.map(header => {
+        const value = row[header] || '';
+        // Escape quotes and wrap in quotes if contains comma, quote, or newline
+        if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+          return `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+      });
+      csvLines.push(values.join(','));
+    });
+    
+    return csvLines.join('\n');
+  }
+
+  private downloadCSV(csvContent: string, fileName: string) {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', fileName);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  private generateFileName(): string {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+    const setId = this.selectedSet?.id || 'unknown-set';
+    return `note-processing-results-${setId}-${timestamp}.csv`;
   }
 
   // Helper method for debugging entity types
