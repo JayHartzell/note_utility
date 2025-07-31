@@ -1,5 +1,23 @@
 import { UserNote } from './user.interface';
 
+// Define interface for note types
+export interface NoteType {
+  value: string;
+  desc: string;
+}
+
+// Define available note types
+export const NOTE_TYPES: NoteType[] = [
+  { value: 'LIBRARY', desc: 'Library' },
+  { value: 'ADDRESS', desc: 'Address' },
+  { value: 'ERP', desc: 'ERP' },
+  { value: 'POPUP', desc: 'General' },
+  { value: 'CIRCULATION', desc: 'Circulation' },
+  { value: 'BARCODE', desc: 'Barcode' },
+  { value: 'REGISTAR', desc: 'Registrar' },
+  { value: 'OTHER', desc: 'Other' }
+];
+
 // Define interfaces for note search and processing
 export interface NoteSearchCriteria {
   searchText: string;
@@ -13,7 +31,7 @@ export interface NoteModificationOptions {
   action: 'modify' | 'delete';
   makePopup?: boolean;
   disablePopup?: boolean;
-  noteType?: string;
+  noteType?: NoteType;
   deleteMatchingNotes?: boolean;
 }
 

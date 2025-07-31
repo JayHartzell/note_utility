@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { UserData, UserNote } from '../interfaces/user.interface';
-import { NoteSearchCriteria, NoteModificationOptions, UserProcessLog, NoteLogEntry } from '../interfaces/note.interface';
+import { NoteSearchCriteria, NoteModificationOptions, UserProcessLog, NoteLogEntry, NoteType, NOTE_TYPES } from '../interfaces/note.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -147,8 +147,8 @@ export class NoteProcessingService {
           note.popup_note = false;
           noteChanged = true;
         }
-        if (options.noteType && (!note.note_type || note.note_type.value !== options.noteType)) {
-          note.note_type = { value: options.noteType, desc: options.noteType };
+        if (options.noteType && this.shouldUpdateNoteType(note, options.noteType)) {
+          note.note_type = { value: options.noteType.value, desc: options.noteType.desc };
           noteChanged = true;
         }
         
@@ -170,5 +170,32 @@ export class NoteProcessingService {
    */
   wasUserModified(userLog: UserProcessLog): boolean {
     return userLog.notes.length > 0;
+  }
+
+  /**
+   * Check if note type should be updated
+   * @param note The note to check
+   * @param newNoteType The new note type to apply
+   */
+  private shouldUpdateNoteType(note: UserNote, newNoteType: NoteType): boolean {
+    // Update if note has no type, or if the current type value is different
+    return !note.note_type || note.note_type.value !== newNoteType.value;
+  }
+
+  /**
+   * Get all available note types
+   * @returns Array of available note types
+   */
+  getAvailableNoteTypes(): NoteType[] {
+    return [...NOTE_TYPES];
+  }
+
+  /**
+   * Find a note type by its value
+   * @param value The note type value to find
+   * @returns The note type object or undefined if not found
+   */
+  getNoteTypeByValue(value: string): NoteType | undefined {
+    return NOTE_TYPES.find(type => type.value === value);
   }
 }

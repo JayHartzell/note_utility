@@ -9,7 +9,7 @@ import { tap, catchError, concatMap, filter } from 'rxjs/operators';
 
 // Import interfaces and services
 import { UserData, UserNote, SetMember } from '../interfaces/user.interface';
-import { NoteSearchCriteria, NoteModificationOptions, UserProcessLog, SetInfo, JobParameter, MenuOption, SearchCriteria } from '../interfaces/note.interface';
+import { NoteSearchCriteria, NoteModificationOptions, UserProcessLog, SetInfo, JobParameter, MenuOption, SearchCriteria, NoteType } from '../interfaces/note.interface';
 import { SetService } from '../services/set.service';
 import { UserService } from '../services/user.service';
 import { NoteProcessingService } from '../services/note-processing.service';
@@ -29,6 +29,10 @@ export class MainComponent implements OnInit, OnDestroy {
   setID: string = '';
   userDetails: Array<UserData> = [];
   setMembers: Array<SetMember> = [];
+  
+  // Separate users based on note availability
+  usersWithNotes: Array<UserData> = [];
+  usersWithoutNotes: Array<UserData> = [];
   
   // New menu-based job parameters
   jobParameters: JobParameter[] = [];
@@ -83,7 +87,7 @@ export class MainComponent implements OnInit, OnDestroy {
   action: 'modify' | 'delete' = 'modify';
   makePopup: boolean = false;
   disablePopup: boolean = false;
-  noteType: string = '';
+  noteType: NoteType | null = null;
   processed: number = 0;
   recordsToProcess: number = 0;
   modifiedUsers: Set<string> = new Set();
@@ -96,6 +100,7 @@ export class MainComponent implements OnInit, OnDestroy {
   // Job execution state
   jobExecuted: boolean = false;
   showResults: boolean = false;
+  toggleSetDetails: boolean = false;
   
   // Job execution metadata for logging
   jobStartTime: Date | null = null;
@@ -140,12 +145,14 @@ export class MainComponent implements OnInit, OnDestroy {
     this.selectedSet = null;
     this.setMembers = [];
     this.userDetails = [];
+    this.usersWithNotes = [];
+    this.usersWithoutNotes = [];
     this.noteSearch = '';
     this.deleteMatchingNotes = false;
     this.action = 'modify';
     this.makePopup = false;
     this.disablePopup = false;
-    this.noteType = '';
+    this.noteType = null;
     this.processed = 0;
     this.recordsToProcess = 0;
     this.modifiedUsers = new Set();
@@ -172,7 +179,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.action = 'modify';
     this.makePopup = false;
     this.disablePopup = false;
-    this.noteType = '';
+    this.noteType = null;
     this.processed = 0;
     this.recordsToProcess = 0;
     this.modifiedUsers = new Set();
@@ -269,7 +276,7 @@ export class MainComponent implements OnInit, OnDestroy {
           id: 'noteType',
           type: 'modification',
           label: 'Note Type',
-          value: '',
+          value: null,
           editable: true
         };
         break;
@@ -277,8 +284,8 @@ export class MainComponent implements OnInit, OnDestroy {
         return;
     }
 
-    // Remove existing parameter of same type (except search which can have multiple)
-    if (parameter.type !== 'search') {
+    // Remove existing parameter of same type (except search and modification which can have multiple)
+    if (parameter.type !== 'search' && parameter.type !== 'modification') {
       this.jobParameters = this.jobParameters.filter(p => p.type !== parameter.type);
     }
 
@@ -317,7 +324,18 @@ export class MainComponent implements OnInit, OnDestroy {
       const optionId = optionMap[parameterId];
       if (optionId) {
         const option = this.menuOptions.find(o => o.id === optionId);
-        if (option) option.available = true;
+        if (option) {
+          // For modification options, only make available if action is 'modify'
+          if (parameterId === 'popupSettings' || parameterId === 'noteType') {
+            const actionParam = this.jobParameters.find(p => p.type === 'action');
+            if (actionParam?.value === 'modify') {
+              option.available = true;
+            }
+          } else {
+            // For search options, always make available
+            option.available = true;
+          }
+        }
       }
     }
   }
@@ -356,7 +374,14 @@ export class MainComponent implements OnInit, OnDestroy {
   get canExecuteJob(): boolean {
     const hasAction = this.jobParameters.some(p => p.type === 'action');
     const hasSearch = this.jobParameters.some(p => p.type === 'search' || p.type === 'dateRange');
-    return hasAction && hasSearch && this.users && this.users.length > 0;
+    const baseRequirements = hasAction && hasSearch && this.usersWithNotes && this.usersWithNotes.length > 0;
+    
+    // If it's a modify action, also require modification parameters
+    if (this.isModifyAction) {
+      return baseRequirements && this.hasModificationParameter;
+    }
+    
+    return baseRequirements;
   }
 
   get hasActionParameter(): boolean {
@@ -367,12 +392,46 @@ export class MainComponent implements OnInit, OnDestroy {
     return this.jobParameters.some(p => p.type === 'search' || p.type === 'dateRange');
   }
 
+  get hasModificationParameter(): boolean {
+    return this.jobParameters.some(p => p.type === 'modification');
+  }
+
+  get isModifyAction(): boolean {
+    return this.jobParameters.some(p => p.type === 'action' && p.value === 'modify');
+  }
+
+  get needsModificationOptions(): boolean {
+    return this.isModifyAction && this.hasSearchParameter && !this.hasModificationParameter;
+  }
+
   getMenuOptionsByCategory(category: string): MenuOption[] {
     return this.availableMenuOptions.filter(option => option.category === category);
   }
 
   get processLogsWithChanges(): UserProcessLog[] {
     return this.processLogs.filter(log => !log.noMatchingNotes && log.notes.length > 0);
+  }
+
+  get availableNoteTypes(): NoteType[] {
+    return this.noteProcessingService.getAvailableNoteTypes();
+  }
+
+  getNoteTypeByValue(value: string): NoteType | null {
+    if (!value) return null;
+    return this.noteProcessingService.getNoteTypeByValue(value) || null;
+  }
+
+  // Summary statistics getters
+  get totalUsersInSet(): number {
+    return this.userDetails.length;
+  }
+
+  get totalUsersWithNotes(): number {
+    return this.usersWithNotes.length;
+  }
+
+  get totalUsersWithoutNotes(): number {
+    return this.usersWithoutNotes.length;
   }
 
 // main note matching logic
@@ -394,8 +453,8 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   processUserNotes() {
-    if (!this.users || !this.users.length) {
-      this.alert.error('Please load users first');
+    if (!this.usersWithNotes || !this.usersWithNotes.length) {
+      this.alert.error('No users with notes found in this set');
       return;
     }
     
@@ -423,7 +482,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.jobExecuted = true;
     this.processingNotes = true;
     this.processed = 0;
-    this.recordsToProcess = this.users.length;
+    this.recordsToProcess = this.usersWithNotes.length; // Only count users with notes
     this.modifiedUsers.clear();
     this.processLogs = [];
     this.showResults = false; // Reset results view
@@ -446,14 +505,14 @@ export class MainComponent implements OnInit, OnDestroy {
     
     const modificationOptions: NoteModificationOptions = {
       action: actionParam?.value || 'modify',
-      makePopup: popupParam?.value.makePopup || false,
-      disablePopup: popupParam?.value.disablePopup || false,
-      noteType: noteTypeParam?.value || '',
+      makePopup: popupParam?.value?.makePopup || false,
+      disablePopup: popupParam?.value?.disablePopup || false,
+      noteType: noteTypeParam?.value || null,
       deleteMatchingNotes: actionParam?.value === 'delete'
     };
     
-    // Process each user
-    from(this.users).pipe(
+    // Process each user (only those with notes)
+    from(this.usersWithNotes).pipe(
       concatMap((user: UserData) => {
         if (!user || user.error) {
           this.processed++;
@@ -672,6 +731,8 @@ export class MainComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.userDetails = [];
     this.setMembers = [];
+    this.usersWithNotes = [];
+    this.usersWithoutNotes = [];
     
     // Use the data service to fetch all set data
     this.dataService.fetchSetData(this.selectedSet.id).subscribe({
@@ -679,6 +740,10 @@ export class MainComponent implements OnInit, OnDestroy {
         console.log('Set data retrieved:', setData);
         this.setMembers = setData.members;
         this.userDetails = setData.users;
+        
+        // Categorize users based on note availability
+        this.categorizeUsers();
+        
         this.loading = false;
       },
       error: (error) => {
@@ -695,6 +760,29 @@ export class MainComponent implements OnInit, OnDestroy {
   
   get users() {
     return this.userDetails;
+  }
+
+  /**
+   * Categorize users based on whether they have notes or not
+   */
+  private categorizeUsers(): void {
+    this.usersWithNotes = [];
+    this.usersWithoutNotes = [];
+    
+    this.userDetails.forEach(user => {
+      if (user.error) {
+        // Skip users with errors - they'll be handled separately
+        return;
+      }
+      
+      if (user.user_note && Array.isArray(user.user_note) && user.user_note.length > 0) {
+        this.usersWithNotes.push(user);
+      } else {
+        this.usersWithoutNotes.push(user);
+      }
+    });
+    
+    console.log(`Categorized users: ${this.usersWithNotes.length} with notes, ${this.usersWithoutNotes.length} without notes`);
   }
 
   // Helper method to format note creation date
