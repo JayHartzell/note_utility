@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, Inject, LOCALE_ID } from '@angular/core';
 import {
   AlertService,
   CloudAppEventsService,
@@ -113,7 +113,8 @@ export class MainComponent implements OnInit, OnDestroy {
     private setService: SetService,
     private userService: UserService,
     private noteProcessingService: NoteProcessingService,
-    private dataService: DataService
+  private dataService: DataService,
+  @Inject(LOCALE_ID) private locale: string
   ) {
     this.entities$ = this.eventsService.entities$.pipe(
       tap((entities) => {
@@ -785,20 +786,34 @@ export class MainComponent implements OnInit, OnDestroy {
     console.log(`Categorized users: ${this.usersWithNotes.length} with notes, ${this.usersWithoutNotes.length} without notes`);
   }
 
-  // Helper method to format note creation date
+  // Helper method to format note creation date (locale-aware, local timezone)
   formatNoteDate(note: UserNote): string {
-    const dateField = note.created_date;
+    const dateField = note.created_date || note.creation_date || note.note_date;
     if (!dateField) return 'Unknown';
-    
+
+    // Use local midnight for date-only inputs to align with user-visible calendar days
+    const onlyDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateField));
+    let dateObj: Date;
+    if (onlyDate) {
+      const y = Number(onlyDate[1]);
+      const m = Number(onlyDate[2]) - 1;
+      const d = Number(onlyDate[3]);
+      dateObj = new Date(y, m, d, 0, 0, 0, 0); // local midnight
+    } else {
+      dateObj = new Date(dateField);
+    }
+
+    const ms = dateObj.getTime();
+    if (isNaN(ms)) return String(dateField);
+
     try {
-      const date = new Date(dateField);
-      return date.toLocaleDateString('en-US', {
+      return new Intl.DateTimeFormat(this.locale || 'en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
-      });
+      }).format(dateObj);
     } catch {
-      return dateField.toString();
+      return dateObj.toLocaleDateString();
     }
   }
 }

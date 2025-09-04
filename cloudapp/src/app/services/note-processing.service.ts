@@ -6,6 +6,43 @@ import { NoteSearchCriteria, NoteModificationOptions, UserProcessLog, NoteLogEnt
   providedIn: 'root'
 })
 export class NoteProcessingService {
+  /**
+   * Parse a date-only string (YYYY-MM-DD) into a local timestamp at midnight.
+   */
+  private parseDateOnlyToLocalMs(dateStr: string): number | null {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+    if (!m) return null;
+    const year = Number(m[1]);
+    const month = Number(m[2]) - 1; // JS months 0-11
+    const day = Number(m[3]);
+    return new Date(year, month, day, 0, 0, 0, 0).getTime(); // local midnight
+  }
+
+  /**
+   * Get inclusive LOCAL bounds (start and end) in ms for a criteria date which is YYYY-MM-DD.
+   * Uses local start-of-day and end-of-day to align with user-visible dates.
+   */
+  private getLocalBoundsForDateOnly(dateStr: string): { startMs: number; endMs: number } | null {
+    const startMs = this.parseDateOnlyToLocalMs(dateStr);
+    if (startMs === null) return null;
+    const start = new Date(startMs);
+    const end = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 23, 59, 59, 999);
+    return { startMs, endMs: end.getTime() };
+  }
+
+  /**
+   * Parse a note's date field into a timestamp in ms.
+   * Accepts full ISO strings or date-only strings and treats date-only as UTC midnight.
+   */
+  private parseNoteDateToMs(dateField: string): number | null {
+    if (!dateField) return null;
+    // If it's a date-only (YYYY-MM-DD), treat as LOCAL midnight
+    const onlyLocal = this.parseDateOnlyToLocalMs(dateField);
+    if (onlyLocal !== null) return onlyLocal;
+    const dt = new Date(dateField);
+    const ms = dt.getTime();
+    return isNaN(ms) ? null : ms;
+  }
 
   /**
    * Find notes that match the search criteria
@@ -41,33 +78,24 @@ export class NoteProcessingService {
     
     // Additionally filter by date if enabled
     if (criteria.searchByDate && (criteria.startDate || criteria.endDate)) {
+      // Pre-compute LOCAL bounds for criteria to avoid recomputing per note
+      const startBounds = criteria.startDate ? this.getLocalBoundsForDateOnly(criteria.startDate) : null;
+      const endBounds = criteria.endDate ? this.getLocalBoundsForDateOnly(criteria.endDate) : null;
+
       matchingNotes = matchingNotes.filter((note: UserNote) => {
-        // Check for the created_date field first (this is the primary field from the system)
         const dateField = note.created_date || note.creation_date || note.note_date;
-        if (!dateField) {
-          return false; // Skip notes without dates
-        }
-        
-        // Parse the note's date (which comes as ISO string like "2025-07-18T18:14:17.343Z")
-        const noteDate = new Date(dateField);
-        if (isNaN(noteDate.getTime())) {
-          return false; // Skip notes with invalid dates
-        }
-        
-        // Extract just the date part (YYYY-MM-DD) from the note's timestamp
-        const noteDateOnly = noteDate.toISOString().split('T')[0];
-        
-        // Compare with the date range (criteria dates are already in YYYY-MM-DD format)
+        if (!dateField) return false; // Skip notes without dates
+
+        const noteMs = this.parseNoteDateToMs(dateField);
+        if (noteMs === null) return false; // Skip invalid dates
+
         let matchesRange = true;
-        
-        if (criteria.startDate) {
-          matchesRange = matchesRange && (noteDateOnly >= criteria.startDate);
+        if (startBounds) {
+          matchesRange = matchesRange && (noteMs >= startBounds.startMs);
         }
-        
-        if (criteria.endDate) {
-          matchesRange = matchesRange && (noteDateOnly <= criteria.endDate);
+        if (endBounds) {
+          matchesRange = matchesRange && (noteMs <= endBounds.endMs);
         }
-        
         return matchesRange;
       });
     }
