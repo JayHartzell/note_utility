@@ -11,6 +11,76 @@
 }
 
 @mixin theme-component-theme($theme, $typgraphy) {
+  // Themed text utilities
+  .text-primary { color: mat.get-theme-color($theme, primary); }
+  .text-secondary { color: mat.get-theme-color($theme, secondary); }
+  .text-tertiary { color: mat.get-theme-color($theme, tertiary); }
+  .text-muted { color: mat.get-theme-color($theme, on-surface-variant); }
+
+  // Themed backgrounds
+  .bg-surface { background-color: mat.get-theme-color($theme, surface); }
+  .bg-surface-variant { background-color: mat.get-theme-color($theme, surface-variant); }
+
+  // Themed borders
+  .border { border: 1px solid mat.get-theme-color($theme, outline-variant); }
+  .border-primary { border-color: mat.get-theme-color($theme, primary); }
+  .border-secondary { border-color: mat.get-theme-color($theme, secondary); }
+  .border-tertiary { border-color: mat.get-theme-color($theme, tertiary); }
+  .border-bottom { border-bottom: 1px solid mat.get-theme-color($theme, outline-variant); }
+  .border-bottom-primary { border-bottom: 1px solid mat.get-theme-color($theme, primary); }
+  .border-top { border-top: 1px solid mat.get-theme-color($theme, outline-variant); }
+  .border-top-primary { border-top: 1px solid mat.get-theme-color($theme, primary); }
+  .border-left { border-left: 3px solid mat.get-theme-color($theme, outline-variant); }
+  .border-left-primary { border-left: 3px solid mat.get-theme-color($theme, primary); }
+  .border-left-secondary { border-left: 3px solid mat.get-theme-color($theme, secondary); }
+  .border-left-tertiary { border-left: 3px solid mat.get-theme-color($theme, tertiary); }
+
+  // Links
+  a { color: mat.get-theme-color($theme, primary); }
+
+  // Buttons
+  .btn { color: mat.get-theme-color($theme, on-surface); border: 1px solid mat.get-theme-color($theme, outline-variant); background-color: mat.get-theme-color($theme, surface); }
+  .btn-primary { background-color: mat.get-theme-color($theme, primary); color: mat.get-theme-color($theme, on-primary); border-color: mat.get-theme-color($theme, primary); }
+  .btn-secondary { background-color: mat.get-theme-color($theme, secondary); color: mat.get-theme-color($theme, on-secondary); border-color: mat.get-theme-color($theme, secondary); }
+  .btn-tertiary { background-color: mat.get-theme-color($theme, tertiary); color: mat.get-theme-color($theme, on-tertiary); border-color: mat.get-theme-color($theme, tertiary); }
+  .btn-outline-primary { background-color: transparent; color: mat.get-theme-color($theme, primary); border-color: mat.get-theme-color($theme, primary); }
+  .btn-outline-secondary { background-color: transparent; color: mat.get-theme-color($theme, secondary); border-color: mat.get-theme-color($theme, secondary); }
+  .btn-outline-tertiary { background-color: transparent; color: mat.get-theme-color($theme, tertiary); border-color: mat.get-theme-color($theme, tertiary); }
+
+  .btn-primary:hover:not(:disabled) { background-color: color-mix(in srgb, mat.get-theme-color($theme, primary) 88%, transparent); }
+  .btn-secondary:hover:not(:disabled) { background-color: color-mix(in srgb, mat.get-theme-color($theme, secondary) 88%, transparent); }
+  .btn-tertiary:hover:not(:disabled) { background-color: color-mix(in srgb, mat.get-theme-color($theme, tertiary) 88%, transparent); }
+  .btn-outline-primary:hover:not(:disabled) { background-color: mat.get-theme-color($theme, primary); color: mat.get-theme-color($theme, on-primary); }
+  .btn-outline-secondary:hover:not(:disabled) { background-color: mat.get-theme-color($theme, secondary); color: mat.get-theme-color($theme, on-secondary); }
+  .btn-outline-tertiary:hover:not(:disabled) { background-color: mat.get-theme-color($theme, tertiary); color: mat.get-theme-color($theme, on-tertiary); }
+
+  // Chips / badges
+  .chip { background-color: mat.get-theme-color($theme, surface-variant); color: mat.get-theme-color($theme, on-surface-variant); }
+  .chip-primary { background-color: mat.get-theme-color($theme, primary-container); color: mat.get-theme-color($theme, on-primary-container); }
+  .chip-secondary { background-color: mat.get-theme-color($theme, secondary-container); color: mat.get-theme-color($theme, on-secondary-container); }
+  .chip-tertiary { background-color: mat.get-theme-color($theme, tertiary-container); color: mat.get-theme-color($theme, on-tertiary-container); }
+
+  // Cards
+  .card { background-color: mat.get-theme-color($theme, surface); border: 1px solid mat.get-theme-color($theme, outline-variant); color: mat.get-theme-color($theme, on-surface); }
+  .card-primary { border-color: mat.get-theme-color($theme, primary); }
+  .card-secondary { border-color: mat.get-theme-color($theme, secondary); }
+  .card-tertiary { border-color: mat.get-theme-color($theme, tertiary); }
+
+  // Semantic status helpers
+  .text-success { color: mat.get-theme-color($theme, tertiary); }
+  .text-warning { color: mat.get-theme-color($theme, secondary); }
+  .text-error { color: mat.get-theme-color($theme, error); }
+  .chip-success { background-color: mat.get-theme-color($theme, tertiary-container); color: mat.get-theme-color($theme, on-tertiary-container); }
+  .chip-warning { background-color: mat.get-theme-color($theme, secondary-container); color: mat.get-theme-color($theme, on-secondary-container); }
+  .chip-error { background-color: mat.get-theme-color($theme, error-container); color: mat.get-theme-color($theme, on-error-container); }
+  .border-left-success { border-left: 3px solid mat.get-theme-color($theme, tertiary); }
+  .border-left-warning { border-left: 3px solid mat.get-theme-color($theme, secondary); }
+  .border-left-error { border-left: 3px solid mat.get-theme-color($theme, error); }
+
+  // Progress
+  .progress-track { background-color: mat.get-theme-color($theme, surface-variant); }
+  .progress-bar { background-color: mat.get-theme-color($theme, primary); color: mat.get-theme-color($theme, on-primary); }
+
  .note-management {
     border: mat.get-theme-color($theme, primary) solid 2px;
     color: mat.get-theme-color($theme, on-primary-container);

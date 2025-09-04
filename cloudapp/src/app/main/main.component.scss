@@ -6,8 +6,10 @@
 
 // New menu-based interface styles
 .job-parameters-window {
+  h3 { font-weight: 700; }
   .parameter-item {
     transition: all 0.2s ease;
+    h4 { font-weight: 700; }
     
     &:hover {
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -18,7 +20,6 @@
     transition: all 0.2s ease;
     
     &:hover:not(:disabled) {
-      background-color: #45a049 !important;
       transform: translateY(-1px);
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
@@ -32,7 +33,6 @@
     transition: all 0.2s ease;
     
     &:hover {
-      background-color: #1976D2 !important;
       transform: translateY(-1px);
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
@@ -40,7 +40,9 @@
 }
 
 .menu-options {
+  .option-category h4 { font-weight: 700; }
   .menu-option-button {
+    font-weight: 600;
     transition: all 0.2s ease;
     
     &:hover {
@@ -77,8 +79,8 @@
 
 // Processing results styles
 .processing-results {
+  h3 { font-weight: 700; }
   .summary-box {
-    background: linear-gradient(135deg, #e8f5e8 0%, #f1f8f1 100%);
     transition: box-shadow 0.2s ease;
     
     &:hover {
@@ -155,16 +157,14 @@ textarea {
 // Keep existing styles
 
 .user-card {
-  border: 1px solid #ddd;
+  border: 1px solid var(--mat-sys-outline-variant, #ddd);
   border-radius: 4px;
   margin-bottom: 20px;
   padding: 15px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.note-management {
-  background-color: #f9f9f9;
-}
+
 
 // Set selection components
 .instruction-message {
@@ -239,8 +239,8 @@ textarea {
     box-sizing: border-box;
     
     h3 {
-      margin: 0 0 10px 0;
-      font-weight: 600;
+  margin: 0 0 10px 0;
+  font-weight: 700;
     }
     
     p {
@@ -348,6 +348,9 @@ textarea {
   outline-offset: 2px;
 }
 
+// Make main section titles bold for clarity
+section h2 { font-weight: 700; }
+
 // Animation for loading states
 .set-button:disabled,
 .change-set-button:disabled,
@@ -374,13 +377,7 @@ textarea {
   100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-.error-message {
-  color: #d32f2f;
-  padding: 10px;
-  background-color: #ffebee;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
+.error-message { padding: 10px; border-radius: 4px; margin-bottom: 10px; }
 
 input[type="text"], select {
   padding: 8px;
