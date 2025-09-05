@@ -9,8 +9,7 @@ import { tap, catchError, concatMap, filter } from 'rxjs/operators';
 
 // Import interfaces and services
 import { UserData, UserNote, SetMember } from '../interfaces/user.interface';
-import { NoteSearchCriteria, NoteModificationOptions, UserProcessLog, SetInfo, JobParameter, MenuOption, SearchCriteria, NoteType } from '../interfaces/note.interface';
-import { SetService } from '../services/set.service';
+import { NoteSearchCriteria, NoteModificationOptions, UserProcessLog, JobParameter, MenuOption, NoteType } from '../interfaces/note.interface';
 import { UserService } from '../services/user.service';
 import { NoteProcessingService } from '../services/note-processing.service';
 import { DataService } from '../services/data.service';
@@ -33,8 +32,8 @@ export class MainComponent implements OnInit, OnDestroy {
   // Separate users based on note availability
   usersWithNotes: Array<UserData> = [];
   usersWithoutNotes: Array<UserData> = [];
-  
-  // New menu-based job parameters
+
+  // Job parameters
   jobParameters: JobParameter[] = [];
   menuOptions: MenuOption[] = [
     {
@@ -88,20 +87,10 @@ export class MainComponent implements OnInit, OnDestroy {
     }
   ];
   
-  // Legacy properties for backward compatibility
-  noteSearch: string = '';
-  deleteMatchingNotes: boolean = false;
-  action: 'modify' | 'delete' = 'modify';
-  makePopup: boolean = false;
-  disablePopup: boolean = false;
-  noteType: NoteType | null = null;
+  // state derived from job parameters
   processed: number = 0;
   recordsToProcess: number = 0;
   modifiedUsers: Set<string> = new Set();
-  caseSensitiveSearch: boolean = false;
-  searchByDate: boolean = false;
-  startDate: string = '';
-  endDate: string = '';
   processLogs: UserProcessLog[] = [];
   
   // Job execution state
@@ -121,7 +110,6 @@ export class MainComponent implements OnInit, OnDestroy {
   constructor(
     private eventsService: CloudAppEventsService,
     private alert: AlertService,
-    private setService: SetService,
     private userService: UserService,
     private noteProcessingService: NoteProcessingService,
   private dataService: DataService,
@@ -139,13 +127,10 @@ export class MainComponent implements OnInit, OnDestroy {
     // Subscribe to entities to detect when sets are available
     this.entities$.subscribe({
       next: (entities) => {
-        console.log('Entities detected:', entities);
-        console.log('Number of entities:', entities.length);
-        console.log('Entity types:', entities.map(e => e.type));
-        console.log('Sets found:', entities.filter(e => e.type === 'SET'));
+  // Entities detected
       },
       error: (error) => {
-        console.error('Error in entities observable:', error);
+  // Error in entities observable
       }
     });
   }
@@ -159,12 +144,6 @@ export class MainComponent implements OnInit, OnDestroy {
     this.userDetails = [];
     this.usersWithNotes = [];
     this.usersWithoutNotes = [];
-    this.noteSearch = '';
-    this.deleteMatchingNotes = false;
-    this.action = 'modify';
-    this.makePopup = false;
-    this.disablePopup = false;
-    this.noteType = null;
     this.processed = 0;
     this.recordsToProcess = 0;
     this.modifiedUsers = new Set();
@@ -173,10 +152,6 @@ export class MainComponent implements OnInit, OnDestroy {
     // Clear job parameters and reset menu options
     this.jobParameters = [];
     this.menuOptions.forEach(option => option.available = true);
-    this.caseSensitiveSearch = false;
-    this.searchByDate = false;
-    this.startDate = '';
-    this.endDate = '';
     this.jobExecuted = false;
     this.showResults = false;
     this.jobStartTime = null;
@@ -188,12 +163,6 @@ export class MainComponent implements OnInit, OnDestroy {
 
   // Reset job configuration but keep the set and users loaded
   resetJob() {
-    this.noteSearch = '';
-    this.deleteMatchingNotes = false;
-    this.action = 'modify';
-    this.makePopup = false;
-    this.disablePopup = false;
-    this.noteType = null;
     this.processed = 0;
     this.recordsToProcess = 0;
     this.modifiedUsers = new Set();
@@ -202,10 +171,6 @@ export class MainComponent implements OnInit, OnDestroy {
     // Clear job parameters and reset menu options
     this.jobParameters = [];
     this.menuOptions.forEach(option => option.available = true);
-    this.caseSensitiveSearch = false;
-    this.searchByDate = false;
-    this.startDate = '';
-    this.endDate = '';
     this.jobExecuted = false;
     this.showResults = false;
     this.jobStartTime = null;
@@ -332,7 +297,6 @@ export class MainComponent implements OnInit, OnDestroy {
           value: 'modify',
           editable: false
         };
-        this.action = 'modify';
         // Make the other action option available
         const deleteOption = this.menuOptions.find(o => o.id === 'action-delete');
         if (deleteOption) deleteOption.available = true;
@@ -352,8 +316,6 @@ export class MainComponent implements OnInit, OnDestroy {
           value: 'delete',
           editable: false
         };
-        this.action = 'delete';
-        this.deleteMatchingNotes = true; // Auto-enable delete confirmation
         // Make the other action option available
         const modifyOption = this.menuOptions.find(o => o.id === 'action-modify');
         if (modifyOption) modifyOption.available = true;
@@ -397,7 +359,7 @@ export class MainComponent implements OnInit, OnDestroy {
           id: 'userViewable',
           type: 'modification',
           label: 'User Viewable',
-          value: { makeUserViewable: false },
+          value: { makeUserViewable: undefined },
           editable: true
         };
         break;
@@ -443,15 +405,14 @@ export class MainComponent implements OnInit, OnDestroy {
       if (popupOption) popupOption.available = true;
       if (typeOption) typeOption.available = true;
   if (userViewableOption) userViewableOption.available = true;
-      // Reset delete confirmation
-      this.deleteMatchingNotes = false;
+  // Reset of legacy delete confirmation removed
     } else {
       const optionMap: { [key: string]: string } = {
         'textSearch': 'search-text',
         'dateRange': 'search-date',
         'popupSettings': 'modification-popup',
-  'noteType': 'modification-type',
-  'userViewable': 'modification-user-viewable'
+        'noteType': 'modification-type',
+        'userViewable': 'modification-user-viewable'
       };
 
       const optionId = optionMap[parameterId];
@@ -474,33 +435,8 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   updateJobParameter(parameterId: string, newValue: any) {
-    const parameter = this.jobParameters.find(p => p.id === parameterId);
-    if (parameter) {
-      parameter.value = newValue;
-      
-      // Update legacy properties for backward compatibility
-      switch (parameterId) {
-        case 'textSearch':
-          this.noteSearch = newValue.text;
-          this.caseSensitiveSearch = newValue.caseSensitive;
-          break;
-        case 'dateRange':
-          this.startDate = newValue.startDate;
-          this.endDate = newValue.endDate;
-          this.searchByDate = !!(newValue.startDate || newValue.endDate);
-          break;
-        case 'popupSettings':
-          this.makePopup = newValue.makePopup;
-          this.disablePopup = newValue.disablePopup;
-          break;
-        case 'userViewable':
-          // legacy passthrough if needed in future
-          break;
-        case 'noteType':
-          this.noteType = newValue;
-          break;
-      }
-    }
+    const parameter = this.jobParameters.find(p => p.id === parameterId as any);
+    if (parameter) parameter.value = newValue;
   }
 
   get availableMenuOptions(): MenuOption[] {
@@ -508,16 +444,20 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   get canExecuteJob(): boolean {
-    const hasAction = this.jobParameters.some(p => p.type === 'action');
-    const hasSearch = this.jobParameters.some(p => p.type === 'search' || p.type === 'dateRange');
-    const baseRequirements = hasAction && hasSearch && this.usersWithNotes && this.usersWithNotes.length > 0;
-    
-    // If it's a modify action, also require modification parameters
+    const hasAction = this.hasActionParameter;
+    const baseUsersOk = !!(this.usersWithNotes && this.usersWithNotes.length > 0);
+    if (!hasAction || !baseUsersOk) return false;
+
+    // Validate search: either text provided or date provided; but block if text param is selected empty
+    if (this.textSearchSelectedButEmpty) return false;
+    if (!this.hasValidSearchSelection) return false;
+
+    // If it's a modify action, require a concrete modification selection
     if (this.isModifyAction) {
-      return baseRequirements && this.hasModificationParameter;
+      return this.hasModificationParameter && this.hasConcreteModificationSelection;
     }
-    
-    return baseRequirements;
+
+    return true;
   }
 
   get hasActionParameter(): boolean {
@@ -528,8 +468,50 @@ export class MainComponent implements OnInit, OnDestroy {
     return this.jobParameters.some(p => p.type === 'search' || p.type === 'dateRange');
   }
 
+  //  require text search box to have a non-empty value
+  get hasTextSearch(): boolean {
+    const textParam = this.jobParameters.find(p => p.id === 'textSearch');
+    const text = textParam?.value?.text ?? '';
+    return typeof text === 'string' && text.trim().length > 0;
+  }
+
+  //  whether text search parameter is present but empty (invalid)
+  get textSearchSelectedButEmpty(): boolean {
+    const textParam = this.jobParameters.find(p => p.id === 'textSearch');
+    if (!textParam) return false;
+    const text = textParam.value?.text ?? '';
+    return !(typeof text === 'string' && text.trim().length > 0);
+  }
+
+  //  whether date range parameter has at least one bound set
+  get hasDateRangeWithValue(): boolean {
+    const dateParam = this.jobParameters.find(p => p.id === 'dateRange');
+    if (!dateParam) return false;
+    const start = dateParam.value?.startDate;
+    const end = dateParam.value?.endDate;
+    return !!(start || end);
+  }
+
+  //  valid search if text provided or date provided
+  get hasValidSearchSelection(): boolean {
+    return this.hasTextSearch || this.hasDateRangeWithValue;
+  }
+
   get hasModificationParameter(): boolean {
     return this.jobParameters.some(p => p.type === 'modification');
+  }
+
+  // at least one modification has a concrete selection/value
+  get hasConcreteModificationSelection(): boolean {
+    const popup = this.jobParameters.find(p => p.id === 'popupSettings');
+    const noteType = this.jobParameters.find(p => p.id === 'noteType');
+    const userViewable = this.jobParameters.find(p => p.id === 'userViewable');
+
+    const popupSelected = !!(popup && popup.value && (popup.value.makePopup === true || popup.value.disablePopup === true));
+    const noteTypeSelected = !!(noteType && noteType.value);
+    const userViewableSelected = !!(userViewable && userViewable.value && typeof userViewable.value.makeUserViewable === 'boolean');
+
+    return popupSelected || noteTypeSelected || userViewableSelected;
   }
 
   get isModifyAction(): boolean {
@@ -572,20 +554,82 @@ export class MainComponent implements OnInit, OnDestroy {
 
 // main note matching logic
 
-  findMatchingNotes(user: UserData): UserNote[] {
-    // Build criteria from job parameters
-    const textSearchParam = this.jobParameters.find(p => p.id === 'textSearch');
-    const dateRangeParam = this.jobParameters.find(p => p.id === 'dateRange');
-    
-    const criteria: NoteSearchCriteria = {
-      searchText: textSearchParam?.value.text || this.noteSearch,
-      caseSensitive: textSearchParam?.value.caseSensitive || this.caseSensitiveSearch,
-      searchByDate: !!dateRangeParam || this.searchByDate,
-      startDate: dateRangeParam?.value.startDate || this.startDate,
-      endDate: dateRangeParam?.value.endDate || this.endDate
+  // Public selector getters for template clarity
+  get actionParam() {
+    return this.jobParameters.find(p => p.id === 'action') as Extract<typeof this.jobParameters[number], { id: 'action' }> | undefined;
+  }
+
+  get textSearchParam() {
+    return this.getTextParam();
+  }
+
+  get dateRangeParam() {
+    return this.getDateParam();
+  }
+
+  get popupParam() {
+    return this.getPopupParam();
+  }
+
+  get userViewableParam() {
+    return this.getUserViewableParam();
+  }
+
+  get noteTypeParam() {
+    return this.getNoteTypeParam();
+  }
+
+  private getTextParam() {
+    return this.jobParameters.find(p => p.id === 'textSearch') as Extract<typeof this.jobParameters[number], { id: 'textSearch' }> | undefined;
+  }
+
+  private getDateParam() {
+    return this.jobParameters.find(p => p.id === 'dateRange') as Extract<typeof this.jobParameters[number], { id: 'dateRange' }> | undefined;
+  }
+
+  private getPopupParam() {
+    return this.jobParameters.find(p => p.id === 'popupSettings') as Extract<typeof this.jobParameters[number], { id: 'popupSettings' }> | undefined;
+  }
+
+  private getUserViewableParam() {
+    return this.jobParameters.find(p => p.id === 'userViewable') as Extract<typeof this.jobParameters[number], { id: 'userViewable' }> | undefined;
+  }
+
+  private getNoteTypeParam() {
+    return this.jobParameters.find(p => p.id === 'noteType') as Extract<typeof this.jobParameters[number], { id: 'noteType' }> | undefined;
+  }
+
+  private buildSearchCriteria(): NoteSearchCriteria {
+    const text = this.getTextParam();
+    const date = this.getDateParam();
+    return {
+      searchText: text?.value.text || '',
+      caseSensitive: text?.value.caseSensitive || false,
+      searchByDate: !!date && (!!date.value.startDate || !!date.value.endDate),
+      startDate: date?.value.startDate || '',
+      endDate: date?.value.endDate || ''
     };
-    
-    return this.noteProcessingService.findMatchingNotes(user, criteria);
+  }
+
+  private buildModificationOptions(action: 'modify' | 'delete'): NoteModificationOptions & { makeUserViewable?: boolean } {
+    const popup = this.getPopupParam();
+    const uv = this.getUserViewableParam();
+    const nt = this.getNoteTypeParam();
+    const opts: NoteModificationOptions & { makeUserViewable?: boolean } = {
+      action,
+      makePopup: popup?.value.makePopup || false,
+      disablePopup: popup?.value.disablePopup || false,
+      noteType: nt?.value || undefined,
+      deleteMatchingNotes: action === 'delete'
+    };
+    if (uv && typeof uv.value.makeUserViewable === 'boolean') {
+      opts.makeUserViewable = uv.value.makeUserViewable;
+    }
+    return opts;
+  }
+
+  findMatchingNotes(user: UserData): UserNote[] {
+    return this.noteProcessingService.findMatchingNotes(user, this.buildSearchCriteria());
   }
 
   processUserNotes() {
@@ -595,25 +639,24 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     
     // Validate job parameters
-    if (!this.canExecuteJob) {
-      this.alert.error('Please configure action and search criteria first');
+    if (!this.hasActionParameter) {
+      this.alert.error('Please select an action');
+      return;
+    }
+    if (this.textSearchSelectedButEmpty) {
+      this.alert.error('Text search is selected but empty. Enter text or remove the text search parameter.');
+      return;
+    }
+    if (!this.hasValidSearchSelection) {
+      this.alert.error('Please add search criteria (enter text or set a date range).');
+      return;
+    }
+    if (this.isModifyAction && (!this.hasModificationParameter || !this.hasConcreteModificationSelection)) {
+      this.alert.error('Please select at least one concrete modification option.');
       return;
     }
     
-    // Build search criteria from job parameters
-    const textSearchParam = this.jobParameters.find(p => p.id === 'textSearch');
-    const dateRangeParam = this.jobParameters.find(p => p.id === 'dateRange');
-    
-    if (!textSearchParam && !dateRangeParam) {
-      this.alert.error('Please add search criteria');
-      return;
-    }
-    
-    // Create modification options from job parameters
-    const actionParam = this.jobParameters.find(p => p.type === 'action');
-  const popupParam = this.jobParameters.find(p => p.id === 'popupSettings');
-  const userViewableParam = this.jobParameters.find(p => p.id === 'userViewable');
-    const noteTypeParam = this.jobParameters.find(p => p.id === 'noteType');
+  const actionParam = this.jobParameters.find(p => p.type === 'action') as Extract<typeof this.jobParameters[number], { id: 'action' }> | undefined;
     
     // Set job as executed to hide menu options and user details
     this.jobExecuted = true;
@@ -626,29 +669,28 @@ export class MainComponent implements OnInit, OnDestroy {
     
     // Capture job metadata for logging
     this.jobStartTime = new Date();
+    const textParam = this.getTextParam();
+    const dateParam = this.getDateParam();
+    const popupParam = this.getPopupParam();
+    const uvParam = this.getUserViewableParam();
+    const noteTypeParam = this.getNoteTypeParam();
+
     this.jobConfiguration = {
       action: actionParam?.value || 'modify',
       searchCriteria: {
-        textSearch: textSearchParam?.value || null,
-        dateRange: dateRangeParam?.value || null
+        textSearch: textParam?.value || null,
+        dateRange: dateParam?.value || null
       },
       modificationOptions: {
         popup: popupParam?.value || null,
-  noteType: noteTypeParam?.value || null,
-  userViewable: userViewableParam?.value || null
+        noteType: noteTypeParam?.value || null,
+        userViewable: uvParam?.value || null
       },
       setId: this.selectedSet?.id,
       setDescription: this.selectedSet?.description
     };
     
-    const modificationOptions: NoteModificationOptions = {
-      action: actionParam?.value || 'modify',
-      makePopup: popupParam?.value?.makePopup || false,
-      disablePopup: popupParam?.value?.disablePopup || false,
-  makeUserViewable: userViewableParam?.value?.makeUserViewable || false,
-      noteType: noteTypeParam?.value || null,
-      deleteMatchingNotes: actionParam?.value === 'delete'
-    };
+  const modificationOptions = this.buildModificationOptions(actionParam?.value || 'modify');
     
     // Process each user (only those with notes)
     from(this.usersWithNotes).pipe(
@@ -871,7 +913,7 @@ export class MainComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('Loading set data for selected set:', this.selectedSet);
+  // Loading set data for selected set
     
     this.loading = true;
     this.userDetails = [];
@@ -882,7 +924,7 @@ export class MainComponent implements OnInit, OnDestroy {
     // Use the data service to fetch all set data
     this.dataService.fetchSetData(this.selectedSet.id).subscribe({
       next: (setData) => {
-        console.log('Set data retrieved:', setData);
+  // Set data retrieved
         this.setMembers = setData.members;
         this.userDetails = setData.users;
         
@@ -892,7 +934,7 @@ export class MainComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error fetching set data:', error);
+  // Error fetching set data
         this.loading = false;
         this.alert.error(error.message || 'Failed to retrieve set data');
       }
@@ -927,7 +969,7 @@ export class MainComponent implements OnInit, OnDestroy {
       }
     });
     
-    console.log(`Categorized users: ${this.usersWithNotes.length} with notes, ${this.usersWithoutNotes.length} without notes`);
+  // Categorized users summary
   }
 
   // Helper method to format note creation date (locale-aware, local timezone)

@@ -15,7 +15,6 @@ export class SetService {
    * @param setID The ID of the set to fetch
    */
   fetchSetInfo(setID: string): Observable<SetInfo> {
-    console.log('Fetching set info for set ID:', setID);
     return this.restService.call(`/conf/sets/${setID}`);
   }
 
@@ -26,27 +25,10 @@ export class SetService {
    * @param limit The limit for pagination (default: 100)
    */
   fetchSetMembers(setID: string, offset: number = 0, limit: number = 100): Observable<any> {
-    console.log(`Fetching set members page with offset ${offset} for set ${setID}`);
     return this.restService.call(`/conf/sets/${setID}/members?limit=${limit}&offset=${offset}`);
   }
 
-  /**
-   * Validate if a set ID is valid
-   * @param id The set ID to validate
-   */
-  isValidSetId(id: string): boolean {
-    // Less restrictive validation - just check if it's a number
-    // Some set IDs might be shorter than 12 digits
-    return /^\d+$/.test(id.trim());
-  }
-
-  /**
-   * Sanitize input by trimming whitespace
-   * @param input The input string to sanitize
-   */
-  sanitizeInput(input: string): string {
-    return input.trim();
-  }
+  // Removed debug helpers (isValidSetId, sanitizeInput) as unused
 
   /**
    * Check if a set contains users

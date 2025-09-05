@@ -59,13 +59,49 @@ export interface SetInfo {
 }
 
 // Define interfaces for the new menu-based job parameters
-export interface JobParameter {
-  id: string;
-  type: 'action' | 'search' | 'modification' | 'dateRange';
-  label: string;
-  value: any;
-  editable: boolean;
-}
+export type JobParameter =
+  | {
+      id: 'action';
+      type: 'action';
+      label: string;
+      value: 'modify' | 'delete';
+      editable: boolean;
+    }
+  | {
+      id: 'textSearch';
+      type: 'search';
+      label: 'Text Search' | string;
+      value: { text: string; caseSensitive: boolean };
+      editable: boolean;
+    }
+  | {
+      id: 'dateRange';
+      type: 'dateRange';
+      label: 'Date Range' | string;
+      value: { startDate: string; endDate: string };
+      editable: boolean;
+    }
+  | {
+      id: 'popupSettings';
+      type: 'modification';
+      label: 'Popup Settings' | string;
+      value: { makePopup: boolean; disablePopup: boolean };
+      editable: boolean;
+    }
+  | {
+      id: 'userViewable';
+      type: 'modification';
+      label: 'User Viewable' | string;
+      value: { makeUserViewable?: boolean | undefined };
+      editable: boolean;
+    }
+  | {
+      id: 'noteType';
+      type: 'modification';
+      label: 'Note Type' | string;
+      value: NoteType | null;
+      editable: boolean;
+    };
 
 export interface MenuOption {
   id: string;

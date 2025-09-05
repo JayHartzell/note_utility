@@ -45,7 +45,7 @@
             <span class="chip chip-primary" style="padding: 2px 6px; border-radius: 10px;">{{ setMembers.length }} total</span>
             <span *ngIf="totalUsersWithNotes > 0" class="chip chip-secondary" style="padding: 2px 6px; border-radius: 10px;">{{ totalUsersWithNotes }} with notes</span>
           </div>
-          <div *ngIf="loading" class="text-muted" style="font-size: 12px;">Loading...</div>
+          <div *ngIf="loading" class="text-default" style="font-size: 12px;">Loading...</div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
           <button 
@@ -63,7 +63,7 @@
       <!-- Expandable Details -->
   <div *ngIf="toggleSetDetails" class="border-top-primary">
         <!-- Loading State -->
-  <div *ngIf="loading" style="padding: 20px; text-align: center;" class="text-muted bg-surface">
+  <div *ngIf="loading" style="padding: 20px; text-align: center;" class="text-default bg-surface">
           <div style="margin-bottom: 8px;">🔄 Loading set members...</div>
           <div style="font-size: 12px;">Please wait while we fetch the user data.</div>
         </div>
@@ -72,7 +72,7 @@
   <div *ngIf="!loading && setMembers && setMembers.length > 0" style="padding: 15px;" class="bg-surface">
           <!-- Set Info -->
           <div style="margin-bottom: 15px; padding-bottom: 12px;" class="border-bottom">
-            <div style="font-size: 12px; margin-bottom: 4px;" class="text-muted">Set Details</div>
+            <div style="font-size: 12px; margin-bottom: 4px;" class="text-default">Set Details</div>
             <div style="font-size: 13px;">ID: {{ selectedSet.id }}</div>
           </div>
           
@@ -93,7 +93,7 @@
             <!-- Users without Notes -->
             <div *ngIf="totalUsersWithoutNotes > 0" class="card" style="padding: 8px; border-radius: 4px; text-align: center;">
               <div style="font-size: 18px; font-weight: bold;">{{ totalUsersWithoutNotes }}</div>
-              <div style="font-size: 10px;" class="text-muted">Without Notes</div>
+              <div style="font-size: 10px;" class="text-default">Without Notes</div>
             </div>
           </div>
           
@@ -104,13 +104,13 @@
           </div>
           
           <div *ngIf="totalUsersWithNotes === 0" class="border-left" style="padding: 8px 12px; border-radius: 0 4px 4px 0;">
-            <div style="font-weight: bold; font-size: 12px;" class="text-muted">No Notes Found</div>
+            <div style="font-weight: bold; font-size: 12px;" class="text-default">No Notes Found</div>
             <div style="font-size: 11px;">This set contains no users with notes to process</div>
           </div>
         </div>
         
         <!-- No Members Found -->
-  <div *ngIf="!loading && (!setMembers || setMembers.length === 0)" style="padding: 20px; text-align: center;" class="text-muted bg-surface">
+  <div *ngIf="!loading && (!setMembers || setMembers.length === 0)" style="padding: 20px; text-align: center;" class="text-default bg-surface">
           <div style="margin-bottom: 8px;">⚠️ No members found</div>
           <div style="font-size: 12px;">This set appears to be empty or inaccessible.</div>
         </div>
@@ -126,13 +126,13 @@
     <button class="btn btn-primary" [disabled]="loading || processingNotes" (click)="onClickDeleteAll()" style="padding: 10px 16px; border-radius: 6px; font-weight: bold;">
       Delete All Notes
     </button>
-    <div class="text-muted" style="margin-top: 6px; font-size: 13px;">
+  <div class="text-default" style="margin-top: 6px; font-size: 13px;">
       <div>Delete All Notes: Removes every note from every user in the selected set. This cannot be undone.</div>
     </div>
     <!-- Inline confirmation panel -->
     <div *ngIf="showDeleteAllConfirm" class="card" style="margin-top: 10px; padding: 10px; border-radius: 6px;">
       <div style="font-weight: bold; margin-bottom: 8px;">Confirm Delete All Notes</div>
-      <div class="text-muted" style="font-size: 13px;">This will delete ALL notes for ALL users in the selected set. This action cannot be undone.</div>
+  <div class="text-default" style="font-size: 13px;">This will delete ALL notes for ALL users in the selected set. This action cannot be undone.</div>
       <div style="margin-top: 10px; display: flex; gap: 10px; width: 100%;">
         <button class="btn btn-primary" [disabled]="processingNotes" (click)="executeDeleteAllNotes()">Yes, Delete All Notes</button>
         <button class="btn btn-error" [disabled]="processingNotes" (click)="cancelDeleteAll()" style="margin-left: auto;">Cancel</button>
@@ -144,7 +144,7 @@
     <button class="btn btn-secondary" [disabled]="loading || processingNotes" (click)="chooseMenuFlow()" style="padding: 10px 16px; border-radius: 6px; font-weight: bold;">
       Modify or Delete Specific Notes
     </button>
-    <div class="text-muted" style="margin-top: 6px; font-size: 13px;">
+  <div class="text-default" style="margin-top: 6px; font-size: 13px;">
       <div>Modify or Delete Specific Notes: Configure filters and actions to target specific notes.</div>
     </div>
   </div>
@@ -165,143 +165,118 @@
       </div>
     </div>
     
-  <div *ngIf="jobParameters.length === 0" class="empty-parameters text-muted" style="font-style: italic;">
+  <div *ngIf="jobParameters.length === 0" class="empty-parameters text-default" style="font-style: italic;">
       No parameters configured. Select options from the menu below to build your job.
     </div>
     
-  <div *ngFor="let parameter of jobParameters" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
+    <!-- Action Parameter (non-editable) -->
+    <div *ngIf="actionParam" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
       <div style="display: flex; justify-content: space-between; align-items: flex-start;">
         <div style="flex-grow: 1;">
-      <h4 style="margin: 0 0 10px 0;">{{ parameter.label }}</h4>
-          
-          <!-- Action Parameter (non-editable) -->
-          <div *ngIf="parameter.type === 'action'">
-            <strong>{{ parameter.value === 'modify' ? 'Modify matching notes' : 'Delete matching notes' }}</strong>
-          </div>
-          
-          <!-- Text Search Parameter -->
-          <div *ngIf="parameter.id === 'textSearch'" style="display: flex; flex-direction: column; gap: 8px;">
+          <h4 style="margin: 0 0 10px 0;">{{ actionParam.label }}</h4>
+          <strong>{{ actionParam.value === 'modify' ? 'Modify matching notes' : 'Delete matching notes' }}</strong>
+        </div>
+        <button *ngIf="!jobExecuted" (click)="removeJobParameter(actionParam.id)" class="btn btn-secondary" style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;" title="Remove this parameter">✕</button>
+      </div>
+    </div>
+
+    <!-- Text Search Parameter -->
+    <div *ngIf="textSearchParam" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="flex-grow: 1;">
+          <h4 style="margin: 0 0 10px 0;">{{ textSearchParam.label }}</h4>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
             <div>
               <label>Search text:</label>
-              <input 
-                type="text" 
-                [value]="parameter.value.text"
-                (input)="updateJobParameter('textSearch', { text: $any($event.target).value, caseSensitive: parameter.value.caseSensitive })"
-                placeholder="Enter text to search for"
-                style="margin-left: 10px; padding: 4px; width: 200px;"
-                [disabled]="jobExecuted"
-              >
+              <input type="text" [value]="textSearchParam.value.text" (input)="updateJobParameter('textSearch', { text: $any($event.target).value, caseSensitive: textSearchParam.value.caseSensitive })" placeholder="Enter text to search for" style="margin-left: 10px; padding: 4px; width: 200px;" [disabled]="jobExecuted">
             </div>
             <div>
               <label>
-                <input 
-                  type="checkbox" 
-                  [checked]="parameter.value.caseSensitive"
-                  (change)="updateJobParameter('textSearch', { text: parameter.value.text, caseSensitive: $any($event.target).checked })"
-                  [disabled]="jobExecuted"
-                > 
+                <input type="checkbox" [checked]="textSearchParam.value.caseSensitive" (change)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: $any($event.target).checked })" [disabled]="jobExecuted"> 
                 Case sensitive search
               </label>
             </div>
           </div>
-          
-          <!-- Date Range Parameter -->
-          <div *ngIf="parameter.id === 'dateRange'" style="display: flex; gap: 15px;">
+        </div>
+        <button *ngIf="!jobExecuted" (click)="removeJobParameter(textSearchParam.id)" class="btn btn-secondary" style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;" title="Remove this parameter">✕</button>
+      </div>
+    </div>
+
+    <!-- Date Range Parameter -->
+    <div *ngIf="dateRangeParam" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="flex-grow: 1;">
+          <h4 style="margin: 0 0 10px 0;">{{ dateRangeParam.label }}</h4>
+          <div style="display: flex; gap: 15px;">
             <div>
               <label>From:</label>
-              <input 
-                type="date" 
-                [value]="parameter.value.startDate"
-                (input)="updateJobParameter('dateRange', { startDate: $any($event.target).value, endDate: parameter.value.endDate })"
-                style="margin-left: 5px;"
-                [disabled]="jobExecuted"
-              >
+              <input type="date" [value]="dateRangeParam.value.startDate" (input)="updateJobParameter('dateRange', { startDate: $any($event.target).value, endDate: dateRangeParam.value.endDate })" style="margin-left: 5px;" [disabled]="jobExecuted">
             </div>
             <div>
               <label>To:</label>
-              <input 
-                type="date" 
-                [value]="parameter.value.endDate"
-                (input)="updateJobParameter('dateRange', { startDate: parameter.value.startDate, endDate: $any($event.target).value })"
-                style="margin-left: 5px;"
-                [disabled]="jobExecuted"
-              >
+              <input type="date" [value]="dateRangeParam.value.endDate" (input)="updateJobParameter('dateRange', { startDate: dateRangeParam.value.startDate, endDate: $any($event.target).value })" style="margin-left: 5px;" [disabled]="jobExecuted">
             </div>
           </div>
-          
-          <!-- Popup Settings Parameter -->
-          <div *ngIf="parameter.id === 'popupSettings'" style="display: flex; gap: 15px;">
+        </div>
+        <button *ngIf="!jobExecuted" (click)="removeJobParameter(dateRangeParam.id)" class="btn btn-secondary" style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;" title="Remove this parameter">✕</button>
+      </div>
+    </div>
+
+    <!-- Popup Settings Parameter (radio group) -->
+    <div *ngIf="popupParam" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="flex-grow: 1;">
+          <h4 style="margin: 0 0 10px 0;">{{ popupParam.label }}</h4>
+          <div style="display: flex; gap: 15px; align-items: center;">
             <label>
-              <input 
-                type="checkbox" 
-                [checked]="parameter.value.makePopup"
-                (change)="updateJobParameter('popupSettings', { makePopup: $any($event.target).checked, disablePopup: $any($event.target).checked ? false : parameter.value.disablePopup })"
-                [disabled]="jobExecuted"
-              > 
+              <input type="radio" name="popupSettings" [checked]="popupParam.value.makePopup === true" (change)="updateJobParameter('popupSettings', { makePopup: true, disablePopup: false })" [disabled]="jobExecuted">
               Make popup note
             </label>
             <label>
-              <input 
-                type="checkbox" 
-                [checked]="parameter.value.disablePopup"
-                (change)="updateJobParameter('popupSettings', { makePopup: $any($event.target).checked ? false : parameter.value.makePopup, disablePopup: $any($event.target).checked })"
-                [disabled]="jobExecuted"
-              > 
+              <input type="radio" name="popupSettings" [checked]="popupParam.value.disablePopup === true" (change)="updateJobParameter('popupSettings', { makePopup: false, disablePopup: true })" [disabled]="jobExecuted">
               Disable popup
             </label>
           </div>
+        </div>
+        <button *ngIf="!jobExecuted" (click)="removeJobParameter(popupParam.id)" class="btn btn-secondary" style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;" title="Remove this parameter">✕</button>
+      </div>
+    </div>
 
-          <!-- User Viewable Parameter -->
-          <div *ngIf="parameter.id === 'userViewable'" style="display: flex; gap: 20px; align-items: center;">
+    <!-- User Viewable Parameter (radio group) -->
+    <div *ngIf="userViewableParam" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="flex-grow: 1;">
+          <h4 style="margin: 0 0 10px 0;">{{ userViewableParam.label }}</h4>
+          <div style="display: flex; gap: 20px; align-items: center;">
             <label>
-              <input 
-                type="checkbox" 
-                [checked]="parameter.value.makeUserViewable === true"
-                (change)="updateJobParameter('userViewable', { makeUserViewable: $any($event.target).checked ? true : parameter.value.makeUserViewable })"
-                [disabled]="jobExecuted"
-              > 
+              <input type="radio" name="userViewable" [checked]="userViewableParam.value.makeUserViewable === true" (change)="updateJobParameter('userViewable', { makeUserViewable: true })" [disabled]="jobExecuted">
               True (make note user-viewable)
             </label>
             <label>
-              <input 
-                type="checkbox" 
-                [checked]="parameter.value.makeUserViewable === false"
-                (change)="updateJobParameter('userViewable', { makeUserViewable: $any($event.target).checked ? false : parameter.value.makeUserViewable })"
-                [disabled]="jobExecuted"
-              > 
+              <input type="radio" name="userViewable" [checked]="userViewableParam.value.makeUserViewable === false" (change)="updateJobParameter('userViewable', { makeUserViewable: false })" [disabled]="jobExecuted">
               False (make note not user-viewable)
             </label>
           </div>
-          
-          <!-- Note Type Parameter -->
-          <div *ngIf="parameter.id === 'noteType'">
-            <label>New note type:</label>
-            <div *ngIf="parameter.value" style="margin-left: 10px; margin-bottom: 5px; font-weight: bold;" class="text-tertiary">
-              Selected: {{ parameter.value.desc }}
-            </div>
-            <select 
-              [value]="parameter.value?.value || ''"
-              (change)="updateJobParameter('noteType', getNoteTypeByValue($any($event.target).value))"
-              style="margin-left: 10px; padding: 4px; width: 200px;"
-              [disabled]="jobExecuted"
-            >
-              <option value="">Select a note type...</option>
-              <option *ngFor="let noteType of availableNoteTypes" [value]="noteType.value">
-                {{ noteType.desc }}
-              </option>
-            </select>
-          </div>
         </div>
-        
-        <button 
-          *ngIf="!jobExecuted"
-          (click)="removeJobParameter(parameter.id)"
-          class="btn btn-secondary"
-          style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;"
-          title="Remove this parameter"
-        >
-          ✕
-        </button>
+        <button *ngIf="!jobExecuted" (click)="removeJobParameter(userViewableParam.id)" class="btn btn-secondary" style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;" title="Remove this parameter">✕</button>
+      </div>
+    </div>
+
+    <!-- Note Type Parameter -->
+    <div *ngIf="noteTypeParam" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="flex-grow: 1;">
+          <h4 style="margin: 0 0 10px 0;">{{ noteTypeParam.label }}</h4>
+          <label>New note type:</label>
+          <div *ngIf="noteTypeParam.value" style="margin-left: 10px; margin-bottom: 5px; font-weight: bold;" class="text-tertiary">
+            Selected: {{ noteTypeParam.value.desc }}
+          </div>
+          <select [value]="noteTypeParam.value?.value || ''" (change)="updateJobParameter('noteType', getNoteTypeByValue($any($event.target).value))" style="margin-left: 10px; padding: 4px; width: 200px;" [disabled]="jobExecuted">
+            <option value="">Select a note type...</option>
+            <option *ngFor="let noteType of availableNoteTypes" [value]="noteType.value">{{ noteType.desc }}</option>
+          </select>
+        </div>
+        <button *ngIf="!jobExecuted" (click)="removeJobParameter(noteTypeParam.id)" class="btn btn-secondary" style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;" title="Remove this parameter">✕</button>
       </div>
     </div>
     
@@ -309,10 +284,9 @@
     <div style="margin-top: 20px; text-align: center;">
       <button 
         *ngIf="!jobExecuted"
-        class="execute-job-button"
+        class="btn btn-primary execute-job-button"
         [disabled]="!canExecuteJob || loading || processingNotes"
         (click)="processUserNotes()"
-        class="btn btn-primary execute-job-button"
         style="border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold;"
         [style.opacity]="canExecuteJob ? '1' : '0.5'"
       >
@@ -322,9 +296,8 @@
       <!-- Reset Job Button (shown after job execution) -->
       <button 
         *ngIf="jobExecuted && !processingNotes && operationMode === 'menu'"
-        class="reset-job-button"
-        (click)="resetJob()"
         class="btn btn-primary reset-job-button"
+        (click)="resetJob()"
         style="border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold;"
       >
         Configure New Job
@@ -357,7 +330,7 @@
           {{percentComplete}}%
         </div>
       </div>
-      <div style="text-align: center; margin-top: 5px;" class="text-muted">
+  <div style="text-align: center; margin-top: 5px;" class="text-default">
         Processing {{ processed }} of {{ recordsToProcess }} users...
       </div>
     </div>
@@ -367,7 +340,7 @@
   <div *ngIf="!jobExecuted" class="menu-options card" style="padding: 15px; border-radius: 8px;">
     <h3>Available Options</h3>
     
-  <div *ngIf="availableMenuOptions.length === 0" style="text-align: center; font-style: italic; padding: 20px;" class="text-muted">
+  <div *ngIf="availableMenuOptions.length === 0" style="text-align: center; font-style: italic; padding: 20px;" class="text-default">
       All available options have been added to your job parameters.
     </div>
     
@@ -383,7 +356,7 @@
             style="padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
           >
             {{ option.label }}
-            <small style="display: block; font-size: 11px;" class="text-muted">{{ option.description }}</small>
+            <small style="display: block; font-size: 11px;" class="text-default">{{ option.description }}</small>
           </button>
         </div>
       </div>
@@ -399,7 +372,7 @@
             style="padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
           >
             {{ option.label }}
-            <small style="display: block; font-size: 11px;" class="text-muted">{{ option.description }}</small>
+            <small style="display: block; font-size: 11px;" class="text-default">{{ option.description }}</small>
           </button>
         </div>
       </div>
@@ -415,7 +388,7 @@
             style="padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
           >
             {{ option.label }}
-            <small style="display: block; font-size: 11px;" class="text-muted">{{ option.description }}</small>
+            <small style="display: block; font-size: 11px;" class="text-default">{{ option.description }}</small>
           </button>
         </div>
       </div>
@@ -464,7 +437,7 @@
   <!-- Detailed Results (collapsible) -->
   <div *ngIf="showResults">
     <!-- Show message if no users had changes -->
-  <div *ngIf="processLogsWithChanges.length === 0" style="text-align: center; font-style: italic; padding: 20px;" class="text-muted">
+  <div *ngIf="processLogsWithChanges.length === 0" style="text-align: center; font-style: italic; padding: 20px;" class="text-default">
       No users had notes that were modified or deleted.
     </div>
     
@@ -540,14 +513,14 @@
         <div class="card card-secondary" style="padding: 20px; border-radius: 8px; text-align: center;">
           <div style="font-size: 2em; font-weight: bold;" class="text-secondary">{{ totalUsersWithNotes }}</div>
           <div style="font-size: 1.1em; margin-top: 5px;" class="text-secondary">Users with Notes</div>
-          <div style="font-size: 0.9em; margin-top: 5px;" class="text-muted">(Will be processed by job)</div>
+          <div style="font-size: 0.9em; margin-top: 5px;" class="text-default">(Will be processed by job)</div>
         </div>
         
         <!-- Users without Notes Card -->
         <div class="card" style="padding: 20px; border-radius: 8px; text-align: center;">
           <div style="font-size: 2em; font-weight: bold;">{{ totalUsersWithoutNotes }}</div>
-          <div style="font-size: 1.1em; margin-top: 5px;" class="text-muted">Users without Notes</div>
-          <div style="font-size: 0.9em; margin-top: 5px;" class="text-muted">(Will be skipped)</div>
+          <div style="font-size: 1.1em; margin-top: 5px;" class="text-default">Users without Notes</div>
+          <div style="font-size: 0.9em; margin-top: 5px;" class="text-default">(Will be skipped)</div>
         </div>
       </div>
       

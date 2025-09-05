@@ -15,7 +15,7 @@
   .text-primary { color: mat.get-theme-color($theme, primary); }
   .text-secondary { color: mat.get-theme-color($theme, secondary); }
   .text-tertiary { color: mat.get-theme-color($theme, tertiary); }
-  .text-muted { color: mat.get-theme-color($theme, on-surface-variant); }
+  .text-default { color: #000; }
 
   // Themed backgrounds
   .bg-surface { background-color: mat.get-theme-color($theme, surface); }
@@ -46,6 +46,11 @@
   .btn-outline-primary { background-color: transparent; color: mat.get-theme-color($theme, primary); border-color: mat.get-theme-color($theme, primary); }
   .btn-outline-secondary { background-color: transparent; color: mat.get-theme-color($theme, secondary); border-color: mat.get-theme-color($theme, secondary); }
   .btn-outline-tertiary { background-color: transparent; color: mat.get-theme-color($theme, tertiary); border-color: mat.get-theme-color($theme, tertiary); }
+
+  // Ensure menu option descriptions are not bold
+  .menu-option-button small {
+    font-weight: normal;
+  }
 
   .btn-primary:hover:not(:disabled) { background-color: color-mix(in srgb, mat.get-theme-color($theme, primary) 88%, transparent); }
   .btn-secondary:hover:not(:disabled) { background-color: color-mix(in srgb, mat.get-theme-color($theme, secondary) 88%, transparent); }

@@ -32,7 +32,6 @@ export class NoteProcessingService {
 
   /**
    * Parse a note's date field into a timestamp in ms.
-   * Accepts full ISO strings or date-only strings and treats date-only as UTC midnight.
    */
   private parseNoteDateToMs(dateField: string): number | null {
     if (!dateField) return null;
@@ -83,9 +82,8 @@ export class NoteProcessingService {
       const endBounds = criteria.endDate ? this.getLocalBoundsForDateOnly(criteria.endDate) : null;
 
       matchingNotes = matchingNotes.filter((note: UserNote) => {
-        // Per API, only use created_date for filtering
         const dateField = note.created_date;
-        if (!dateField) return false; // Skip notes without created_date
+        if (!dateField) return false; 
 
         const noteMs = this.parseNoteDateToMs(dateField);
         if (noteMs === null) return false; // Skip invalid dates

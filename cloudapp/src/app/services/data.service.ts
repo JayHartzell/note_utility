@@ -25,7 +25,7 @@ export class DataService {
       // First get set information
       this.setService.fetchSetInfo(setID).subscribe({
         next: (setInfo) => {
-          console.log('Set info retrieved:', setInfo);
+          // Set info retrieved
           
           // Check if the set contains users
           if (!this.setService.isUserSet(setInfo)) {
@@ -36,12 +36,12 @@ export class DataService {
           // After getting set info, fetch all members
           this.fetchAllSetMembers(setID).subscribe({
             next: (members) => {
-              console.log('All members fetched:', members.length);
+              // All members fetched
               
               // Fetch user details for all members
               this.fetchUserDetailsForMembers(members).subscribe({
                 next: (users) => {
-                  console.log('All user details fetched:', users.length);
+                  // All user details fetched
                   observer.next({ setInfo, members, users });
                   observer.complete();
                 },
@@ -56,7 +56,7 @@ export class DataService {
           });
         },
         error: (error) => {
-          console.error('Error fetching set info:', error);
+          // Error fetching set info
           observer.error(new Error('Failed to retrieve set information'));
         }
       });
@@ -72,7 +72,7 @@ export class DataService {
       const fetchPage = (offset: number, allMembers: SetMember[] = []) => {
         this.setService.fetchSetMembers(setID, offset).subscribe({
           next: (response) => {
-            console.log('Received members page response:', response);
+            // Received members page response
             
             if (Array.isArray(response.member)) {
               const currentPageMembers = response.member.map((member: any) => ({
@@ -83,27 +83,27 @@ export class DataService {
               }));
               
               const updatedMembers = [...allMembers, ...currentPageMembers];
-              console.log(`Added ${currentPageMembers.length} members, total now: ${updatedMembers.length}`);
+              // Page members added
               
               // Check if we need to fetch more pages
               if (response.member.length === 100) {
                 // If we got a full page, there might be more - fetch next page
-                console.log('Got full page (100 members), fetching next page');
+                // Full page, fetching next page
                 fetchPage(offset + 100, updatedMembers);
               } else {
                 // We've fetched all pages
-                console.log('Fetched all member pages, total members:', updatedMembers.length);
+                // Fetched all member pages
                 observer.next(updatedMembers);
                 observer.complete();
               }
             } else {
-              console.log('No members in current page, total members:', allMembers.length);
+              // No members in current page
               observer.next(allMembers);
               observer.complete();
             }
           },
           error: (error) => {
-            console.error(`Error fetching set members page (offset ${offset}):`, error);
+            // Error fetching set members page
             observer.error(new Error(`Failed to fetch set members page (offset ${offset})`));
           }
         });
@@ -118,19 +118,19 @@ export class DataService {
    * @param members Array of set members
    */
   private fetchUserDetailsForMembers(members: SetMember[]): Observable<UserData[]> {
-    console.log('Starting to fetch user details for members, count:', members.length);
+  // Start fetching user details for members
     
     if (members.length === 0) {
-      console.log('No members to fetch details for');
+  // No members to fetch details for
       return of([]);
     }
     
     // Create an array of observables for each user request
     const userRequests = members.map(member => {
-      console.log('Creating request for member:', member.id);
+  // Creating request for member request
       return this.userService.fetchUserDetails(member.id.toString()).pipe(
         catchError(error => {
-          console.error(`Error fetching details for user ${member.id}:`, error);
+          // Error fetching details for user
           // Return a placeholder on error so forkJoin doesn't fail completely
           return of({ 
             primary_id: member.id.toString(), 
@@ -144,7 +144,7 @@ export class DataService {
     // Execute all requests in parallel
     return forkJoin(userRequests).pipe(
       finalize(() => {
-        console.log('Finalized user details fetch');
+        // Finalized user details fetch
       })
     );
   }
