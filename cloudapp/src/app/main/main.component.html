@@ -119,8 +119,39 @@
   </div>
 </div>
 
-<!-- New Menu-Based Job Configuration -->
-<div *ngIf="usersWithNotes && usersWithNotes.length > 0" class="job-configuration">
+<!-- Operation selection step -->
+<div *ngIf="usersWithNotes && usersWithNotes.length > 0 && operationMode === 'choose'" class="job-configuration card" style="margin-top: 20px; padding: 15px; border-radius: 8px;">
+  <h3 style="margin-top: 0;">Select Operation</h3>
+  <div>
+    <button class="btn btn-primary" [disabled]="loading || processingNotes" (click)="onClickDeleteAll()" style="padding: 10px 16px; border-radius: 6px; font-weight: bold;">
+      Delete All Notes
+    </button>
+    <div class="text-muted" style="margin-top: 6px; font-size: 13px;">
+      <div>Delete All Notes: Removes every note from every user in the selected set. This cannot be undone.</div>
+    </div>
+    <!-- Inline confirmation panel -->
+    <div *ngIf="showDeleteAllConfirm" class="card" style="margin-top: 10px; padding: 10px; border-radius: 6px;">
+      <div style="font-weight: bold; margin-bottom: 8px;">Confirm Delete All Notes</div>
+      <div class="text-muted" style="font-size: 13px;">This will delete ALL notes for ALL users in the selected set. This action cannot be undone.</div>
+      <div style="margin-top: 10px; display: flex; gap: 10px; width: 100%;">
+        <button class="btn btn-primary" [disabled]="processingNotes" (click)="executeDeleteAllNotes()">Yes, Delete All Notes</button>
+        <button class="btn btn-error" [disabled]="processingNotes" (click)="cancelDeleteAll()" style="margin-left: auto;">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div style="height: 16px;"></div>
+  <div>
+    <button class="btn btn-secondary" [disabled]="loading || processingNotes" (click)="chooseMenuFlow()" style="padding: 10px 16px; border-radius: 6px; font-weight: bold;">
+      Modify or Delete Specific Notes
+    </button>
+    <div class="text-muted" style="margin-top: 6px; font-size: 13px;">
+      <div>Modify or Delete Specific Notes: Configure filters and actions to target specific notes.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Menu-Based Job Configuration -->
+<div *ngIf="usersWithNotes && usersWithNotes.length > 0 && operationMode === 'menu'" class="job-configuration">
   
   <!-- Job Parameters Window -->
   <div class="job-parameters-window card card-primary" style="margin-bottom: 20px; padding: 15px; border-width: 2px; border-radius: 8px;">
@@ -204,7 +235,7 @@
               <input 
                 type="checkbox" 
                 [checked]="parameter.value.makePopup"
-                (change)="updateJobParameter('popupSettings', { makePopup: $any($event.target).checked, disablePopup: parameter.value.disablePopup })"
+                (change)="updateJobParameter('popupSettings', { makePopup: $any($event.target).checked, disablePopup: $any($event.target).checked ? false : parameter.value.disablePopup })"
                 [disabled]="jobExecuted"
               > 
               Make popup note
@@ -213,10 +244,32 @@
               <input 
                 type="checkbox" 
                 [checked]="parameter.value.disablePopup"
-                (change)="updateJobParameter('popupSettings', { makePopup: parameter.value.makePopup, disablePopup: $any($event.target).checked })"
+                (change)="updateJobParameter('popupSettings', { makePopup: $any($event.target).checked ? false : parameter.value.makePopup, disablePopup: $any($event.target).checked })"
                 [disabled]="jobExecuted"
               > 
               Disable popup
+            </label>
+          </div>
+
+          <!-- User Viewable Parameter -->
+          <div *ngIf="parameter.id === 'userViewable'" style="display: flex; gap: 20px; align-items: center;">
+            <label>
+              <input 
+                type="checkbox" 
+                [checked]="parameter.value.makeUserViewable === true"
+                (change)="updateJobParameter('userViewable', { makeUserViewable: $any($event.target).checked ? true : parameter.value.makeUserViewable })"
+                [disabled]="jobExecuted"
+              > 
+              True (make note user-viewable)
+            </label>
+            <label>
+              <input 
+                type="checkbox" 
+                [checked]="parameter.value.makeUserViewable === false"
+                (change)="updateJobParameter('userViewable', { makeUserViewable: $any($event.target).checked ? false : parameter.value.makeUserViewable })"
+                [disabled]="jobExecuted"
+              > 
+              False (make note not user-viewable)
             </label>
           </div>
           
@@ -268,7 +321,7 @@
       
       <!-- Reset Job Button (shown after job execution) -->
       <button 
-        *ngIf="jobExecuted && !processingNotes"
+        *ngIf="jobExecuted && !processingNotes && operationMode === 'menu'"
         class="reset-job-button"
         (click)="resetJob()"
         class="btn btn-primary reset-job-button"
@@ -398,6 +451,14 @@
     >
       Export to CSV
     </button>
+    <button 
+      *ngIf="operationMode === 'deleteAll' && jobExecuted && !processingNotes"
+      (click)="clear()"
+      class="btn btn-secondary"
+      style="border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;"
+    >
+      Browse New Set
+    </button>
   </div>
   
   <!-- Detailed Results (collapsible) -->
@@ -423,6 +484,7 @@
                 <div><strong>Text:</strong> {{ entry.before.note_text }}</div>
                 <div><strong>Created:</strong> {{ formatNoteDate(entry.before) }}</div>
                 <div><strong>Popup:</strong> {{ entry.before.popup_note ? 'Yes' : 'No' }}</div>
+                <div><strong>User Viewable:</strong> {{ entry.before['user_viewable'] ? 'Yes' : 'No' }}</div>
                 <div><strong>Type:</strong> {{ entry.before.note_type?.desc || 'None' }}</div>
               </div>
             </div>
@@ -432,6 +494,7 @@
                 <div><strong>Text:</strong> {{ entry.after.note_text }}</div>
                 <div><strong>Created:</strong> {{ formatNoteDate(entry.after) }}</div>
                 <div><strong>Popup:</strong> {{ entry.after.popup_note ? 'Yes' : 'No' }}</div>
+                <div><strong>User Viewable:</strong> {{ entry.after['user_viewable'] ? 'Yes' : 'No' }}</div>
                 <div><strong>Type:</strong> {{ entry.after.note_type?.desc || 'None' }}</div>
               </div>
             </div>
@@ -444,6 +507,7 @@
                 <div><strong>Text:</strong> {{ entry.before.note_text }}</div>
                 <div><strong>Created:</strong> {{ formatNoteDate(entry.before) }}</div>
                 <div><strong>Popup:</strong> {{ entry.before.popup_note ? 'Yes' : 'No' }}</div>
+                <div><strong>User Viewable:</strong> {{ entry.before['user_viewable'] ? 'Yes' : 'No' }}</div>
                 <div><strong>Type:</strong> {{ entry.before.note_type?.desc || 'None' }}</div>
               </div>
             </div>

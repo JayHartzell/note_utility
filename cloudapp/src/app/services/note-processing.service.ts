@@ -83,8 +83,9 @@ export class NoteProcessingService {
       const endBounds = criteria.endDate ? this.getLocalBoundsForDateOnly(criteria.endDate) : null;
 
       matchingNotes = matchingNotes.filter((note: UserNote) => {
-        const dateField = note.created_date || note.creation_date || note.note_date;
-        if (!dateField) return false; // Skip notes without dates
+        // Per API, only use created_date for filtering
+        const dateField = note.created_date;
+        if (!dateField) return false; // Skip notes without created_date
 
         const noteMs = this.parseNoteDateToMs(dateField);
         if (noteMs === null) return false; // Skip invalid dates
@@ -160,7 +161,7 @@ export class NoteProcessingService {
   private processNoteModification(user: UserData, matchingNotes: UserNote[], options: NoteModificationOptions, userLog: UserProcessLog): void {
     const notesToModify = new Set(matchingNotes);
     
-    user.user_note.forEach((note: UserNote) => {
+  user.user_note.forEach((note: UserNote) => {
       if (notesToModify.has(note)) {
         // Create a copy of the note before modifications for logging
         const noteBefore = {...note};
@@ -178,6 +179,14 @@ export class NoteProcessingService {
         if (options.noteType && this.shouldUpdateNoteType(note, options.noteType)) {
           note.note_type = { value: options.noteType.value, desc: options.noteType.desc };
           noteChanged = true;
+        }
+        // Set user_viewable flag when requested
+        if (typeof (options as any).makeUserViewable === 'boolean') {
+          const desired = (options as any).makeUserViewable as boolean;
+          if ((note as any).user_viewable !== desired) {
+            (note as any).user_viewable = desired;
+            noteChanged = true;
+          }
         }
         
         // If note was changed, add to log

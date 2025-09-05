@@ -33,6 +33,7 @@ export interface NoteModificationOptions {
   disablePopup?: boolean;
   noteType?: NoteType;
   deleteMatchingNotes?: boolean;
+  makeUserViewable?: boolean;
 }
 
 // Define interfaces for the log entries

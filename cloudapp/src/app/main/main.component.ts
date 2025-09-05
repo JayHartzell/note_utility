@@ -78,6 +78,13 @@ export class MainComponent implements OnInit, OnDestroy {
       label: 'Note Type',
       description: 'Change the type of matching notes',
       available: true
+    },
+    {
+      id: 'modification-user-viewable',
+      category: 'modification',
+      label: 'User Viewable',
+      description: 'Make matching notes user-viewable',
+      available: true
     }
   ];
   
@@ -101,6 +108,10 @@ export class MainComponent implements OnInit, OnDestroy {
   jobExecuted: boolean = false;
   showResults: boolean = false;
   toggleSetDetails: boolean = false;
+  // Operation mode: 'choose' to show pre-step, 'menu' for menu-based config, 'deleteAll' for delete all notes
+  operationMode: 'choose' | 'menu' | 'deleteAll' = 'choose';
+  // Inline confirmation for delete-all flow
+  showDeleteAllConfirm: boolean = false;
   
   // Job execution metadata for logging
   jobStartTime: Date | null = null;
@@ -171,6 +182,8 @@ export class MainComponent implements OnInit, OnDestroy {
     this.jobStartTime = null;
     this.jobEndTime = null;
     this.jobConfiguration = null;
+  this.operationMode = 'choose';
+  this.showDeleteAllConfirm = false;
   }
 
   // Reset job configuration but keep the set and users loaded
@@ -198,6 +211,109 @@ export class MainComponent implements OnInit, OnDestroy {
     this.jobStartTime = null;
     this.jobEndTime = null;
     this.jobConfiguration = null;
+    this.operationMode = 'menu';
+  this.showDeleteAllConfirm = false;
+  }
+
+  // Choose the menu-based operation flow
+  chooseMenuFlow() {
+    // Clear previous results when switching into menu mode to avoid confusion
+    this.processLogs = [];
+    this.jobExecuted = false;
+    this.showResults = false;
+    this.operationMode = 'menu';
+    this.showDeleteAllConfirm = false;
+  }
+
+  // Show inline confirm for Delete All Notes
+  onClickDeleteAll() {
+    if (this.loading || this.processingNotes) return;
+    this.showDeleteAllConfirm = true;
+  }
+
+  cancelDeleteAll() {
+    this.showDeleteAllConfirm = false;
+  }
+
+  // Execute Delete All Notes across all users with notes in the selected set
+  executeDeleteAllNotes() {
+    if (!this.usersWithNotes || this.usersWithNotes.length === 0) {
+      this.alert.error('No users with notes found in this set');
+      return;
+    }
+    // proceed after inline confirmation
+    this.showDeleteAllConfirm = false;
+    this.operationMode = 'deleteAll';
+    this.jobExecuted = true;
+    this.processingNotes = true;
+    this.processed = 0;
+    this.recordsToProcess = this.usersWithNotes.length;
+    this.modifiedUsers.clear();
+    this.processLogs = [];
+    this.showResults = false;
+
+    // Capture job metadata for logging
+    this.jobStartTime = new Date();
+    this.jobConfiguration = {
+      action: 'deleteAll',
+      searchCriteria: null,
+      modificationOptions: { deleteAll: true },
+      setId: this.selectedSet?.id,
+      setDescription: this.selectedSet?.description
+    };
+
+    const deleteAllOptions: NoteModificationOptions = {
+      action: 'delete',
+      deleteMatchingNotes: true
+    };
+
+    from(this.usersWithNotes).pipe(
+      concatMap((user: UserData) => {
+        if (!user || user.error) {
+          this.processed++;
+          return of(null);
+        }
+        const userId = user.primary_id;
+        const allNotes = Array.isArray(user.user_note) ? [...user.user_note] : [];
+
+        const userLog = this.noteProcessingService.processNoteModifications(user, allNotes, deleteAllOptions);
+        this.processLogs.push(userLog);
+
+        if (this.noteProcessingService.wasUserModified(userLog)) {
+          this.modifiedUsers.add(userId);
+          return this.userService.updateUser(userId, user).pipe(
+            tap(() => this.processed++),
+            catchError(error => {
+              this.alert.error(`Failed to update user ${userId}: ${error.message || 'Unknown error'}`);
+              this.processed++;
+              return of(null);
+            })
+          );
+        } else {
+          this.processed++;
+          return of(null);
+        }
+      }),
+      filter(result => result !== null)
+    ).subscribe({
+      next: () => {},
+      error: (error) => {
+        this.processingNotes = false;
+        this.alert.error('Error deleting notes: ' + (error.message || 'Unknown error'));
+        console.error('Error:', error);
+      },
+      complete: () => {
+        this.processingNotes = false;
+        this.jobEndTime = new Date();
+        if (this.modifiedUsers.size > 0) {
+          this.alert.success(`Successfully deleted notes for ${this.modifiedUsers.size} user${this.modifiedUsers.size !== 1 ? 's' : ''}`);
+        } else {
+          this.alert.info('No notes were deleted');
+        }
+        // Auto-show results on completion for delete-all flow
+        this.showResults = true;
+      }
+    });
   }
 
   // Menu-based job parameter methods
@@ -222,9 +338,11 @@ export class MainComponent implements OnInit, OnDestroy {
         if (deleteOption) deleteOption.available = true;
         // Make modification options available when modify is selected
         const modifyPopupOption = this.menuOptions.find(o => o.id === 'modification-popup');
-        const modifyTypeOption = this.menuOptions.find(o => o.id === 'modification-type');
+  const modifyTypeOption = this.menuOptions.find(o => o.id === 'modification-type');
+  const modifyUserViewableOption = this.menuOptions.find(o => o.id === 'modification-user-viewable');
         if (modifyPopupOption) modifyPopupOption.available = true;
         if (modifyTypeOption) modifyTypeOption.available = true;
+  if (modifyUserViewableOption) modifyUserViewableOption.available = true;
         break;
       case 'action-delete':
         parameter = {
@@ -241,9 +359,11 @@ export class MainComponent implements OnInit, OnDestroy {
         if (modifyOption) modifyOption.available = true;
         // Hide modification options when delete is selected
         const deletePopupOption = this.menuOptions.find(o => o.id === 'modification-popup');
-        const deleteTypeOption = this.menuOptions.find(o => o.id === 'modification-type');
+  const deleteTypeOption = this.menuOptions.find(o => o.id === 'modification-type');
+  const deleteUserViewableOption = this.menuOptions.find(o => o.id === 'modification-user-viewable');
         if (deletePopupOption) deletePopupOption.available = false;
         if (deleteTypeOption) deleteTypeOption.available = false;
+  if (deleteUserViewableOption) deleteUserViewableOption.available = false;
         break;
       case 'search-text':
         parameter = {
@@ -269,6 +389,15 @@ export class MainComponent implements OnInit, OnDestroy {
           type: 'modification',
           label: 'Popup Settings',
           value: { makePopup: false, disablePopup: false },
+          editable: true
+        };
+        break;
+      case 'modification-user-viewable':
+        parameter = {
+          id: 'userViewable',
+          type: 'modification',
+          label: 'User Viewable',
+          value: { makeUserViewable: false },
           editable: true
         };
         break;
@@ -308,10 +437,12 @@ export class MainComponent implements OnInit, OnDestroy {
       if (modifyOption) modifyOption.available = true;
       if (deleteOption) deleteOption.available = true;
       // Make modification options available again when action is removed
-      const popupOption = this.menuOptions.find(o => o.id === 'modification-popup');
-      const typeOption = this.menuOptions.find(o => o.id === 'modification-type');
+  const popupOption = this.menuOptions.find(o => o.id === 'modification-popup');
+  const typeOption = this.menuOptions.find(o => o.id === 'modification-type');
+  const userViewableOption = this.menuOptions.find(o => o.id === 'modification-user-viewable');
       if (popupOption) popupOption.available = true;
       if (typeOption) typeOption.available = true;
+  if (userViewableOption) userViewableOption.available = true;
       // Reset delete confirmation
       this.deleteMatchingNotes = false;
     } else {
@@ -319,7 +450,8 @@ export class MainComponent implements OnInit, OnDestroy {
         'textSearch': 'search-text',
         'dateRange': 'search-date',
         'popupSettings': 'modification-popup',
-        'noteType': 'modification-type'
+  'noteType': 'modification-type',
+  'userViewable': 'modification-user-viewable'
       };
 
       const optionId = optionMap[parameterId];
@@ -327,7 +459,7 @@ export class MainComponent implements OnInit, OnDestroy {
         const option = this.menuOptions.find(o => o.id === optionId);
         if (option) {
           // For modification options, only make available if action is 'modify'
-          if (parameterId === 'popupSettings' || parameterId === 'noteType') {
+          if (parameterId === 'popupSettings' || parameterId === 'noteType' || parameterId === 'userViewable') {
             const actionParam = this.jobParameters.find(p => p.type === 'action');
             if (actionParam?.value === 'modify') {
               option.available = true;
@@ -360,6 +492,9 @@ export class MainComponent implements OnInit, OnDestroy {
         case 'popupSettings':
           this.makePopup = newValue.makePopup;
           this.disablePopup = newValue.disablePopup;
+          break;
+        case 'userViewable':
+          // legacy passthrough if needed in future
           break;
         case 'noteType':
           this.noteType = newValue;
@@ -476,7 +611,8 @@ export class MainComponent implements OnInit, OnDestroy {
     
     // Create modification options from job parameters
     const actionParam = this.jobParameters.find(p => p.type === 'action');
-    const popupParam = this.jobParameters.find(p => p.id === 'popupSettings');
+  const popupParam = this.jobParameters.find(p => p.id === 'popupSettings');
+  const userViewableParam = this.jobParameters.find(p => p.id === 'userViewable');
     const noteTypeParam = this.jobParameters.find(p => p.id === 'noteType');
     
     // Set job as executed to hide menu options and user details
@@ -498,7 +634,8 @@ export class MainComponent implements OnInit, OnDestroy {
       },
       modificationOptions: {
         popup: popupParam?.value || null,
-        noteType: noteTypeParam?.value || null
+  noteType: noteTypeParam?.value || null,
+  userViewable: userViewableParam?.value || null
       },
       setId: this.selectedSet?.id,
       setDescription: this.selectedSet?.description
@@ -508,6 +645,7 @@ export class MainComponent implements OnInit, OnDestroy {
       action: actionParam?.value || 'modify',
       makePopup: popupParam?.value?.makePopup || false,
       disablePopup: popupParam?.value?.disablePopup || false,
+  makeUserViewable: userViewableParam?.value?.makeUserViewable || false,
       noteType: noteTypeParam?.value || null,
       deleteMatchingNotes: actionParam?.value === 'delete'
     };
@@ -594,6 +732,8 @@ export class MainComponent implements OnInit, OnDestroy {
       noteText: '',
       beforePopup: '',
       afterPopup: '',
+  beforeUserViewable: '',
+  afterUserViewable: '',
       beforeType: '',
       afterType: '',
       created: '',
@@ -615,6 +755,8 @@ export class MainComponent implements OnInit, OnDestroy {
           noteText: '',
           beforePopup: '',
           afterPopup: '',
+          beforeUserViewable: '',
+          afterUserViewable: '',
           beforeType: '',
           afterType: '',
           created: '',
@@ -634,6 +776,8 @@ export class MainComponent implements OnInit, OnDestroy {
             noteText: entry.before.note_text || '',
             beforePopup: entry.before.popup_note ? 'Yes' : 'No',
             afterPopup: entry.deleted ? '' : (entry.after?.popup_note ? 'Yes' : 'No'),
+            beforeUserViewable: entry.before['user_viewable'] ? 'Yes' : 'No',
+            afterUserViewable: entry.deleted ? '' : ((entry.after && entry.after['user_viewable']) ? 'Yes' : 'No'),
             beforeType: entry.before.note_type?.desc || '',
             afterType: entry.deleted ? '' : (entry.after?.note_type?.desc || ''),
             created: entry.before.created_date || '',
@@ -788,7 +932,8 @@ export class MainComponent implements OnInit, OnDestroy {
 
   // Helper method to format note creation date (locale-aware, local timezone)
   formatNoteDate(note: UserNote): string {
-    const dateField = note.created_date || note.creation_date || note.note_date;
+    // Per API, only use created_date for display
+    const dateField = note.created_date;
     if (!dateField) return 'Unknown';
 
     // Use local midnight for date-only inputs to align with user-visible calendar days
