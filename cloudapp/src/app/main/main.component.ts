@@ -13,6 +13,7 @@ import { NoteSearchCriteria, NoteModificationOptions, UserProcessLog, JobParamet
 import { UserService } from '../services/user.service';
 import { NoteProcessingService } from '../services/note-processing.service';
 import { DataService } from '../services/data.service';
+import { CsvExportService } from '../services/csv-export.service';
 
 @Component({
   selector: 'app-main',
@@ -113,6 +114,7 @@ export class MainComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private noteProcessingService: NoteProcessingService,
   private dataService: DataService,
+  private csvExportService: CsvExportService,
   @Inject(LOCALE_ID) private locale: string
   ) {
     this.entities$ = this.eventsService.entities$.pipe(
@@ -758,126 +760,14 @@ export class MainComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const csvData = this.generateCSVData();
-    const csvContent = this.convertToCSV(csvData);
-    this.downloadCSV(csvContent, this.generateFileName());
-  }
-
-  private generateCSVData(): any[] {
-    const csvRows: any[] = [];
-    
-    // Add header information
-    csvRows.push({
-      type: 'JOB_INFO',
-      userId: '',
-      noteAction: '',
-      noteText: '',
-      beforePopup: '',
-      afterPopup: '',
-  beforeUserViewable: '',
-  afterUserViewable: '',
-      beforeType: '',
-      afterType: '',
-      created: '',
-      jobStartTime: this.jobStartTime?.toISOString() || '',
-      jobEndTime: this.jobEndTime?.toISOString() || '',
-      totalUsersProcessed: this.processLogs.length.toString(),
-      usersWithChanges: this.processLogsWithChanges.length.toString(),
-      jobConfiguration: JSON.stringify(this.jobConfiguration || {})
+    this.csvExportService.exportProcessingResults(this.processLogs, {
+      jobStartTime: this.jobStartTime,
+      jobEndTime: this.jobEndTime,
+      jobConfiguration: this.jobConfiguration,
+      selectedSet: this.selectedSet
     });
-
-    // Add detailed note changes
-    this.processLogs.forEach(log => {
-      if (log.noMatchingNotes) {
-        // Add row for users with no matching notes
-        csvRows.push({
-          type: 'NO_MATCHES',
-          userId: log.userId,
-          noteAction: 'No matching notes found',
-          noteText: '',
-          beforePopup: '',
-          afterPopup: '',
-          beforeUserViewable: '',
-          afterUserViewable: '',
-          beforeType: '',
-          afterType: '',
-          created: '',
-          jobStartTime: '',
-          jobEndTime: '',
-          totalUsersProcessed: '',
-          usersWithChanges: '',
-          jobConfiguration: ''
-        });
-      } else {
-        // Add rows for each note change
-        log.notes.forEach(entry => {
-          csvRows.push({
-            type: entry.deleted ? 'NOTE_DELETED' : 'NOTE_MODIFIED',
-            userId: log.userId,
-            noteAction: entry.deleted ? 'Deleted' : 'Modified',
-            noteText: entry.before.note_text || '',
-            beforePopup: entry.before.popup_note ? 'Yes' : 'No',
-            afterPopup: entry.deleted ? '' : (entry.after?.popup_note ? 'Yes' : 'No'),
-            beforeUserViewable: entry.before['user_viewable'] ? 'Yes' : 'No',
-            afterUserViewable: entry.deleted ? '' : ((entry.after && entry.after['user_viewable']) ? 'Yes' : 'No'),
-            beforeType: entry.before.note_type?.desc || '',
-            afterType: entry.deleted ? '' : (entry.after?.note_type?.desc || ''),
-            created: entry.before.created_date || '',
-            jobStartTime: '',
-            jobEndTime: '',
-            totalUsersProcessed: '',
-            usersWithChanges: '',
-            jobConfiguration: ''
-          });
-        });
-      }
-    });
-
-    return csvRows;
   }
 
-  private convertToCSV(data: any[]): string {
-    if (data.length === 0) return '';
-    
-    const headers = Object.keys(data[0]);
-    const csvLines = [headers.join(',')];
-    
-    data.forEach(row => {
-      const values = headers.map(header => {
-        const value = row[header] || '';
-        // Escape quotes and wrap in quotes if contains comma, quote, or newline
-        if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
-          return `"${value.replace(/"/g, '""')}"`;
-        }
-        return value;
-      });
-      csvLines.push(values.join(','));
-    });
-    
-    return csvLines.join('\n');
-  }
-
-  private downloadCSV(csvContent: string, fileName: string) {
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', fileName);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-  }
-
-  private generateFileName(): string {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
-    const setId = this.selectedSet?.id || 'unknown-set';
-    return `note-processing-results-${setId}-${timestamp}.csv`;
-  }
 
   // Helper method for debugging entity types
   getEntityTypes(): string {
