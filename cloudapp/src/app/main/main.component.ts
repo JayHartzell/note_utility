@@ -16,6 +16,8 @@ import { DataService } from '../services/data.service';
 import { CsvExportService } from '../services/csv-export.service';
 import { DateUtilService } from '../services/date-util.service';
 import { SetUsersService } from '../services/set-users.service';
+import { SetUtilService } from '../services/set-util.service';
+import { JobConfigUtil } from '../services/job-config.util';
 
 @Component({
   selector: 'app-main',
@@ -464,65 +466,51 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   get hasActionParameter(): boolean {
-    return this.jobParameters.some(p => p.type === 'action');
+  return JobConfigUtil.hasActionParameter(this.jobParameters);
   }
 
   get hasSearchParameter(): boolean {
-    return this.jobParameters.some(p => p.type === 'search' || p.type === 'dateRange');
+  return JobConfigUtil.hasSearchParameter(this.jobParameters);
   }
 
   //  require text search box to have a non-empty value
   get hasTextSearch(): boolean {
-    const textParam = this.jobParameters.find(p => p.id === 'textSearch');
-    const text = textParam?.value?.text ?? '';
-    return typeof text === 'string' && text.trim().length > 0;
+  return JobConfigUtil.hasTextSearch(this.jobParameters);
   }
 
   //  whether text search parameter is present but empty (invalid)
   get textSearchSelectedButEmpty(): boolean {
-    const textParam = this.jobParameters.find(p => p.id === 'textSearch');
-    if (!textParam) return false;
-    const text = textParam.value?.text ?? '';
-    return !(typeof text === 'string' && text.trim().length > 0);
+  return JobConfigUtil.textSearchSelectedButEmpty(this.jobParameters);
   }
 
   //  whether date range parameter has at least one bound set
   get hasDateRangeWithValue(): boolean {
-    const dateParam = this.jobParameters.find(p => p.id === 'dateRange');
-    if (!dateParam) return false;
-    const start = dateParam.value?.startDate;
-    const end = dateParam.value?.endDate;
-    return !!(start || end);
+  return JobConfigUtil.hasDateRangeWithValue(this.jobParameters);
   }
 
   //  valid search if text provided or date provided
   get hasValidSearchSelection(): boolean {
-    return this.hasTextSearch || this.hasDateRangeWithValue;
+  return JobConfigUtil.hasValidSearchSelection(this.jobParameters);
   }
 
   get hasModificationParameter(): boolean {
-    return this.jobParameters.some(p => p.type === 'modification');
+  return JobConfigUtil.hasModificationParameter(this.jobParameters);
   }
 
   // at least one modification has a concrete selection/value
   get hasConcreteModificationSelection(): boolean {
-    const popup = this.jobParameters.find(p => p.id === 'popupSettings');
-    const noteType = this.jobParameters.find(p => p.id === 'noteType');
-    const userViewable = this.jobParameters.find(p => p.id === 'userViewable');
-
-    const popupSelected = !!(popup && popup.value && (popup.value.makePopup === true || popup.value.disablePopup === true));
-    const noteTypeSelected = !!(noteType && noteType.value);
-    const userViewableSelected = !!(userViewable && userViewable.value && typeof userViewable.value.makeUserViewable === 'boolean');
-
-    return popupSelected || noteTypeSelected || userViewableSelected;
+  return JobConfigUtil.hasConcreteModificationSelection(this.jobParameters);
   }
 
   get isModifyAction(): boolean {
-    return this.jobParameters.some(p => p.type === 'action' && p.value === 'modify');
+  return JobConfigUtil.isModifyAction(this.jobParameters);
   }
 
   get needsModificationOptions(): boolean {
-    return this.isModifyAction && this.hasSearchParameter && !this.hasModificationParameter;
+    // Preserve existing semantics using util-backed checks
+    return JobConfigUtil.isModifyAction(this.jobParameters)
+      && JobConfigUtil.hasSearchParameter(this.jobParameters)
+      && !JobConfigUtil.hasModificationParameter(this.jobParameters);
   }
 
   getMenuOptionsByCategory(category: string): MenuOption[] {
@@ -583,52 +571,31 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   private getTextParam() {
-    return this.jobParameters.find(p => p.id === 'textSearch') as Extract<typeof this.jobParameters[number], { id: 'textSearch' }> | undefined;
+  return JobConfigUtil.getTextParam(this.jobParameters) as Extract<typeof this.jobParameters[number], { id: 'textSearch' }> | undefined;
   }
 
   private getDateParam() {
-    return this.jobParameters.find(p => p.id === 'dateRange') as Extract<typeof this.jobParameters[number], { id: 'dateRange' }> | undefined;
+  return JobConfigUtil.getDateParam(this.jobParameters) as Extract<typeof this.jobParameters[number], { id: 'dateRange' }> | undefined;
   }
 
   private getPopupParam() {
-    return this.jobParameters.find(p => p.id === 'popupSettings') as Extract<typeof this.jobParameters[number], { id: 'popupSettings' }> | undefined;
+  return JobConfigUtil.getPopupParam(this.jobParameters) as Extract<typeof this.jobParameters[number], { id: 'popupSettings' }> | undefined;
   }
 
   private getUserViewableParam() {
-    return this.jobParameters.find(p => p.id === 'userViewable') as Extract<typeof this.jobParameters[number], { id: 'userViewable' }> | undefined;
+  return JobConfigUtil.getUserViewableParam(this.jobParameters) as Extract<typeof this.jobParameters[number], { id: 'userViewable' }> | undefined;
   }
 
   private getNoteTypeParam() {
-    return this.jobParameters.find(p => p.id === 'noteType') as Extract<typeof this.jobParameters[number], { id: 'noteType' }> | undefined;
+  return JobConfigUtil.getNoteTypeParam(this.jobParameters) as Extract<typeof this.jobParameters[number], { id: 'noteType' }> | undefined;
   }
 
   private buildSearchCriteria(): NoteSearchCriteria {
-    const text = this.getTextParam();
-    const date = this.getDateParam();
-    return {
-      searchText: text?.value.text || '',
-      caseSensitive: text?.value.caseSensitive || false,
-      searchByDate: !!date && (!!date.value.startDate || !!date.value.endDate),
-      startDate: date?.value.startDate || '',
-      endDate: date?.value.endDate || ''
-    };
+  return JobConfigUtil.buildSearchCriteria(this.jobParameters);
   }
 
   private buildModificationOptions(action: 'modify' | 'delete'): NoteModificationOptions & { makeUserViewable?: boolean } {
-    const popup = this.getPopupParam();
-    const uv = this.getUserViewableParam();
-    const nt = this.getNoteTypeParam();
-    const opts: NoteModificationOptions & { makeUserViewable?: boolean } = {
-      action,
-      makePopup: popup?.value.makePopup || false,
-      disablePopup: popup?.value.disablePopup || false,
-      noteType: nt?.value || undefined,
-      deleteMatchingNotes: action === 'delete'
-    };
-    if (uv && typeof uv.value.makeUserViewable === 'boolean') {
-      opts.makeUserViewable = uv.value.makeUserViewable;
-    }
-    return opts;
+  return JobConfigUtil.buildModificationOptions(this.jobParameters, action);
   }
 
   findMatchingNotes(user: UserData): UserNote[] {
@@ -772,17 +739,17 @@ export class MainComponent implements OnInit, OnDestroy {
 
   // Helper method for debugging entity types
   getEntityTypes(): string {
-    return this.currentEntities.map(e => e.type).join(', ') || 'None';
+  return SetUtilService.getEntityTypes(this.currentEntities);
   }
 
   // Check if current page has sets
   get hasValidSets(): boolean {
-    return this.currentEntities.some(entity => entity.type === 'SET');
+  return SetUtilService.hasValidSets(this.currentEntities);
   }
 
   // Get available sets from current entities
   get availableSets(): Entity[] {
-    return this.currentEntities.filter(entity => entity.type === 'SET');
+  return SetUtilService.availableSets(this.currentEntities);
   }
 
   // Select a set from the available entities
