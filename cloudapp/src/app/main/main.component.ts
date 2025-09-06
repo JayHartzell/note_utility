@@ -14,6 +14,8 @@ import { UserService } from '../services/user.service';
 import { NoteProcessingService } from '../services/note-processing.service';
 import { DataService } from '../services/data.service';
 import { CsvExportService } from '../services/csv-export.service';
+import { DateUtilService } from '../services/date-util.service';
+import { SetUsersService } from '../services/set-users.service';
 
 @Component({
   selector: 'app-main',
@@ -184,7 +186,6 @@ export class MainComponent implements OnInit, OnDestroy {
 
   // Choose the menu-based operation flow
   chooseMenuFlow() {
-    // Clear previous results when switching into menu mode to avoid confusion
     this.processLogs = [];
     this.jobExecuted = false;
     this.showResults = false;
@@ -814,17 +815,17 @@ export class MainComponent implements OnInit, OnDestroy {
     // Use the data service to fetch all set data
     this.dataService.fetchSetData(this.selectedSet.id).subscribe({
       next: (setData) => {
-  // Set data retrieved
         this.setMembers = setData.members;
         this.userDetails = setData.users;
         
-        // Categorize users based on note availability
-        this.categorizeUsers();
+  // Categorize users based on note availability
+  const categorized = SetUsersService.categorize(this.userDetails);
+  this.usersWithNotes = categorized.usersWithNotes;
+  this.usersWithoutNotes = categorized.usersWithoutNotes;
         
         this.loading = false;
       },
       error: (error) => {
-  // Error fetching set data
         this.loading = false;
         this.alert.error(error.message || 'Failed to retrieve set data');
       }
@@ -839,58 +840,8 @@ export class MainComponent implements OnInit, OnDestroy {
     return this.userDetails;
   }
 
-  /**
-   * Categorize users based on whether they have notes or not
-   */
-  private categorizeUsers(): void {
-    this.usersWithNotes = [];
-    this.usersWithoutNotes = [];
-    
-    this.userDetails.forEach(user => {
-      if (user.error) {
-        // Skip users with errors - they'll be handled separately
-        return;
-      }
-      
-      if (user.user_note && Array.isArray(user.user_note) && user.user_note.length > 0) {
-        this.usersWithNotes.push(user);
-      } else {
-        this.usersWithoutNotes.push(user);
-      }
-    });
-    
-  // Categorized users summary
-  }
-
   // Helper method to format note creation date (locale-aware, local timezone)
   formatNoteDate(note: UserNote): string {
-    // Per API, only use created_date for display
-    const dateField = note.created_date;
-    if (!dateField) return 'Unknown';
-
-    // Use local midnight for date-only inputs to align with user-visible calendar days
-    const onlyDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateField));
-    let dateObj: Date;
-    if (onlyDate) {
-      const y = Number(onlyDate[1]);
-      const m = Number(onlyDate[2]) - 1;
-      const d = Number(onlyDate[3]);
-      dateObj = new Date(y, m, d, 0, 0, 0, 0); // local midnight
-    } else {
-      dateObj = new Date(dateField);
-    }
-
-    const ms = dateObj.getTime();
-    if (isNaN(ms)) return String(dateField);
-
-    try {
-      return new Intl.DateTimeFormat(this.locale || 'en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      }).format(dateObj);
-    } catch {
-      return dateObj.toLocaleDateString();
-    }
+  return DateUtilService.formatNoteDate(note, this.locale);
   }
 }
