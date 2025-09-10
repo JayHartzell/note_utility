@@ -453,7 +453,7 @@ export class MainComponent implements OnInit, OnDestroy {
     const baseUsersOk = !!(this.usersWithNotes && this.usersWithNotes.length > 0);
     if (!hasAction || !baseUsersOk) return false;
 
-    // Validate search: either text provided or date provided; but block if text param is selected empty
+    // Validate search: either text provided or date provided; but block execution on empty text search
     if (this.textSearchSelectedButEmpty) return false;
     if (!this.hasValidSearchSelection) return false;
 
@@ -542,8 +542,6 @@ export class MainComponent implements OnInit, OnDestroy {
   get totalUsersWithoutNotes(): number {
     return this.usersWithoutNotes.length;
   }
-
-// main note matching logic
 
   // Public selector getters for template clarity
   get actionParam() {

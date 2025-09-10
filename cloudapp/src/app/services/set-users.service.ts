@@ -1,8 +1,7 @@
 import { UserData } from '../interfaces/user.interface';
 
 /**
- * Pure utility for categorizing users by presence of notes.
- * Static methods; no DI required.
+ * Utility for categorizing users by presence of notes.
  */
 export class SetUsersService {
   static categorize(users: UserData[] | undefined | null): {
