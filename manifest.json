@@ -1,16 +1,17 @@
 {
    "id": "user-note-utility",
    "title": "User Note Utility",
-   "subtitle": "Easily delete user notes or modify their properties.",
+   "subtitle": "A utility for modifying or deleting user notes in bulk.",
    "author": "Jay Hartzell",
+   "description": "This utility allows you to modify note properties or delete notes for a set of Users. The utility allows you to delete all notes on any user account in a set, or modify/delete specific notes using a text or date range filter. Please use caution when using this utility, and be sure to test on a small set of users before running on a large set. It is not recommended to run this on sets larger than a few hundred users. This is currently considered a Beta release.",
    "icon": {
       "type": "url",
       "value": "/assets/note_icon.png"
    },
    "contentSecurity": {
       "sandbox": {
-         "downloads": true,
-         "allow-downloads": true
+         "downloads": true
       }
-   }
+   },
+   "license": "https://github.com/JayHartzell/note_utility/blob/main/LICENSE"
 }

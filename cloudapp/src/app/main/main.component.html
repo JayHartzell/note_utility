@@ -250,11 +250,11 @@
           <div style="display: flex; gap: 20px; align-items: center;">
             <label>
               <input type="radio" name="userViewable" [checked]="userViewableParam.value.makeUserViewable === true" (change)="updateJobParameter('userViewable', { makeUserViewable: true })" [disabled]="jobExecuted">
-              True (make note user-viewable)
+              True
             </label>
             <label>
               <input type="radio" name="userViewable" [checked]="userViewableParam.value.makeUserViewable === false" (change)="updateJobParameter('userViewable', { makeUserViewable: false })" [disabled]="jobExecuted">
-              False (make note not user-viewable)
+              False
             </label>
           </div>
         </div>
