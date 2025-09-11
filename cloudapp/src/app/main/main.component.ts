@@ -355,7 +355,8 @@ export class MainComponent implements OnInit, OnDestroy {
           id: 'popupSettings',
           type: 'modification',
           label: 'Popup Settings',
-          value: { makePopup: false, disablePopup: false },
+          // Default to a concrete selection so the job can execute
+          value: { makePopup: true, disablePopup: false },
           editable: true
         };
         break;
@@ -364,7 +365,8 @@ export class MainComponent implements OnInit, OnDestroy {
           id: 'userViewable',
           type: 'modification',
           label: 'User Viewable',
-          value: { makeUserViewable: undefined },
+          // Default to a concrete selection so the job can execute
+          value: { makeUserViewable: true },
           editable: true
         };
         break;
@@ -440,8 +442,15 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   updateJobParameter(parameterId: string, newValue: any) {
-    const parameter = this.jobParameters.find(p => p.id === parameterId as any);
-    if (parameter) parameter.value = newValue;
+    const idx = this.jobParameters.findIndex(p => p.id === parameterId as any);
+    if (idx >= 0) {
+      const updated = { ...this.jobParameters[idx], value: newValue } as any;
+      this.jobParameters = [
+        ...this.jobParameters.slice(0, idx),
+        updated,
+        ...this.jobParameters.slice(idx + 1)
+      ];
+    }
   }
 
   get availableMenuOptions(): MenuOption[] {

@@ -191,19 +191,19 @@
           <div class="param-grid">
             <mat-form-field class="mw-240">
               <mat-label>Search text</mat-label>
-              <input matInput type="text" [value]="textSearchParam.value.text" (input)="updateJobParameter('textSearch', { text: $any($event.target).value, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents })" placeholder="Enter text to search for" [disabled]="jobExecuted">
+              <input matInput type="text" [ngModel]="textSearchParam.value.text" (ngModelChange)="updateJobParameter('textSearch', { text: $event, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents })" placeholder="Enter text to search for" [disabled]="jobExecuted">
             </mat-form-field>
-            <mat-checkbox labelPosition="before" [checked]="textSearchParam.value.caseSensitive" (change)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: $event.checked, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents })" [disabled]="jobExecuted">Case sensitive search</mat-checkbox>
+            <mat-checkbox labelPosition="before" [ngModel]="textSearchParam.value.caseSensitive" (ngModelChange)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: $event, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents })" [disabled]="jobExecuted">Case sensitive search</mat-checkbox>
             <div class="inline-controls">
               <mat-form-field class="mw-180">
                 <mat-label>Match</mat-label>
-                <mat-select [value]="textSearchParam.value.matchMode || 'substring'" (selectionChange)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: textSearchParam.value.caseSensitive, matchMode: $event.value, ignoreAccents: textSearchParam.value.ignoreAccents })" [disabled]="jobExecuted">
+                <mat-select [ngModel]="textSearchParam.value.matchMode || 'substring'" (ngModelChange)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: textSearchParam.value.caseSensitive, matchMode: $event, ignoreAccents: textSearchParam.value.ignoreAccents })" [disabled]="jobExecuted">
                   <mat-option value="substring">Substring</mat-option>
                   <mat-option value="wholeWord">Whole word</mat-option>
                   <mat-option value="exact">Exact</mat-option>
                 </mat-select>
               </mat-form-field>
-              <mat-checkbox labelPosition="before" [checked]="(textSearchParam.value.ignoreAccents ?? true)" (change)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: $event.checked })" [disabled]="jobExecuted">Ignore accents (é ≈ e)</mat-checkbox>
+              <mat-checkbox labelPosition="before" [ngModel]="(textSearchParam.value.ignoreAccents ?? true)" (ngModelChange)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: $event })" [disabled]="jobExecuted">Ignore accents (é ≈ e)</mat-checkbox>
             </div>
           </div>
         </div>
@@ -219,11 +219,11 @@
           <div class="inline-controls">
             <mat-form-field class="mw-200">
               <mat-label>From</mat-label>
-              <input matInput type="date" [value]="dateRangeParam.value.startDate" (input)="updateJobParameter('dateRange', { startDate: $any($event.target).value, endDate: dateRangeParam.value.endDate })" [disabled]="jobExecuted">
+              <input matInput type="date" [ngModel]="dateRangeParam.value.startDate" (ngModelChange)="updateJobParameter('dateRange', { startDate: $event, endDate: dateRangeParam.value.endDate })" [disabled]="jobExecuted">
             </mat-form-field>
             <mat-form-field class="mw-200">
               <mat-label>To</mat-label>
-              <input matInput type="date" [value]="dateRangeParam.value.endDate" (input)="updateJobParameter('dateRange', { startDate: dateRangeParam.value.startDate, endDate: $any($event.target).value })" [disabled]="jobExecuted">
+              <input matInput type="date" [ngModel]="dateRangeParam.value.endDate" (ngModelChange)="updateJobParameter('dateRange', { startDate: dateRangeParam.value.startDate, endDate: $event })" [disabled]="jobExecuted">
             </mat-form-field>
           </div>
         </div>
@@ -236,9 +236,14 @@
       <div class="param-row">
         <div class="param-col">
           <h4>{{ popupParam.label }}</h4>
-          <mat-radio-group class="inline-controls" [disabled]="jobExecuted">
-            <mat-radio-button (change)="updateJobParameter('popupSettings', { makePopup: true, disablePopup: false })" [checked]="popupParam.value.makePopup === true">Make popup note</mat-radio-button>
-            <mat-radio-button (change)="updateJobParameter('popupSettings', { makePopup: false, disablePopup: true })" [checked]="popupParam.value.disablePopup === true">Disable popup</mat-radio-button>
+          <mat-radio-group
+            class="inline-controls"
+            [disabled]="jobExecuted"
+            [value]="popupParam.value.makePopup ? 'make' : (popupParam.value.disablePopup ? 'disable' : null)"
+            (change)="updateJobParameter('popupSettings', $event.value === 'make' ? { makePopup: true, disablePopup: false } : { makePopup: false, disablePopup: true })"
+          >
+            <mat-radio-button value="make">Make popup note</mat-radio-button>
+            <mat-radio-button value="disable">Disable popup</mat-radio-button>
           </mat-radio-group>
         </div>
         <button *ngIf="!jobExecuted" mat-flat-button color="secondary" (click)="removeJobParameter(popupParam.id)" class="small-button" title="Remove this parameter">✕</button>
@@ -250,9 +255,14 @@
       <div class="param-row">
         <div class="param-col">
           <h4>{{ userViewableParam.label }}</h4>
-          <mat-radio-group class="inline-controls" [disabled]="jobExecuted">
-            <mat-radio-button (change)="updateJobParameter('userViewable', { makeUserViewable: true })" [checked]="userViewableParam.value.makeUserViewable === true">True</mat-radio-button>
-            <mat-radio-button (change)="updateJobParameter('userViewable', { makeUserViewable: false })" [checked]="userViewableParam.value.makeUserViewable === false">False</mat-radio-button>
+          <mat-radio-group
+            class="inline-controls"
+            [disabled]="jobExecuted"
+            [value]="userViewableParam.value.makeUserViewable === true ? 'true' : (userViewableParam.value.makeUserViewable === false ? 'false' : null)"
+            (change)="updateJobParameter('userViewable', { makeUserViewable: $event.value === 'true' })"
+          >
+            <mat-radio-button value="true">True</mat-radio-button>
+            <mat-radio-button value="false">False</mat-radio-button>
           </mat-radio-group>
         </div>
         <button *ngIf="!jobExecuted" mat-flat-button color="secondary" (click)="removeJobParameter(userViewableParam.id)" class="small-button" title="Remove this parameter">✕</button>
