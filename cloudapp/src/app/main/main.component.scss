@@ -10,11 +10,21 @@
   .parameter-item {
     transition: all 0.2s ease;
     h4 { font-weight: 700; }
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 4px;
+  box-sizing: border-box;
+    
+  // Prevent contents from hugging the edge
+  & > .param-row { padding-left: 4px; padding-right: 4px; }
+  .mat-mdc-form-field { width: 100%; max-width: 360px; }
     
     &:hover {
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
   }
+  // Ensure helper lines wrap under primary labels
+  .param-col { display: flex; flex-direction: column; gap: 8px; }
   
   .execute-job-button {
     transition: all 0.2s ease;
@@ -44,6 +54,13 @@
   .menu-option-button {
     font-weight: 600;
     transition: all 0.2s ease;
+    // Stack label and helper text vertically inside Material button
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    line-height: 1.2;
+    white-space: normal;
     
     &:hover {
       transform: translateY(-1px);
@@ -51,6 +68,9 @@
     }
     
     small {
+      display: block;
+      font-size: 11px;
+      margin-top: 2px;
       transition: color 0.2s ease;
     }
     
@@ -200,7 +220,10 @@ textarea {
       border-radius: 6px;
       cursor: pointer;
       width: 100%;
-      text-align: left;
+  text-align: left;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
       transition: all 0.2s ease;
       font-size: 14px;
       
@@ -220,10 +243,7 @@ textarea {
         font-weight: 600;
       }
       
-      small {
-        font-size: 12px;
-        opacity: 0.8;
-      }
+  small { font-size: 12px; opacity: 0.8; display: block; }
     }
   }
 }
@@ -232,11 +252,13 @@ textarea {
   width: 100%;
   
   .selected-set-card {
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-    width: 100%;
-    box-sizing: border-box;
+  padding: 0; // header handles padding
+  margin-bottom: 20px;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  border-width: 2px;
+  overflow: hidden;
     
     h3 {
   margin: 0 0 10px 0;
@@ -400,4 +422,103 @@ button:disabled {
   justify-content: center;
   align-items: center;
   height: 100px;
+}
+
+/* --- Utilities and replacements for removed inline styles --- */
+.compact-header {
+  padding: 12px 15px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.chips-row { display: flex; gap: 8px; font-size: 12px; }
+.subtext { font-size: 12px; }
+.small-text { font-size: 13px; }
+.small-button { padding: 4px 8px; font-size: 11px; min-height: 28px; line-height: 28px; }
+.toggle-icon { font-size: 16px; transition: transform 0.2s; }
+.toggle-icon.rotated { transform: rotate(180deg); }
+.loading-section { padding: 20px; text-align: center; }
+.mb-8 { margin-bottom: 8px; }
+.mt-4 { margin-top: 4px; }
+.mt-5 { margin-top: 5px; }
+.mt-10 { margin-top: 10px; }
+.mt-12 { margin-top: 12px; }
+.mt-15 { margin-top: 15px; }
+.mt-20 { margin-top: 20px; }
+.mt-30 { margin-top: 30px; }
+.mt-50 { margin-top: 50px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.mb-10 { margin-bottom: 10px; }
+.mb-15 { margin-bottom: 15px; }
+.mb-20 { margin-bottom: 20px; }
+.pb-15 { padding-bottom: 15px; }
+.pad-4 { padding: 4px; }
+.pad-8 { padding: 8px; }
+.pad-16 { padding: 16px; }
+.pad-24 { padding: 24px; }
+.pad-5 { padding: 5px; }
+.pad-10 { padding: 10px; }
+.pad-15 { padding: 15px; }
+.pad-20 { padding: 20px; }
+.no-mb { margin-bottom: 0; }
+.italic { font-style: italic; }
+.bold { font-weight: bold; }
+.center { text-align: center; }
+.pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+.chip-lg { padding: 8px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; }
+.spacer-16 { height: 16px; }
+.flex-spacer { flex: 1 1 auto; }
+.card-pad { padding: 16px; border-radius: 8px; }
+.gap-8 { gap: 8px; }
+.gap-16 { gap: 16px; }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.header-row { display: flex; justify-content: space-between; align-items: center; }
+.param-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.param-col { flex: 1 1 auto; }
+.param-grid { display: flex; flex-direction: column; gap: 8px; }
+.inline-controls { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+.mw-240 { max-width: 240px; width: 100%; }
+.mw-200 { max-width: 200px; width: 100%; }
+.mw-180 { max-width: 180px; width: 100%; }
+.details-section { padding: 15px; }
+.set-info { margin-bottom: 15px; padding-bottom: 12px; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px; }
+.stat-card { padding: 8px; border-radius: 4px; text-align: center; }
+.stat-value { font-size: 18px; font-weight: bold; }
+.stat-label { font-size: 10px; }
+.status-box { padding: 8px 12px; border-radius: 0 4px 4px 0; }
+.results-scroll { max-height: 400px; overflow-y: auto; }
+.note-entry-pad { margin-top: 10px; padding: 10px; border-radius: 4px; }
+.section-head { border: 3px solid; border-radius: 8px; }
+.grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+.summary-card { padding: 20px; border-radius: 8px; text-align: center; }
+.summary-value { font-size: 2em; font-weight: bold; }
+.summary-label { font-size: 1.1em; margin-top: 5px; }
+.summary-subtext { font-size: 0.9em; margin-top: 5px; }
+.button-wrap { display: flex; gap: 10px; flex-wrap: wrap; }
+.action-row { display: flex; gap: 10px; align-items: center; justify-content: center; }
+.confirm-panel { margin-top: 10px; padding: 10px; border-radius: 6px; }
+.selected-note-type { margin-left: 10px; margin-bottom: 5px; font-weight: bold; }
+.job-configuration h3 { margin-top: 0; }
+
+// Empty list icon sizing
+#emptyList .uxf-icon { font-size: 3em; }
+
+// Replace custom progress with Material
+mat-progress-bar { border-radius: 4px; }
+
+/* Dense form mode: tighter Material components within this scope */
+.dense {
+  .mat-mdc-form-field { margin-bottom: 8px; }
+  .mat-mdc-form-field-infix { padding-top: 10px; padding-bottom: 10px; }
+  .mat-mdc-form-field-subscript-wrapper { margin-top: 2px; }
+  .mat-mdc-checkbox, .mat-mdc-radio-button { margin-right: 8px; }
+  .inline-controls { gap: 8px; }
 }

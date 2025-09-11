@@ -18,7 +18,9 @@
     <div>
       <p>Select a set to load its user members:</p>
       <div *ngFor="let set of availableSets" class="set-option">
-        <button 
+        <button
+          mat-flat-button
+          color="secondary"
           class="set-button"
           (click)="selectSet(set)"
           [disabled]="loading || processingNotes"
@@ -32,87 +34,87 @@
 
   <!-- Show selected set info -->
   <div *ngIf="selectedSet" class="selected-set-info">
-    <div class="selected-set-card card card-primary" style="border-width: 2px; border-radius: 6px; overflow: hidden;">
+    <div class="selected-set-card card card-primary">
       <!-- Compact Header (always visible) -->
-      <div 
-        (click)="toggleSetDetails = !toggleSetDetails" 
-        style="padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;"
-        class="border-bottom-primary bg-surface"
+      <div
+        (click)="toggleSetDetails = !toggleSetDetails"
+        class="compact-header border-bottom-primary bg-surface"
       >
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <span style="font-weight: bold; font-size: 14px;">{{ selectedSet.description || 'Set ID: ' + selectedSet.id }}</span>
-          <div *ngIf="!loading && setMembers && setMembers.length > 0" style="display: flex; gap: 8px; font-size: 12px;">
-            <span class="chip chip-primary" style="padding: 2px 6px; border-radius: 10px;">{{ setMembers.length }} total</span>
-            <span *ngIf="totalUsersWithNotes > 0" class="chip chip-secondary" style="padding: 2px 6px; border-radius: 10px;">{{ totalUsersWithNotes }} with notes</span>
+        <div class="header-left">
+          <span class="title">{{ selectedSet.description || 'Set ID: ' + selectedSet.id }}</span>
+          <div *ngIf="!loading && setMembers && setMembers.length > 0" class="chips-row">
+            <span class="chip chip-primary">{{ setMembers.length }} total</span>
+            <span *ngIf="totalUsersWithNotes > 0" class="chip chip-secondary">{{ totalUsersWithNotes }} with notes</span>
           </div>
-          <div *ngIf="loading" class="text-default" style="font-size: 12px;">Loading...</div>
+          <div *ngIf="loading" class="text-default subtext">Loading...</div>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <button 
+        <div class="header-actions">
+          <button
+            mat-flat-button
+            color="secondary"
+            class="small-button"
             (click)="clear(); $event.stopPropagation()"
             [disabled]="loading || processingNotes"
-            class="btn btn-outline-primary"
-            style="padding: 4px 8px; border-radius: 3px; font-size: 11px;"
           >
             Change
           </button>
-          <span style="font-size: 16px; transition: transform 0.2s;" [style.transform]="toggleSetDetails ? 'rotate(180deg)' : 'rotate(0deg)'">▼</span>
+          <span class="toggle-icon" [class.rotated]="toggleSetDetails">▼</span>
         </div>
       </div>
       
       <!-- Expandable Details -->
   <div *ngIf="toggleSetDetails" class="border-top-primary">
         <!-- Loading State -->
-  <div *ngIf="loading" style="padding: 20px; text-align: center;" class="text-default bg-surface">
-          <div style="margin-bottom: 8px;">🔄 Loading set members...</div>
-          <div style="font-size: 12px;">Please wait while we fetch the user data.</div>
+        <div *ngIf="loading" class="loading-section text-default bg-surface">
+          <div class="mb-8">🔄 Loading set members...</div>
+          <div class="subtext">Please wait while we fetch the user data.</div>
         </div>
         
         <!-- Loaded Details -->
-  <div *ngIf="!loading && setMembers && setMembers.length > 0" style="padding: 15px;" class="bg-surface">
+        <div *ngIf="!loading && setMembers && setMembers.length > 0" class="details-section bg-surface">
           <!-- Set Info -->
-          <div style="margin-bottom: 15px; padding-bottom: 12px;" class="border-bottom">
-            <div style="font-size: 12px; margin-bottom: 4px;" class="text-default">Set Details</div>
-            <div style="font-size: 13px;">ID: {{ selectedSet.id }}</div>
+          <div class="set-info border-bottom">
+            <div class="subtext text-default">Set Details</div>
+            <div class="small-text">ID: {{ selectedSet.id }}</div>
           </div>
           
           <!-- Statistics Grid -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px;">
+          <div class="stats-grid">
             <!-- Total Users -->
-            <div class="card card-tertiary" style="padding: 8px; border-radius: 4px; text-align: center;">
-              <div style="font-size: 18px; font-weight: bold;" class="text-tertiary">{{ setMembers.length }}</div>
-              <div style="font-size: 10px;" class="text-tertiary">Total Users</div>
+            <div class="card card-tertiary stat-card">
+              <div class="stat-value text-tertiary">{{ setMembers.length }}</div>
+              <div class="stat-label text-tertiary">Total Users</div>
             </div>
             
             <!-- Users with Notes -->
-            <div *ngIf="totalUsersWithNotes > 0" class="card card-secondary" style="padding: 8px; border-radius: 4px; text-align: center;">
-              <div style="font-size: 18px; font-weight: bold;" class="text-secondary">{{ totalUsersWithNotes }}</div>
-              <div style="font-size: 10px;" class="text-secondary">With Notes</div>
+            <div *ngIf="totalUsersWithNotes > 0" class="card card-secondary stat-card">
+              <div class="stat-value text-secondary">{{ totalUsersWithNotes }}</div>
+              <div class="stat-label text-secondary">With Notes</div>
             </div>
             
             <!-- Users without Notes -->
-            <div *ngIf="totalUsersWithoutNotes > 0" class="card" style="padding: 8px; border-radius: 4px; text-align: center;">
-              <div style="font-size: 18px; font-weight: bold;">{{ totalUsersWithoutNotes }}</div>
-              <div style="font-size: 10px;" class="text-default">Without Notes</div>
+            <div *ngIf="totalUsersWithoutNotes > 0" class="card stat-card">
+              <div class="stat-value">{{ totalUsersWithoutNotes }}</div>
+              <div class="stat-label text-default">Without Notes</div>
             </div>
           </div>
           
           <!-- Status Message -->
-          <div *ngIf="totalUsersWithNotes > 0" class="border-left-success" style="padding: 8px 12px; border-radius: 0 4px 4px 0;">
-            <div style="font-weight: bold; font-size: 12px;" class="text-tertiary">Ready for Processing</div>
-            <div style="font-size: 11px;">{{ totalUsersWithNotes }} user{{ totalUsersWithNotes !== 1 ? 's' : '' }} with notes available</div>
+          <div *ngIf="totalUsersWithNotes > 0" class="status-box border-left-success">
+            <div class="status-title text-tertiary">Ready for Processing</div>
+            <div class="subtext">{{ totalUsersWithNotes }} user{{ totalUsersWithNotes !== 1 ? 's' : '' }} with notes available</div>
           </div>
           
-          <div *ngIf="totalUsersWithNotes === 0" class="border-left" style="padding: 8px 12px; border-radius: 0 4px 4px 0;">
-            <div style="font-weight: bold; font-size: 12px;" class="text-default">No Notes Found</div>
-            <div style="font-size: 11px;">This set contains no users with notes to process</div>
+          <div *ngIf="totalUsersWithNotes === 0" class="status-box border-left">
+            <div class="status-title text-default">No Notes Found</div>
+            <div class="subtext">This set contains no users with notes to process</div>
           </div>
         </div>
         
         <!-- No Members Found -->
-  <div *ngIf="!loading && (!setMembers || setMembers.length === 0)" style="padding: 20px; text-align: center;" class="text-default bg-surface">
-          <div style="margin-bottom: 8px;">⚠️ No members found</div>
-          <div style="font-size: 12px;">This set appears to be empty or inaccessible.</div>
+        <div *ngIf="!loading && (!setMembers || setMembers.length === 0)" class="loading-section text-default bg-surface">
+          <div class="mb-8">⚠️ No members found</div>
+          <div class="subtext">This set appears to be empty or inaccessible.</div>
         </div>
       </div>
     </div>
@@ -120,189 +122,172 @@
 </div>
 
 <!-- Operation selection step -->
-<div *ngIf="usersWithNotes && usersWithNotes.length > 0 && operationMode === 'choose'" class="job-configuration card" style="margin-top: 20px; padding: 15px; border-radius: 8px;">
-  <h3 style="margin-top: 0;">Select Operation</h3>
+<div *ngIf="usersWithNotes && usersWithNotes.length > 0 && operationMode === 'choose'" class="job-configuration card card-pad mt-20">
+  <h3>Select Operation</h3>
   <div>
-    <button class="btn btn-primary" [disabled]="loading || processingNotes" (click)="onClickDeleteAll()" style="padding: 10px 16px; border-radius: 6px; font-weight: bold;">
+    <button mat-flat-button color="primary" [disabled]="loading || processingNotes" (click)="onClickDeleteAll()">
       Delete All Notes
     </button>
-  <div class="text-default" style="margin-top: 6px; font-size: 13px;">
+    <div class="text-default mt-6 small-text">
       <div>Delete All Notes: Removes every note from every user in the selected set. This cannot be undone.</div>
     </div>
     <!-- Inline confirmation panel -->
-    <div *ngIf="showDeleteAllConfirm" class="card" style="margin-top: 10px; padding: 10px; border-radius: 6px;">
-      <div style="font-weight: bold; margin-bottom: 8px;">Confirm Delete All Notes</div>
-  <div class="text-default" style="font-size: 13px;">This will delete ALL notes for ALL users in the selected set. This action cannot be undone.</div>
-      <div style="margin-top: 10px; display: flex; gap: 10px; width: 100%;">
-        <button class="btn btn-primary" [disabled]="processingNotes" (click)="executeDeleteAllNotes()">Yes, Delete All Notes</button>
-        <button class="btn btn-error" [disabled]="processingNotes" (click)="cancelDeleteAll()" style="margin-left: auto;">Cancel</button>
+    <div *ngIf="showDeleteAllConfirm" class="card confirm-panel">
+      <div class="confirm-title">Confirm Delete All Notes</div>
+      <div class="text-default small-text">This will delete ALL notes for ALL users in the selected set. This action cannot be undone.</div>
+      <div class="action-row mt-10">
+        <button mat-flat-button color="primary" [disabled]="processingNotes" (click)="executeDeleteAllNotes()">Yes, Delete All Notes</button>
+        <span class="flex-spacer"></span>
+        <button mat-flat-button color="secondary" [disabled]="processingNotes" (click)="cancelDeleteAll()">Cancel</button>
       </div>
     </div>
   </div>
-  <div style="height: 16px;"></div>
+  <div class="spacer-16"></div>
   <div>
-    <button class="btn btn-secondary" [disabled]="loading || processingNotes" (click)="chooseMenuFlow()" style="padding: 10px 16px; border-radius: 6px; font-weight: bold;">
+    <button mat-flat-button color="secondary" [disabled]="loading || processingNotes" (click)="chooseMenuFlow()">
       Modify or Delete Specific Notes
     </button>
-  <div class="text-default" style="margin-top: 6px; font-size: 13px;">
+    <div class="text-default mt-6 small-text">
       <div>Modify or Delete Specific Notes: Configure filters and actions to target specific notes.</div>
     </div>
   </div>
 </div>
 
 <!-- Menu-Based Job Configuration -->
-<div *ngIf="usersWithNotes && usersWithNotes.length > 0 && operationMode === 'menu'" class="job-configuration">
+<div *ngIf="usersWithNotes && usersWithNotes.length > 0 && operationMode === 'menu'" class="job-configuration dense">
   
   <!-- Job Parameters Window -->
-  <div class="job-parameters-window card card-primary" style="margin-bottom: 20px; padding: 15px; border-width: 2px; border-radius: 8px;">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h3 style="margin-top: 0;">Job Parameters</h3>
-      <div *ngIf="jobExecuted && !processingNotes" class="chip chip-tertiary" style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+  <div class="job-parameters-window card card-primary card-pad mb-24">
+    <div class="header-row">
+      <h3>Job Parameters</h3>
+      <div *ngIf="jobExecuted && !processingNotes" class="chip chip-tertiary pill">
         ✓ EXECUTED
       </div>
-      <div *ngIf="processingNotes" class="chip chip-secondary" style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+      <div *ngIf="processingNotes" class="chip chip-secondary pill">
         ⏳ PROCESSING...
       </div>
     </div>
     
-  <div *ngIf="jobParameters.length === 0" class="empty-parameters text-default" style="font-style: italic;">
+    <div *ngIf="jobParameters.length === 0" class="empty-parameters text-default italic">
       No parameters configured. Select options from the menu below to build your job.
     </div>
     
     <!-- Action Parameter (non-editable) -->
-    <div *ngIf="actionParam" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div style="flex-grow: 1;">
-          <h4 style="margin: 0 0 10px 0;">{{ actionParam.label }}</h4>
+    <div *ngIf="actionParam" class="parameter-item card">
+      <div class="param-row">
+        <div class="param-col">
+          <h4>{{ actionParam.label }}</h4>
           <strong>{{ actionParam.value === 'modify' ? 'Modify matching notes' : 'Delete matching notes' }}</strong>
         </div>
-        <button *ngIf="!jobExecuted" (click)="removeJobParameter(actionParam.id)" class="btn btn-secondary" style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;" title="Remove this parameter">✕</button>
+        <button *ngIf="!jobExecuted" mat-flat-button color="secondary" (click)="removeJobParameter(actionParam.id)" class="small-button" title="Remove this parameter">✕</button>
       </div>
     </div>
 
     <!-- Text Search Parameter -->
-    <div *ngIf="textSearchParam" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div style="flex-grow: 1;">
-          <h4 style="margin: 0 0 10px 0;">{{ textSearchParam.label }}</h4>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div>
-              <label>Search text:</label>
-              <input type="text" [value]="textSearchParam.value.text" (input)="updateJobParameter('textSearch', { text: $any($event.target).value, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents })" placeholder="Enter text to search for" style="margin-left: 10px; padding: 4px; width: 200px;" [disabled]="jobExecuted">
-            </div>
-            <div>
-              <label>
-                <input type="checkbox" [checked]="textSearchParam.value.caseSensitive" (change)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: $any($event.target).checked, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents })" [disabled]="jobExecuted"> 
-                Case sensitive search
-              </label>
-            </div>
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-              <div>
-                <label>Match:</label>
-                <select [value]="textSearchParam.value.matchMode || 'substring'" (change)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: textSearchParam.value.caseSensitive, matchMode: $any($event.target).value, ignoreAccents: textSearchParam.value.ignoreAccents })" style="margin-left: 6px; padding: 4px;" [disabled]="jobExecuted">
-                  <option value="substring">Substring</option>
-                  <option value="wholeWord">Whole word</option>
-                  <option value="exact">Exact</option>
-                </select>
-              </div>
-              <label style="margin-left: 10px;">
-                <input type="checkbox" [checked]="(textSearchParam.value.ignoreAccents ?? true)" (change)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: $any($event.target).checked })" [disabled]="jobExecuted">
-                Ignore accents (é ≈ e)
-              </label>
+    <div *ngIf="textSearchParam" class="parameter-item card">
+      <div class="param-row">
+        <div class="param-col">
+          <h4>{{ textSearchParam.label }}</h4>
+          <div class="param-grid">
+            <mat-form-field class="mw-240">
+              <mat-label>Search text</mat-label>
+              <input matInput type="text" [value]="textSearchParam.value.text" (input)="updateJobParameter('textSearch', { text: $any($event.target).value, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents })" placeholder="Enter text to search for" [disabled]="jobExecuted">
+            </mat-form-field>
+            <mat-checkbox labelPosition="before" [checked]="textSearchParam.value.caseSensitive" (change)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: $event.checked, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents })" [disabled]="jobExecuted">Case sensitive search</mat-checkbox>
+            <div class="inline-controls">
+              <mat-form-field class="mw-180">
+                <mat-label>Match</mat-label>
+                <mat-select [value]="textSearchParam.value.matchMode || 'substring'" (selectionChange)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: textSearchParam.value.caseSensitive, matchMode: $event.value, ignoreAccents: textSearchParam.value.ignoreAccents })" [disabled]="jobExecuted">
+                  <mat-option value="substring">Substring</mat-option>
+                  <mat-option value="wholeWord">Whole word</mat-option>
+                  <mat-option value="exact">Exact</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-checkbox labelPosition="before" [checked]="(textSearchParam.value.ignoreAccents ?? true)" (change)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: $event.checked })" [disabled]="jobExecuted">Ignore accents (é ≈ e)</mat-checkbox>
             </div>
           </div>
         </div>
-        <button *ngIf="!jobExecuted" (click)="removeJobParameter(textSearchParam.id)" class="btn btn-secondary" style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;" title="Remove this parameter">✕</button>
+        <button *ngIf="!jobExecuted" mat-flat-button color="secondary" (click)="removeJobParameter(textSearchParam.id)" class="small-button" title="Remove this parameter">✕</button>
       </div>
     </div>
 
     <!-- Date Range Parameter -->
-    <div *ngIf="dateRangeParam" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div style="flex-grow: 1;">
-          <h4 style="margin: 0 0 10px 0;">{{ dateRangeParam.label }}</h4>
-          <div style="display: flex; gap: 15px;">
-            <div>
-              <label>From:</label>
-              <input type="date" [value]="dateRangeParam.value.startDate" (input)="updateJobParameter('dateRange', { startDate: $any($event.target).value, endDate: dateRangeParam.value.endDate })" style="margin-left: 5px;" [disabled]="jobExecuted">
-            </div>
-            <div>
-              <label>To:</label>
-              <input type="date" [value]="dateRangeParam.value.endDate" (input)="updateJobParameter('dateRange', { startDate: dateRangeParam.value.startDate, endDate: $any($event.target).value })" style="margin-left: 5px;" [disabled]="jobExecuted">
-            </div>
+    <div *ngIf="dateRangeParam" class="parameter-item card">
+      <div class="param-row">
+        <div class="param-col">
+          <h4>{{ dateRangeParam.label }}</h4>
+          <div class="inline-controls">
+            <mat-form-field class="mw-200">
+              <mat-label>From</mat-label>
+              <input matInput type="date" [value]="dateRangeParam.value.startDate" (input)="updateJobParameter('dateRange', { startDate: $any($event.target).value, endDate: dateRangeParam.value.endDate })" [disabled]="jobExecuted">
+            </mat-form-field>
+            <mat-form-field class="mw-200">
+              <mat-label>To</mat-label>
+              <input matInput type="date" [value]="dateRangeParam.value.endDate" (input)="updateJobParameter('dateRange', { startDate: dateRangeParam.value.startDate, endDate: $any($event.target).value })" [disabled]="jobExecuted">
+            </mat-form-field>
           </div>
         </div>
-        <button *ngIf="!jobExecuted" (click)="removeJobParameter(dateRangeParam.id)" class="btn btn-secondary" style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;" title="Remove this parameter">✕</button>
+        <button *ngIf="!jobExecuted" mat-flat-button color="secondary" (click)="removeJobParameter(dateRangeParam.id)" class="small-button" title="Remove this parameter">✕</button>
       </div>
     </div>
 
     <!-- Popup Settings Parameter (radio group) -->
-    <div *ngIf="popupParam" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div style="flex-grow: 1;">
-          <h4 style="margin: 0 0 10px 0;">{{ popupParam.label }}</h4>
-          <div style="display: flex; gap: 15px; align-items: center;">
-            <label>
-              <input type="radio" name="popupSettings" [checked]="popupParam.value.makePopup === true" (change)="updateJobParameter('popupSettings', { makePopup: true, disablePopup: false })" [disabled]="jobExecuted">
-              Make popup note
-            </label>
-            <label>
-              <input type="radio" name="popupSettings" [checked]="popupParam.value.disablePopup === true" (change)="updateJobParameter('popupSettings', { makePopup: false, disablePopup: true })" [disabled]="jobExecuted">
-              Disable popup
-            </label>
-          </div>
+    <div *ngIf="popupParam" class="parameter-item card">
+      <div class="param-row">
+        <div class="param-col">
+          <h4>{{ popupParam.label }}</h4>
+          <mat-radio-group class="inline-controls" [disabled]="jobExecuted">
+            <mat-radio-button (change)="updateJobParameter('popupSettings', { makePopup: true, disablePopup: false })" [checked]="popupParam.value.makePopup === true">Make popup note</mat-radio-button>
+            <mat-radio-button (change)="updateJobParameter('popupSettings', { makePopup: false, disablePopup: true })" [checked]="popupParam.value.disablePopup === true">Disable popup</mat-radio-button>
+          </mat-radio-group>
         </div>
-        <button *ngIf="!jobExecuted" (click)="removeJobParameter(popupParam.id)" class="btn btn-secondary" style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;" title="Remove this parameter">✕</button>
+        <button *ngIf="!jobExecuted" mat-flat-button color="secondary" (click)="removeJobParameter(popupParam.id)" class="small-button" title="Remove this parameter">✕</button>
       </div>
     </div>
 
     <!-- User Viewable Parameter (radio group) -->
-    <div *ngIf="userViewableParam" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div style="flex-grow: 1;">
-          <h4 style="margin: 0 0 10px 0;">{{ userViewableParam.label }}</h4>
-          <div style="display: flex; gap: 20px; align-items: center;">
-            <label>
-              <input type="radio" name="userViewable" [checked]="userViewableParam.value.makeUserViewable === true" (change)="updateJobParameter('userViewable', { makeUserViewable: true })" [disabled]="jobExecuted">
-              True
-            </label>
-            <label>
-              <input type="radio" name="userViewable" [checked]="userViewableParam.value.makeUserViewable === false" (change)="updateJobParameter('userViewable', { makeUserViewable: false })" [disabled]="jobExecuted">
-              False
-            </label>
-          </div>
+    <div *ngIf="userViewableParam" class="parameter-item card">
+      <div class="param-row">
+        <div class="param-col">
+          <h4>{{ userViewableParam.label }}</h4>
+          <mat-radio-group class="inline-controls" [disabled]="jobExecuted">
+            <mat-radio-button (change)="updateJobParameter('userViewable', { makeUserViewable: true })" [checked]="userViewableParam.value.makeUserViewable === true">True</mat-radio-button>
+            <mat-radio-button (change)="updateJobParameter('userViewable', { makeUserViewable: false })" [checked]="userViewableParam.value.makeUserViewable === false">False</mat-radio-button>
+          </mat-radio-group>
         </div>
-        <button *ngIf="!jobExecuted" (click)="removeJobParameter(userViewableParam.id)" class="btn btn-secondary" style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;" title="Remove this parameter">✕</button>
+        <button *ngIf="!jobExecuted" mat-flat-button color="secondary" (click)="removeJobParameter(userViewableParam.id)" class="small-button" title="Remove this parameter">✕</button>
       </div>
     </div>
 
     <!-- Note Type Parameter -->
-    <div *ngIf="noteTypeParam" class="parameter-item card" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div style="flex-grow: 1;">
-          <h4 style="margin: 0 0 10px 0;">{{ noteTypeParam.label }}</h4>
-          <label>New note type:</label>
-          <div *ngIf="noteTypeParam.value" style="margin-left: 10px; margin-bottom: 5px; font-weight: bold;" class="text-tertiary">
+    <div *ngIf="noteTypeParam" class="parameter-item card">
+      <div class="param-row">
+        <div class="param-col">
+          <h4>{{ noteTypeParam.label }}</h4>
+          <div *ngIf="noteTypeParam.value" class="selected-note-type text-tertiary">
             Selected: {{ noteTypeParam.value.desc }}
           </div>
-          <select [value]="noteTypeParam.value?.value || ''" (change)="updateJobParameter('noteType', getNoteTypeByValue($any($event.target).value))" style="margin-left: 10px; padding: 4px; width: 200px;" [disabled]="jobExecuted">
-            <option value="">Select a note type...</option>
-            <option *ngFor="let noteType of availableNoteTypes" [value]="noteType.value">{{ noteType.desc }}</option>
-          </select>
+          <mat-form-field class="mw-240">
+            <mat-label>New note type</mat-label>
+            <mat-select [value]="noteTypeParam.value?.value || ''" (selectionChange)="updateJobParameter('noteType', getNoteTypeByValue($event.value))" [disabled]="jobExecuted">
+              <mat-option value="">Select a note type...</mat-option>
+              <mat-option *ngFor="let noteType of availableNoteTypes" [value]="noteType.value">{{ noteType.desc }}</mat-option>
+            </mat-select>
+          </mat-form-field>
         </div>
-        <button *ngIf="!jobExecuted" (click)="removeJobParameter(noteTypeParam.id)" class="btn btn-secondary" style="border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 10px;" title="Remove this parameter">✕</button>
+        <button *ngIf="!jobExecuted" mat-flat-button color="secondary" (click)="removeJobParameter(noteTypeParam.id)" class="small-button" title="Remove this parameter">✕</button>
       </div>
     </div>
     
     <!-- Execute Job Button (only shown before job execution) -->
-    <div style="margin-top: 20px; text-align: center;">
+  <div class="center mt-20">
       <button 
         *ngIf="!jobExecuted"
-        class="btn btn-primary execute-job-button"
+        mat-flat-button
+        color="primary"
+        class="execute-job-button"
         [disabled]="!canExecuteJob || loading || processingNotes"
         (click)="processUserNotes()"
-        style="border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold;"
-        [style.opacity]="canExecuteJob ? '1' : '0.5'"
       >
         Execute Job
       </button>
@@ -310,99 +295,95 @@
       <!-- Reset Job Button (shown after job execution) -->
       <button 
         *ngIf="jobExecuted && !processingNotes && operationMode === 'menu'"
-        class="btn btn-primary reset-job-button"
+        mat-flat-button
+        color="primary"
+        class="reset-job-button"
         (click)="resetJob()"
-        style="border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold;"
       >
         Configure New Job
       </button>
       
-  <div *ngIf="!canExecuteJob && !jobExecuted" style="margin-top: 12px;">
+  <div *ngIf="!canExecuteJob && !jobExecuted" class="mt-16">
         <div *ngIf="!hasActionParameter" 
-     class="chip chip-secondary" style="padding: 8px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-bottom: 8px;">
+          class="chip chip-secondary chip-lg mb-8">
           ► Please select an action (modify or delete).
         </div>
         <div *ngIf="hasActionParameter && !hasSearchParameter" 
-     class="chip chip-secondary" style="padding: 8px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-bottom: 8px;">
+          class="chip chip-secondary chip-lg mb-8">
           ► Please add search criteria.
         </div>
         <div *ngIf="needsModificationOptions" 
-     class="chip chip-secondary" style="padding: 8px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-bottom: 8px;">
+          class="chip chip-secondary chip-lg mb-8">
           ► Please select modification options.
         </div>
       </div>
     </div>
     
     <!-- Progress Bar -->
-    <div *ngIf="processingNotes" style="margin-top: 15px;">
-      <div class="progress-track" style="height: 20px; border-radius: 4px; overflow: hidden;">
-        <div 
-          [style.width.%]="percentComplete"
-          class="progress-bar"
-          style="height: 100%; text-align: center; line-height: 20px;"
-        >
-          {{percentComplete}}%
-        </div>
-      </div>
-  <div style="text-align: center; margin-top: 5px;" class="text-default">
-        Processing {{ processed }} of {{ recordsToProcess }} users...
+    <div *ngIf="processingNotes" class="mt-15">
+      <mat-progress-bar mode="determinate" [value]="percentComplete"></mat-progress-bar>
+      <div class="center mt-5 text-default">
+        Processing {{ processed }} of {{ recordsToProcess }} users... ({{percentComplete}}%)
       </div>
     </div>
   </div>
   
   <!-- Menu Options (hidden after job execution) -->
-  <div *ngIf="!jobExecuted" class="menu-options card" style="padding: 15px; border-radius: 8px;">
+  <div *ngIf="!jobExecuted" class="menu-options card card-pad">
     <h3>Available Options</h3>
     
-  <div *ngIf="availableMenuOptions.length === 0" style="text-align: center; font-style: italic; padding: 20px;" class="text-default">
+    <div *ngIf="availableMenuOptions.length === 0" class="center italic pad-20 text-default">
       All available options have been added to your job parameters.
     </div>
     
     <div *ngIf="availableMenuOptions.length > 0" class="option-categories">
       <!-- Action Options -->
-      <div *ngIf="getMenuOptionsByCategory('action').length > 0" class="option-category" style="margin-bottom: 20px;">
-        <h4 class="text-secondary" style="margin-bottom: 10px;">Actions</h4>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <div *ngIf="getMenuOptionsByCategory('action').length > 0" class="option-category mb-24">
+        <h4 class="text-secondary mb-10">Actions</h4>
+        <div class="button-wrap gap-8">
           <button 
             *ngFor="let option of getMenuOptionsByCategory('action')"
             (click)="addJobParameter(option.id)"
-            class="menu-option-button btn btn-outline-secondary"
-            style="padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
+            mat-flat-button
+            color="primary"
+            class="menu-option-button"
           >
             {{ option.label }}
-            <small style="display: block; font-size: 11px;" class="text-default">{{ option.description }}</small>
+            <small class="text-default">{{ option.description }}</small>
           </button>
         </div>
       </div>
       
       <!-- Search Options -->
-      <div *ngIf="getMenuOptionsByCategory('search').length > 0" class="option-category" style="margin-bottom: 20px;">
-        <h4 class="text-primary" style="margin-bottom: 10px;">Filter Criteria</h4>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <div *ngIf="getMenuOptionsByCategory('search').length > 0" class="option-category mb-24">
+        <h4 class="text-primary mb-10">Filter Criteria</h4>
+        <div class="button-wrap gap-8">
           <button 
             *ngFor="let option of getMenuOptionsByCategory('search')"
             (click)="addJobParameter(option.id)"
-            class="menu-option-button btn btn-outline-primary"
-            style="padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
+            mat-flat-button
+            color="secondary"
+            class="menu-option-button"
           >
             {{ option.label }}
-            <small style="display: block; font-size: 11px;" class="text-default">{{ option.description }}</small>
+            <small class="text-default">{{ option.description }}</small>
           </button>
         </div>
       </div>
       
       <!-- Modification Options -->
-      <div *ngIf="getMenuOptionsByCategory('modification').length > 0" class="option-category" style="margin-bottom: 20px;">
-        <h4 class="text-tertiary" style="margin-bottom: 10px;">Modification Options</h4>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <div *ngIf="getMenuOptionsByCategory('modification').length > 0" class="option-category mb-24">
+        <h4 class="text-tertiary mb-10">Modification Options</h4>
+        <div class="button-wrap gap-8">
           <button 
             *ngFor="let option of getMenuOptionsByCategory('modification')"
             (click)="addJobParameter(option.id)"
-            class="menu-option-button btn btn-outline-tertiary"
-            style="padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
+            mat-flat-button
+            color="secondary"
+            class="menu-option-button"
           >
             {{ option.label }}
-            <small style="display: block; font-size: 11px;" class="text-default">{{ option.description }}</small>
+            <small class="text-default">{{ option.description }}</small>
           </button>
         </div>
       </div>
@@ -411,38 +392,38 @@
 </div>
 
 <!-- Processing Logs -->
-<div *ngIf="processLogs && processLogs.length > 0" class="processing-results card" style="margin-top: 30px; padding: 15px; border-radius: 5px;">
+<div *ngIf="processLogs && processLogs.length > 0" class="processing-results card card-pad mt-30">
   <h3>Processing Results</h3>
   
   <!-- Summary -->
-  <div class="summary-box border-left-success" style="margin-bottom: 20px; padding: 10px; border-radius: 4px;">
-    <div style="font-weight: bold;" class="text-tertiary">Summary:</div>
+  <div class="summary-box border-left-success mb-20 pad-10">
+    <div class="text-tertiary bold">Summary:</div>
     <div>Total users processed: {{ processLogs.length }}</div>
     <div>Users with changes: {{ processLogsWithChanges.length }}</div>
     <div>Users with no matching notes: {{ processLogs.length - processLogsWithChanges.length }}</div>
   </div>
   
   <!-- Action Buttons -->
-  <div style="margin-bottom: 20px; display: flex; gap: 10px; justify-content: center;">
+  <div class="action-row mb-20 center">
     <button 
       (click)="showResults = !showResults"
-      class="btn btn-primary"
-      style="border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;"
+      mat-flat-button
+      color="primary"
     >
       {{ showResults ? 'Hide Results' : 'View Results' }}
     </button>
     <button 
       (click)="exportResultsToCSV()"
-      class="btn btn-tertiary"
-      style="border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;"
+      mat-flat-button
+      color="secondary"
     >
       Export to CSV
     </button>
     <button 
       *ngIf="operationMode === 'deleteAll' && jobExecuted && !processingNotes"
       (click)="clear()"
-      class="btn btn-secondary"
-      style="border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;"
+      mat-flat-button
+      color="secondary"
     >
       Browse New Set
     </button>
@@ -451,23 +432,23 @@
   <!-- Detailed Results (collapsible) -->
   <div *ngIf="showResults">
     <!-- Show message if no users had changes -->
-  <div *ngIf="processLogsWithChanges.length === 0" style="text-align: center; font-style: italic; padding: 20px;" class="text-default">
+    <div *ngIf="processLogsWithChanges.length === 0" class="center italic pad-20 text-default">
       No users had notes that were modified or deleted.
     </div>
     
     <!-- Show only users with changes -->
-    <div *ngIf="processLogsWithChanges.length > 0" class="card" style="max-height: 400px; overflow-y: auto; padding: 10px;">
-  <div *ngFor="let log of processLogsWithChanges" class="user-change-card border-bottom" style="margin-bottom: 15px; padding-bottom: 15px;">
-      <h4 style="margin-bottom: 10px;" class="text-primary">User ID: {{ log.userId }}</h4>
+    <div *ngIf="processLogsWithChanges.length > 0" class="card results-scroll pad-10">
+      <div *ngFor="let log of processLogsWithChanges" class="user-change-card border-bottom mb-15 pb-15">
+        <h4 class="text-primary mb-10">User ID: {{ log.userId }}</h4>
       <div>
-        <div *ngFor="let entry of log.notes" class="note-entry card" style="margin-top: 10px; padding: 10px; border-radius: 4px;">
-          <div *ngIf="entry.deleted" class="text-error" style="font-weight: bold; margin-bottom: 8px;">📝 NOTE DELETED</div>
-          <div *ngIf="!entry.deleted" class="text-warning" style="font-weight: bold; margin-bottom: 8px;">📝 NOTE MODIFIED</div>
+          <div *ngFor="let entry of log.notes" class="note-entry card note-entry-pad">
+            <div *ngIf="entry.deleted" class="text-error bold mb-8">📝 NOTE DELETED</div>
+            <div *ngIf="!entry.deleted" class="text-warning bold mb-8">📝 NOTE MODIFIED</div>
           
           <div *ngIf="!entry.deleted">
-            <div style="margin-bottom: 8px;">
+            <div class="mb-8">
               <strong>Before:</strong>
-              <div class="before-after-box border-left-primary" style="padding: 5px; margin-top: 4px;">
+              <div class="before-after-box border-left-primary pad-5 mt-4">
                 <div><strong>Text:</strong> {{ entry.before.note_text }}</div>
                 <div><strong>Created:</strong> {{ formatNoteDate(entry.before) }}</div>
                 <div><strong>Popup:</strong> {{ entry.before.popup_note ? 'Yes' : 'No' }}</div>
@@ -477,7 +458,7 @@
             </div>
             <div *ngIf="entry.after">
               <strong>After:</strong>
-              <div class="before-after-box border-left-success" style="padding: 5px; margin-top: 4px;">
+              <div class="before-after-box border-left-success pad-5 mt-4">
                 <div><strong>Text:</strong> {{ entry.after.note_text }}</div>
                 <div><strong>Created:</strong> {{ formatNoteDate(entry.after) }}</div>
                 <div><strong>Popup:</strong> {{ entry.after.popup_note ? 'Yes' : 'No' }}</div>
@@ -488,9 +469,9 @@
           </div>
           
           <div *ngIf="entry.deleted">
-            <div style="margin-bottom: 8px;">
+            <div class="mb-8">
               <strong>Deleted Note:</strong>
-              <div class="before-after-box border-left-error" style="padding: 5px; margin-top: 4px;">
+              <div class="before-after-box border-left-error pad-5 mt-4">
                 <div><strong>Text:</strong> {{ entry.before.note_text }}</div>
                 <div><strong>Created:</strong> {{ formatNoteDate(entry.before) }}</div>
                 <div><strong>Popup:</strong> {{ entry.before.popup_note ? 'Yes' : 'No' }}</div>
@@ -508,40 +489,40 @@
 <!-- User display with note highlighting -->
 <div>
   <!-- Show set summary before job execution -->
-  <section *ngIf="users && users.length > 0 && !jobExecuted" style="margin-top: 30px; border: 3px solid; padding: 20px; border-radius: 8px;" class="card card-primary">
-    <h2 style="margin-top: 0; padding: 10px; margin: -20px -20px 20px -20px; border-radius: 5px 5px 0 0;">
+  <section *ngIf="users && users.length > 0 && !jobExecuted" class="card card-primary mt-30 section-head">
+    <h2>
       📋 Set Summary
     </h2>
     
-    <div style="padding: 20px; border-radius: 5px;" class="bg-surface">
+    <div class="bg-surface pad-20">
       <!-- Summary Cards -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
+      <div class="grid-cards mb-20">
         
         <!-- Total Users Card -->
-        <div class="card card-tertiary" style="padding: 20px; border-radius: 8px; text-align: center;">
-          <div style="font-size: 2em; font-weight: bold;" class="text-tertiary">{{ totalUsersInSet }}</div>
-          <div style="font-size: 1.1em; margin-top: 5px;" class="text-tertiary">Total Users in Set</div>
+        <div class="card card-tertiary summary-card">
+          <div class="summary-value text-tertiary">{{ totalUsersInSet }}</div>
+          <div class="summary-label text-tertiary">Total Users in Set</div>
         </div>
         
         <!-- Users with Notes Card -->
-        <div class="card card-secondary" style="padding: 20px; border-radius: 8px; text-align: center;">
-          <div style="font-size: 2em; font-weight: bold;" class="text-secondary">{{ totalUsersWithNotes }}</div>
-          <div style="font-size: 1.1em; margin-top: 5px;" class="text-secondary">Users with Notes</div>
-          <div style="font-size: 0.9em; margin-top: 5px;" class="text-default">(Will be processed by job)</div>
+        <div class="card card-secondary summary-card">
+          <div class="summary-value text-secondary">{{ totalUsersWithNotes }}</div>
+          <div class="summary-label text-secondary">Users with Notes</div>
+          <div class="summary-subtext text-default">(Will be processed by job)</div>
         </div>
         
         <!-- Users without Notes Card -->
-        <div class="card" style="padding: 20px; border-radius: 8px; text-align: center;">
-          <div style="font-size: 2em; font-weight: bold;">{{ totalUsersWithoutNotes }}</div>
-          <div style="font-size: 1.1em; margin-top: 5px;" class="text-default">Users without Notes</div>
-          <div style="font-size: 0.9em; margin-top: 5px;" class="text-default">(Will be skipped)</div>
+        <div class="card summary-card">
+          <div class="summary-value">{{ totalUsersWithoutNotes }}</div>
+          <div class="summary-label text-default">Users without Notes</div>
+          <div class="summary-subtext text-default">(Will be skipped)</div>
         </div>
       </div>
       
       <!-- Additional Info -->
-      <div class="card border-left-primary" style="padding: 15px; border-radius: 5px;">
-        <h4 style="margin-top: 0;" class="text-primary">💡 Processing Information</h4>
-        <ul style="margin-bottom: 0;">
+      <div class="card border-left-primary pad-15">
+        <h4 class="text-primary">💡 Processing Information</h4>
+        <ul class="no-mb">
           <li>Only users with notes will be processed during job execution</li>
           <li>Users without notes will be automatically skipped for efficiency</li>
           <li>Configure your job parameters above, then click "Execute Job" to begin</li>
@@ -551,14 +532,14 @@
   </section>
   
   <!-- Debugging section for when users should exist but don't show -->
-  <section *ngIf="selectedSet && setMembers && setMembers.length > 0 && (!users || users.length === 0) && !loading" style="margin-top: 30px; border: 3px solid; padding: 20px; border-radius: 8px;" class="card card-secondary">
-    <h2 class="text-secondary" style="margin-top: 0;">⚠️ Debug: Users Not Loading</h2>
+  <section *ngIf="selectedSet && setMembers && setMembers.length > 0 && (!users || users.length === 0) && !loading" class="card card-secondary mt-30 pad-20">
+    <h2 class="text-secondary">⚠️ Debug: Users Not Loading</h2>
     <p>Set is selected and members are found, but user details are not loading.</p>
     <p><strong>Set Members Found:</strong> {{ setMembers.length }}</p>
     <p><strong>User Details Loaded:</strong> {{ userDetails.length || 0 }}</p>
     <p><strong>Users Getter Result:</strong> {{ users.length || 0 }}</p>
     <p><strong>Loading State:</strong> {{ loading }}</p>
-    <div class="card" style="padding: 10px; margin-top: 10px;">
+    <div class="card pad-10 mt-10">
       <strong>First few set members:</strong>
       <div *ngFor="let member of setMembers.slice(0, 3)">
         - {{ member.name }} ({{ member.id }})
@@ -567,10 +548,10 @@
   </section>
   
   <!-- Show basic set member info -->
-  <section *ngIf="setMembers && setMembers.length > 0 && (!users || users.length === 0)" style="margin-top: 50px;">
+  <section *ngIf="setMembers && setMembers.length > 0 && (!users || users.length === 0)" class="mt-50">
     <h2 class="text-primary">Set Members</h2>
-    <ul style="padding: 10px;">
-      <li style="margin: 5px 0;" *ngFor="let member of setMembers">
+    <ul class="pad-10">
+      <li class="mb-5" *ngFor="let member of setMembers">
         <strong>Name:</strong> {{ member.name }} | 
         <strong>Id:</strong> {{ member.id }} | 
         <strong>Description:</strong> {{ member.description }} | 
@@ -580,21 +561,21 @@
   </section>
   
   <!-- Show empty list template when nothing is available -->
-  <section *ngIf="selectedSet && (!setMembers || setMembers.length === 0) && !loading" style="margin-top: 50px;">
+  <section *ngIf="selectedSet && (!setMembers || setMembers.length === 0) && !loading" class="mt-50">
     <ng-container *ngTemplateOutlet="emptyList"></ng-container>
   </section>
   
   <!-- Loading indicator -->
-  <section *ngIf="loading || processingNotes" style="margin-top: 50px;">
-    <div class="loading-indicator">
-      <span>{{ processingNotes ? 'Processing notes...' : 'Loading data...' }}</span>
+  <section *ngIf="loading || processingNotes" class="mt-50">
+    <div class="loading-shade">
+      <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
     </div>
   </section>
   
   <!-- Empty list template -->
   <ng-template #emptyList>
     <div id="emptyList">
-      <span class="uxf-icon uxf-list" style="font-size: 3em;"></span>
+      <span class="uxf-icon uxf-list"></span>
       <div>No items found for this set.</div>
     </div>
   </ng-template>
