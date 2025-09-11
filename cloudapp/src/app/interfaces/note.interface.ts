@@ -25,6 +25,10 @@ export interface NoteSearchCriteria {
   searchByDate: boolean;
   startDate?: string;
   endDate?: string;
+  // Text matching enhancements
+  matchMode?: 'substring' | 'wholeWord' | 'exact';
+  ignoreAccents?: boolean;
+  locale?: string;
 }
 
 export interface NoteModificationOptions {
@@ -71,7 +75,7 @@ export type JobParameter =
       id: 'textSearch';
       type: 'search';
       label: 'Text Search' | string;
-      value: { text: string; caseSensitive: boolean };
+  value: { text: string; caseSensitive: boolean; matchMode?: 'substring' | 'wholeWord' | 'exact'; ignoreAccents?: boolean };
       editable: boolean;
     }
   | {

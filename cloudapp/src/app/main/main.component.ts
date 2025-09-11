@@ -337,7 +337,7 @@ export class MainComponent implements OnInit, OnDestroy {
           id: 'textSearch',
           type: 'search',
           label: 'Text Search',
-          value: { text: '', caseSensitive: false },
+          value: { text: '', caseSensitive: false, matchMode: 'substring', ignoreAccents: true },
           editable: true
         };
         break;
@@ -589,7 +589,9 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   private buildSearchCriteria(): NoteSearchCriteria {
-  return JobConfigUtil.buildSearchCriteria(this.jobParameters);
+    const criteria = JobConfigUtil.buildSearchCriteria(this.jobParameters);
+    // Supply current UI locale if not already provided
+    return { ...criteria, locale: this.locale };
   }
 
   private buildModificationOptions(action: 'modify' | 'delete'): NoteModificationOptions & { makeUserViewable?: boolean } {

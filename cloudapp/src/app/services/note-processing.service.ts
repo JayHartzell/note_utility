@@ -43,6 +43,43 @@ export class NoteProcessingService {
     return isNaN(ms) ? null : ms;
   }
 
+  /** Normalize text for matching: NFKD + optional diacritic folding + locale-aware case fold */
+  private normalizeForMatch(input: string | undefined, locale: string | undefined, caseSensitive: boolean, ignoreAccents: boolean): string {
+    let s = (input ?? '').normalize('NFKD');
+    if (ignoreAccents) {
+      s = s.replace(/\p{M}+/gu, '');
+    }
+    return caseSensitive ? s : (locale ? s.toLocaleLowerCase(locale) : s.toLowerCase());
+  }
+
+  private escapeRegExp(s: string): string {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  /** Core matcher for substring | wholeWord | exact */
+  private matchesText(noteText: string | undefined, query: string, criteria: NoteSearchCriteria): boolean {
+    const mode = criteria.matchMode ?? 'substring';
+    const ignoreAccents = criteria.ignoreAccents ?? true;
+    const locale = criteria.locale;
+
+    const text = this.normalizeForMatch(noteText, locale, !!criteria.caseSensitive, ignoreAccents);
+    const q = this.normalizeForMatch(query, locale, !!criteria.caseSensitive, ignoreAccents);
+    if (!q) return false;
+
+    switch (mode) {
+      case 'exact':
+        return text === q;
+      case 'wholeWord': {
+        // Unicode-aware word boundary approximation using letter/number classes
+        const re = new RegExp(`(?<![\\p{L}\\p{N}])${this.escapeRegExp(q)}(?![\\p{L}\\p{N}])`, 'u');
+        return re.test(text);
+      }
+      case 'substring':
+      default:
+        return text.includes(q);
+    }
+  }
+
   /**
    * Find notes that match the search criteria
    * @param user The user whose notes to search
@@ -68,10 +105,7 @@ export class NoteProcessingService {
     if (hasTextSearch) {
       matchingNotes = matchingNotes.filter((note: UserNote) => {
         if (!note.note_text) return false;
-        
-        const noteText = criteria.caseSensitive ? note.note_text : note.note_text.toLowerCase();
-        const searchText = criteria.caseSensitive ? criteria.searchText : criteria.searchText.toLowerCase();
-        return noteText.includes(searchText);
+        return this.matchesText(note.note_text, criteria.searchText, criteria);
       });
     }
     

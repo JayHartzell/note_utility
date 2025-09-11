@@ -188,12 +188,26 @@
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <div>
               <label>Search text:</label>
-              <input type="text" [value]="textSearchParam.value.text" (input)="updateJobParameter('textSearch', { text: $any($event.target).value, caseSensitive: textSearchParam.value.caseSensitive })" placeholder="Enter text to search for" style="margin-left: 10px; padding: 4px; width: 200px;" [disabled]="jobExecuted">
+              <input type="text" [value]="textSearchParam.value.text" (input)="updateJobParameter('textSearch', { text: $any($event.target).value, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents })" placeholder="Enter text to search for" style="margin-left: 10px; padding: 4px; width: 200px;" [disabled]="jobExecuted">
             </div>
             <div>
               <label>
-                <input type="checkbox" [checked]="textSearchParam.value.caseSensitive" (change)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: $any($event.target).checked })" [disabled]="jobExecuted"> 
+                <input type="checkbox" [checked]="textSearchParam.value.caseSensitive" (change)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: $any($event.target).checked, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents })" [disabled]="jobExecuted"> 
                 Case sensitive search
+              </label>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <div>
+                <label>Match:</label>
+                <select [value]="textSearchParam.value.matchMode || 'substring'" (change)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: textSearchParam.value.caseSensitive, matchMode: $any($event.target).value, ignoreAccents: textSearchParam.value.ignoreAccents })" style="margin-left: 6px; padding: 4px;" [disabled]="jobExecuted">
+                  <option value="substring">Substring</option>
+                  <option value="wholeWord">Whole word</option>
+                  <option value="exact">Exact</option>
+                </select>
+              </div>
+              <label style="margin-left: 10px;">
+                <input type="checkbox" [checked]="(textSearchParam.value.ignoreAccents ?? true)" (change)="updateJobParameter('textSearch', { text: textSearchParam.value.text, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: $any($event.target).checked })" [disabled]="jobExecuted">
+                Ignore accents (é ≈ e)
               </label>
             </div>
           </div>
