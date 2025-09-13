@@ -140,15 +140,15 @@
         <div class="mat-body-2">This will delete ALL notes for ALL users in the selected set. This action cannot be undone.</div>
       </mat-card-content>
       <mat-card-actions class="action-row mt-10">
-        <button mat-raised-button color="primary" [disabled]="processingNotes" (click)="executeDeleteAllNotes()">Yes, Delete All Notes</button>
+        <button mat-flat-button color="secondary" [disabled]="processingNotes" (click)="cancelDeleteAll()" tabindex="0">Cancel</button>
         <span class="flex-spacer"></span>
-        <button mat-flat-button color="secondary" [disabled]="processingNotes" (click)="cancelDeleteAll()">Cancel</button>
+        <button mat-flat-button color="secondary" [disabled]="processingNotes" (click)="executeDeleteAllNotes()" tabindex="-1">Yes, Delete All Notes</button>
       </mat-card-actions>
     </mat-card>
     
-    <div class="spacer-16"></div>
+    <div class="spacer-32"></div>
     
-    <button mat-flat-button color="secondary" [disabled]="loading || processingNotes" (click)="chooseMenuFlow()">
+    <button mat-raised-button color="primary" [disabled]="loading || processingNotes" (click)="chooseMenuFlow()">
       Modify or Delete Specific Notes
     </button>
     <div class="text-default mt-16 small-text">
@@ -376,8 +376,8 @@
           <button 
             *ngFor="let option of getMenuOptionsByCategory('action')"
             (click)="addJobParameter(option.id)"
-            mat-raised-button
-            color="primary"
+            mat-flat-button
+            color="secondary"
             class="menu-option-button"
           >
             {{ option.label }}
