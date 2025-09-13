@@ -43,9 +43,9 @@ p, div, span, label, .running-text {
   color: #5E5E5E !important;
 }
 
-// job params background - main containers should be white
+// job params background
 ::ng-deep .mb-24 {
-  background-color: white !important;
+  background-color: #f2f2f2 !important;
 }
 
 // Default mat-card background - bluish for parameter tiles
@@ -60,7 +60,7 @@ p, div, span, label, .running-text {
 ::ng-deep .menu-options > mat-card,
 ::ng-deep mat-card.job-params-card,
 ::ng-deep mat-card.menu-options-card {
-  background-color: white !important;
+  background-color: #f2f2f2 !important;
 }
 
 // Parameter item styles for mat-card components
@@ -89,6 +89,7 @@ p, div, span, label, .running-text {
     font-family: 'Roboto', sans-serif;
     font-weight: 400; // Secondary title weight
     color: #5E5E5E;
+    margin-bottom: 16px; // Add space between title and content
   }
   
   // Prevent contents from hugging the edge
@@ -111,12 +112,12 @@ p, div, span, label, .running-text {
 .param-col { 
   display: flex; 
   flex-direction: column; 
-  gap: 12px; // Increased from 8px for better spacing
+  gap: 8px; // Reduced gap for tighter spacing
 }
 
 // Form field typography following style guide
 .mat-mdc-form-field {
-  margin-bottom: 12px; // Add margin to prevent overlap
+  margin-bottom: 8px; // Reduced margin for tighter spacing
   
   // Form field outlines - default color
   .mdc-notched-outline__leading,
@@ -128,8 +129,9 @@ p, div, span, label, .running-text {
   .mat-mdc-form-field-label,
   .mdc-floating-label {
     font-family: 'Roboto', sans-serif !important;
-    font-weight: 300 !important; // Running text weight
-    color: #5E5E5E !important;
+    font-weight: 400 !important; // Increased weight for better visibility
+    color: #474747 !important; // Darker color for better visibility
+    font-size: 14px !important; // Larger font size
   }
   
   .mat-mdc-input-element {
@@ -142,6 +144,9 @@ p, div, span, label, .running-text {
 // Radio buttons and checkboxes
 .mat-mdc-radio-button,
 .mat-mdc-checkbox {
+  margin-top: 4px; // Reduce space above checkboxes
+  margin-bottom: 4px; // Add small space below
+  
   .mdc-form-field > label {
     font-family: 'Roboto', sans-serif !important;
     font-weight: 300 !important; // Running text weight
@@ -396,8 +401,26 @@ p, div, span, label, .running-text {
 // Form and layout specific
 .param-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .param-col { flex: 1 1 auto; }
-.param-grid { display: flex; flex-direction: column; gap: 8px; }
-.inline-controls { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+.param-grid { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 4px; // Tighter spacing between form elements
+  
+  // Specific spacing for text search parameter
+  .mat-mdc-form-field:first-child {
+    margin-bottom: 2px; // Space between search input and first checkbox
+  }
+  
+  .mat-mdc-checkbox {
+    margin-top: 2px;
+    margin-bottom: 2px;
+  }
+  
+  .inline-controls {
+    margin-top: 2px; // Small space before inline controls
+  }
+}
+.inline-controls { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
 .mw-240 { max-width: 240px; width: 100%; }
 .mw-200 { max-width: 200px; width: 100%; }
 .mw-180 { max-width: 180px; width: 100%; }
@@ -468,12 +491,17 @@ p, div, span, label, .running-text {
   // Hide action icons by default
   mat-card-actions {
     opacity: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
     transition: opacity 0.2s ease;
   }
   
   // Show action icons on hover
   &:hover mat-card-actions {
     opacity: 1;
+    height: auto;
   }
   
   // Style the eca-button icons
@@ -562,23 +590,38 @@ p, div, span, label, .running-text {
 
 // Dense form mode: tighter Material components within this scope
 .dense {
-  .mat-mdc-form-field { margin-bottom: 12px; } // Increased from 8px
-  .mat-mdc-form-field-infix { padding-top: 12px; padding-bottom: 12px; } // Increased padding
-  .mat-mdc-form-field-subscript-wrapper { margin-top: 4px; } // Increased from 2px
-  .mat-mdc-checkbox, .mat-mdc-radio-button { margin-right: 12px; } // Increased from 8px
-  .inline-controls { gap: 12px; } // Increased from 8px
+  .mat-mdc-form-field { margin-bottom: 8px; } // Reduced for tighter spacing
+  .mat-mdc-form-field-infix { padding-top: 16px; padding-bottom: 8px; } // Better top padding, reduced bottom
+  .mat-mdc-form-field-subscript-wrapper { margin-top: 2px; } // Reduced margin
+  .mat-mdc-checkbox, .mat-mdc-radio-button { margin-right: 8px; margin-top: 4px; margin-bottom: 4px; } // Tighter spacing
+  .inline-controls { gap: 8px; align-items: flex-start; } // Reduced gap and better alignment
 }
 
 // Fix for overlapping labels
 .mat-mdc-form-field {
   &.mw-240 {
     .mat-mdc-form-field-infix {
-      padding-top: 16px;
+      padding-top: 20px; // Increased to give labels more space
+      min-height: 56px; // Ensure minimum height for proper label positioning
     }
     
     .mat-mdc-floating-label {
-      transform: translateY(-1.28125em) scale(0.75);
-      color: rgba(0, 0, 0, 0.6);
+      transform: translateY(-1.28125em) scale(0.85); // Slightly larger scale
+      color: #474747 !important; // Better visibility
+      font-weight: 400 !important; // Better weight for visibility
+    }
+  }
+  
+  &.mw-180 {
+    .mat-mdc-form-field-infix {
+      padding-top: 20px;
+      min-height: 56px;
+    }
+    
+    .mat-mdc-floating-label {
+      transform: translateY(-1.28125em) scale(0.85);
+      color: #474747 !important;
+      font-weight: 400 !important;
     }
   }
 }
