@@ -11,11 +11,27 @@
 }
 
 @mixin theme-component-theme($theme, $typgraphy) {
-  // Themed text utilities
-  .text-primary { color: mat.get-theme-color($theme, primary); }
-  .text-secondary { color: mat.get-theme-color($theme, secondary); }
-  .text-tertiary { color: mat.get-theme-color($theme, tertiary); }
-  .text-default { color: #000; }
+  // Themed text utilities following Cloud Apps Style Guide
+  .text-primary { 
+    color: mat.get-theme-color($theme, primary); 
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300; // Running text weight
+  }
+  .text-secondary { 
+    color: mat.get-theme-color($theme, secondary); 
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300; // Running text weight
+  }
+  .text-tertiary { 
+    color: mat.get-theme-color($theme, tertiary); 
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300; // Running text weight
+  }
+  .text-default { 
+    color: #000; 
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300; // Running text weight
+  }
 
   // Themed backgrounds
   .bg-surface { background-color: mat.get-theme-color($theme, surface); }
@@ -190,6 +206,80 @@
     &:disabled {
       background-color: mat.get-theme-color($theme, surface-variant);
       color: mat.get-theme-color($theme, on-surface-variant);
+    }
+  }
+
+  // Form controls using primary theme color
+  .mat-mdc-form-field {
+    // Focus state - primary color
+    &.mat-focused {
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__notch,
+      .mdc-notched-outline__trailing {
+        border-color: mat.get-theme-color($theme, primary) !important;
+      }
+      
+      .mat-mdc-form-field-label,
+      .mdc-floating-label {
+        color: mat.get-theme-color($theme, primary) !important;
+      }
+    }
+  }
+
+  // Radio buttons and checkboxes - primary theme color
+  .mat-mdc-radio-button {
+    &.mat-primary {
+      --mdc-radio-selected-icon-color: #{mat.get-theme-color($theme, primary)};
+      --mdc-radio-selected-hover-icon-color: #{mat.get-theme-color($theme, primary)};
+      --mdc-radio-selected-focus-icon-color: #{mat.get-theme-color($theme, primary)};
+      --mdc-radio-selected-pressed-icon-color: #{mat.get-theme-color($theme, primary)};
+    }
+  }
+
+  .mat-mdc-checkbox {
+    &.mat-primary {
+      --mdc-checkbox-selected-icon-color: #{mat.get-theme-color($theme, primary)};
+      --mdc-checkbox-selected-hover-icon-color: #{mat.get-theme-color($theme, primary)};
+      --mdc-checkbox-selected-focus-icon-color: #{mat.get-theme-color($theme, primary)};
+      --mdc-checkbox-selected-pressed-icon-color: #{mat.get-theme-color($theme, primary)};
+    }
+  }
+
+  // Select options - focus state
+  .mat-mdc-select {
+    &.mat-focused {
+      .mat-mdc-select-arrow {
+        color: mat.get-theme-color($theme, primary) !important;
+      }
+    }
+  }
+
+  // Toggle switches - primary theme color
+  .mat-slide-toggle {
+    &.mat-primary {
+      --mdc-switch-selected-handle-color: #{mat.get-theme-color($theme, primary)};
+      --mdc-switch-selected-track-color: #{mat.get-theme-color($theme, primary)};
+      --mdc-switch-selected-hover-handle-color: #{mat.get-theme-color($theme, primary)};
+      --mdc-switch-selected-focus-handle-color: #{mat.get-theme-color($theme, primary)};
+      --mdc-switch-selected-pressed-handle-color: #{mat.get-theme-color($theme, primary)};
+    }
+  }
+
+  // Toggle icons - primary theme color
+  .toggle-icon { 
+    color: mat.get-theme-color($theme, primary) !important;
+    
+    &:hover {
+      color: color-mix(in srgb, #{mat.get-theme-color($theme, primary)} 80%, black) !important;
+    }
+  }
+
+  // ECA button icons - primary theme color
+  .eca-button {
+    color: mat.get-theme-color($theme, primary) !important;
+    
+    &:hover {
+      color: color-mix(in srgb, #{mat.get-theme-color($theme, primary)} 80%, black) !important;
     }
   }
 }

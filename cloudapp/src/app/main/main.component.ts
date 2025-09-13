@@ -820,4 +820,71 @@ export class MainComponent implements OnInit, OnDestroy {
   formatNoteDate(note: UserNote): string {
   return DateUtilService.formatNoteDate(note, this.locale);
   }
+
+  // Helper methods for result summary display
+  getUserSummary(log: UserProcessLog): { action: 'deleted' | 'modified'; noteCount: number; modifications: string[] } {
+    const deletedCount = log.notes.filter(entry => entry.deleted).length;
+    const modifiedCount = log.notes.filter(entry => !entry.deleted).length;
+    
+    const action: 'deleted' | 'modified' = deletedCount > 0 ? 'deleted' : 'modified';
+    const noteCount = deletedCount + modifiedCount;
+    
+    const modifications = this.getModificationDescriptions(log);
+    
+    return { action, noteCount, modifications };
+  }
+
+  getModificationDescriptions(log: UserProcessLog): string[] {
+    const descriptions: string[] = [];
+    
+    // For deleted notes, just indicate deletion
+    const deletedCount = log.notes.filter(entry => entry.deleted).length;
+    if (deletedCount > 0) {
+      descriptions.push(`Deleted ${deletedCount} note${deletedCount !== 1 ? 's' : ''}`);
+      return descriptions; // For delete operations, that's the only description needed
+    }
+
+    // For modified notes, analyze what changed
+    const modifiedEntries = log.notes.filter(entry => !entry.deleted && entry.after);
+    
+    if (modifiedEntries.length > 0) {
+      // Check for popup changes
+      const popupChanges = modifiedEntries.filter(entry => 
+        entry.before.popup_note !== entry.after!.popup_note);
+      if (popupChanges.length > 0) {
+        const madePopup = popupChanges.filter(entry => entry.after!.popup_note).length;
+        const disabledPopup = popupChanges.filter(entry => !entry.after!.popup_note).length;
+        if (madePopup > 0) descriptions.push(`Made ${madePopup} note${madePopup !== 1 ? 's' : ''} popup`);
+        if (disabledPopup > 0) descriptions.push(`Disabled popup on ${disabledPopup} note${disabledPopup !== 1 ? 's' : ''}`);
+      }
+
+      // Check for user viewable changes
+      const userViewableChanges = modifiedEntries.filter(entry => 
+        entry.before['user_viewable'] !== entry.after!['user_viewable']);
+      if (userViewableChanges.length > 0) {
+        const madeViewable = userViewableChanges.filter(entry => entry.after!['user_viewable']).length;
+        const madeStaffOnly = userViewableChanges.filter(entry => !entry.after!['user_viewable']).length;
+        if (madeViewable > 0) descriptions.push(`Made ${madeViewable} note${madeViewable !== 1 ? 's' : ''} user-viewable`);
+        if (madeStaffOnly > 0) descriptions.push(`Made ${madeStaffOnly} note${madeStaffOnly !== 1 ? 's' : ''} staff-only`);
+      }
+
+      // Check for note type changes
+      const typeChanges = modifiedEntries.filter(entry => 
+        entry.before.note_type?.value !== entry.after!.note_type?.value);
+      if (typeChanges.length > 0) {
+        // Group by new note type
+        const typeGroups = new Map<string, number>();
+        typeChanges.forEach(entry => {
+          const newType = entry.after!.note_type?.desc || 'None';
+          typeGroups.set(newType, (typeGroups.get(newType) || 0) + 1);
+        });
+        
+        typeGroups.forEach((count, typeName) => {
+          descriptions.push(`Changed ${count} note${count !== 1 ? 's' : ''} to type: ${typeName}`);
+        });
+      }
+    }
+
+    return descriptions;
+  }
 }

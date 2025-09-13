@@ -1,30 +1,185 @@
-.entities-radio-group {
-  display: flex;
-  flex-direction: column;
-  margin: 15px 0;
+// Cloud Apps Style Guide Typography
+:host {
+  font-family: 'Roboto', sans-serif;
 }
 
-// New menu-based interface styles
-.job-parameters-window {
-  h3 { font-weight: 700; }
-  .parameter-item {
-    transition: all 0.2s ease;
-    h4 { font-weight: 700; }
-  margin-bottom: 16px;
-  padding: 12px;
-  border-radius: 4px;
-  box-sizing: border-box;
-    
-  // Prevent contents from hugging the edge
-  & > .param-row { padding-left: 4px; padding-right: 4px; }
-  .mat-mdc-form-field { width: 100%; max-width: 360px; }
-    
-    &:hover {
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+// Main titles - H1 (font-weight 500)
+h1, .main-title {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  color: #474747;
+}
+
+// Secondary titles - H2 (font-weight 400)
+h2, .secondary-title {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  color: #5E5E5E;
+}
+
+// Running text - light weight (font-weight 300)
+p, div, span, label, .running-text {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  color: #5E5E5E;
+}
+
+// Override Material Typography to follow style guide
+.mat-headline-5 {
+  font-family: 'Roboto', sans-serif !important;
+  font-weight: 500 !important;  // H1 equivalent
+  color: #474747 !important;
+}
+
+.mat-headline-6 {
+  font-family: 'Roboto', sans-serif !important;
+  font-weight: 400 !important;  // H2 equivalent
+  color: #5E5E5E !important;
+}
+
+.mat-body-1, .mat-body-2 {
+  font-family: 'Roboto', sans-serif !important;
+  font-weight: 300 !important;  // Running text
+  color: #5E5E5E !important;
+}
+
+// job params background - main containers should be white
+::ng-deep .mb-24 {
+  background-color: white !important;
+}
+
+// Default mat-card background - bluish for parameter tiles
+::ng-deep mat-card,
+::ng-deep .mat-card,
+::ng-deep .mdc-card {
+  background-color: #eaf2f6 !important;
+}
+
+// Override for main container cards - white background with higher specificity
+::ng-deep .job-configuration > mat-card,
+::ng-deep .menu-options > mat-card,
+::ng-deep mat-card.job-params-card,
+::ng-deep mat-card.menu-options-card {
+  background-color: white !important;
+}
+
+// Parameter item styles for mat-card components
+.parameter-item {
+  transition: all 0.2s ease;
+  margin-bottom: 24px; // Increased from 16px to prevent overlap
+  
+  // Override default mat-card styling for better appearance
+  .mat-mdc-card-header {
+    .mat-mdc-card-title {
+      font-family: 'Roboto', sans-serif;
+      font-weight: 400; // Secondary title weight
+      color: #5E5E5E;
     }
   }
-  // Ensure helper lines wrap under primary labels
-  .param-col { display: flex; flex-direction: column; gap: 8px; }
+  
+  // Ensure all text in parameter items follows style guide
+  div, span, p, label, strong {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300; // Running text weight
+    color: #5E5E5E;
+  }
+  
+  // Headings within parameter items
+  .mat-headline-6 {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400; // Secondary title weight
+    color: #5E5E5E;
+  }
+  
+  // Prevent contents from hugging the edge
+  .param-row { 
+    padding-left: 4px; 
+    padding-right: 4px; 
+  }
+  
+  .mat-mdc-form-field { 
+    width: 100%; 
+    max-width: 360px; 
+  }
+    
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+}
+
+// Ensure helper lines wrap under primary labels
+.param-col { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; // Increased from 8px for better spacing
+}
+
+// Form field typography following style guide
+.mat-mdc-form-field {
+  margin-bottom: 12px; // Add margin to prevent overlap
+  
+  // Form field outlines - default color
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: #DCDCDC !important;
+  }
+  
+  .mat-mdc-form-field-label,
+  .mdc-floating-label {
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: 300 !important; // Running text weight
+    color: #5E5E5E !important;
+  }
+  
+  .mat-mdc-input-element {
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: 500 !important; // Input text weight 500
+    color: #5E5E5E !important;
+  }
+}
+
+// Radio buttons and checkboxes
+.mat-mdc-radio-button,
+.mat-mdc-checkbox {
+  .mdc-form-field > label {
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: 300 !important; // Running text weight
+    color: #5E5E5E !important;
+  }
+}
+
+// Select options
+.mat-mdc-select {
+  font-family: 'Roboto', sans-serif !important;
+  font-weight: 500 !important; // Select text weight 500
+  color: #5E5E5E !important;
+}
+
+// Job configuration and processing results sections
+.job-configuration,
+.processing-results {
+  // Main titles within these sections
+  .mat-headline-5 {
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: 500 !important; // H1 equivalent
+    color: #474747 !important;
+  }
+  
+  // Secondary titles within these sections
+  .mat-headline-6 {
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: 400 !important; // H2 equivalent
+    color: #5E5E5E !important;
+  }
+  
+  // All running text
+  div, span, p, label, strong {
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: 300 !important; // Running text weight
+    color: #5E5E5E !important;
+  }
+}
   
   .execute-job-button {
     transition: all 0.2s ease;
@@ -47,14 +202,37 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
   }
+
+// Summary cards for processing results
+.note-summary-card {
+  background: #f8f9fa;
+  border-left: 4px solid #dee2e6;
+  
+  .summary-header {
+    font-size: 1.1em;
+  }
+  
+  .modification-details {
+    .modification-list {
+      padding-left: 20px;
+      margin: 0;
+      
+      li {
+        margin-bottom: 4px;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
 }
 
+// Menu options styling
 .menu-options {
-  .option-category h4 { font-weight: 700; }
   .menu-option-button {
     font-weight: 600;
     transition: all 0.2s ease;
-    // Stack label and helper text vertically inside Material button
     display: inline-flex;
     flex-direction: column;
     align-items: flex-start;
@@ -71,35 +249,12 @@
       display: block;
       font-size: 11px;
       margin-top: 2px;
-      transition: color 0.2s ease;
-    }
-    
-    &:hover small {
-      color: rgba(255,255,255,0.8) !important;
-    }
-  }
-  
-  .option-category {
-    h4 {
-      position: relative;
-      
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: -5px;
-        left: 0;
-        width: 30px;
-        height: 2px;
-        background-color: currentColor;
-        opacity: 0.3;
-      }
     }
   }
 }
 
-// Processing results styles
+// Processing results
 .processing-results {
-  h3 { font-weight: 700; }
   .summary-box {
     transition: box-shadow 0.2s ease;
     
@@ -116,75 +271,7 @@
       transform: translateX(2px);
     }
   }
-  
-  .note-entry {
-    transition: all 0.2s ease;
-    
-    &:hover {
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-  }
-  
-  .before-after-box {
-    transition: box-shadow 0.2s ease;
-    
-    &:hover {
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-  }
 }
-
-.instruction-card,
-.selected-set-card,
-.success-card {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: box-shadow 0.2s ease;
-  
-  &:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  }
-}
-
-textarea {
-  padding: 2px;
-  border-width: 1px;
-  $width: calc(100% - 6px);
-  width: $width;
-  max-width: $width;
-  height: 150px;
-  font-family: monospace;
-  display: block;
-}
-
-textarea,
-section,
-mat-card {
-  margin-bottom: 20px;
-}
-
-pre {
-  overflow: auto;
-  max-height: 200px;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-pre,
-textarea {
-  font-size: 0.9em;
-}
-
-// Keep existing styles
-
-.user-card {
-  border: 1px solid var(--mat-sys-outline-variant, #ddd);
-  border-radius: 4px;
-  margin-bottom: 20px;
-  padding: 15px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-
 
 // Set selection components
 .instruction-message {
@@ -220,10 +307,10 @@ textarea {
       border-radius: 6px;
       cursor: pointer;
       width: 100%;
-  text-align: left;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
+      text-align: left;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
       transition: all 0.2s ease;
       font-size: 14px;
       
@@ -234,7 +321,6 @@ textarea {
       
       &:disabled {
         cursor: not-allowed;
-        opacity: 0.6;
       }
       
       strong {
@@ -243,7 +329,10 @@ textarea {
         font-weight: 600;
       }
       
-  small { font-size: 12px; opacity: 0.8; display: block; }
+      small { 
+        font-size: 12px; 
+        display: block; 
+      }
     }
   }
 }
@@ -252,179 +341,17 @@ textarea {
   width: 100%;
   
   .selected-set-card {
-  padding: 0; // header handles padding
-  margin-bottom: 20px;
-  border-radius: 6px;
-  width: 100%;
-  box-sizing: border-box;
-  border-width: 2px;
-  overflow: hidden;
-    
-    h3 {
-  margin: 0 0 10px 0;
-  font-weight: 700;
-    }
-    
-    p {
-      margin: 0;
-      line-height: 1.4;
-      
-      &:first-of-type {
-        margin-bottom: 5px;
-      }
-      
-      &:last-of-type {
-        font-size: 0.9em;
-        opacity: 0.8;
-      }
-    }
-  }
-  
-  .change-set-button {
-    margin-top: 10px;
-    padding: 6px 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-    transition: all 0.2s ease;
-    
-    &:hover:not(:disabled) {
-      transform: translateY(-1px);
-    }
-    
-    &:disabled {
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-  }
-}
-
-.set-member-count {
-  margin-top: 15px;
-  
-  .success-card {
-    padding: 12px;
-    border-radius: 4px;
-    border: 1px solid;
-    font-weight: 500;
-    
-    .success-icon {
-      font-weight: bold;
-      margin-right: 8px;
-    }
-  }
-}
-
-.process-button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
-  
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-}
-
-// Responsive design improvements
-@media (max-width: 768px) {
-  .set-selection {
-    .set-option {
-      .set-button {
-        padding: 10px 12px;
-        font-size: 13px;
-      }
-    }
-  }
-  
-  .selected-set-info {
-    .selected-set-card {
-      padding: 12px;
-      
-      h3 {
-        font-size: 1.1em;
-      }
-    }
-  }
-  
-  .process-button {
+    padding: 0;
+    margin-bottom: 20px;
+    border-radius: 6px;
     width: 100%;
-    padding: 12px;
+    box-sizing: border-box;
+    border-width: 2px;
+    overflow: hidden;
   }
 }
 
-// Focus styles for accessibility
-.set-button:focus,
-.change-set-button:focus,
-.process-button:focus {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-// Make main section titles bold for clarity
-section h2 { font-weight: 700; }
-
-// Animation for loading states
-.set-button:disabled,
-.change-set-button:disabled,
-.process-button:disabled {
-  position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 16px;
-    height: 16px;
-    border: 2px solid transparent;
-    border-top: 2px solid currentColor;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-}
-
-@keyframes spin {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-.error-message { padding: 10px; border-radius: 4px; margin-bottom: 10px; }
-
-input[type="text"], select {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin: 5px 0;
-}
-
-button {
-  cursor: pointer;
-}
-
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.loading-indicator {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100px;
-}
-
-/* --- Utilities and replacements for removed inline styles --- */
+// Used utility classes
 .compact-header {
   padding: 12px 15px;
   cursor: pointer;
@@ -434,52 +361,39 @@ button:disabled {
   user-select: none;
 }
 .header-left { display: flex; align-items: center; gap: 12px; }
+.header-actions { 
+  display: flex; 
+  align-items: flex-end; 
+  gap: 8px; 
+  align-self: flex-end;
+}
 .chips-row { display: flex; gap: 8px; font-size: 12px; }
 .subtext { font-size: 12px; }
 .small-text { font-size: 13px; }
-.small-button { padding: 4px 8px; font-size: 11px; min-height: 28px; line-height: 28px; }
+.button-small { padding: 4px 8px; font-size: 11px; min-height: 28px; line-height: 28px; }
+.button-large { padding: 12px 24px; font-size: 16px; min-height: 44px; }
 .toggle-icon { font-size: 16px; transition: transform 0.2s; }
 .toggle-icon.rotated { transform: rotate(180deg); }
 .loading-section { padding: 20px; text-align: center; }
+
+// Spacing utilities (only used ones)
 .mb-8 { margin-bottom: 8px; }
-.mt-4 { margin-top: 4px; }
-.mt-5 { margin-top: 5px; }
-.mt-10 { margin-top: 10px; }
-.mt-12 { margin-top: 12px; }
-.mt-15 { margin-top: 15px; }
-.mt-20 { margin-top: 20px; }
-.mt-30 { margin-top: 30px; }
-.mt-50 { margin-top: 50px; }
-.mb-8 { margin-bottom: 8px; }
-.mb-16 { margin-bottom: 16px; }
-.mb-24 { margin-bottom: 24px; }
-.mb-10 { margin-bottom: 10px; }
 .mb-15 { margin-bottom: 15px; }
 .mb-20 { margin-bottom: 20px; }
+.mb-24 { margin-bottom: 24px; }
+.mt-16 { margin-top: 16px; }
+.mt-20 { margin-top: 20px; }
 .pb-15 { padding-bottom: 15px; }
-.pad-4 { padding: 4px; }
-.pad-8 { padding: 8px; }
-.pad-16 { padding: 16px; }
-.pad-24 { padding: 24px; }
-.pad-5 { padding: 5px; }
 .pad-10 { padding: 10px; }
-.pad-15 { padding: 15px; }
 .pad-20 { padding: 20px; }
-.no-mb { margin-bottom: 0; }
+
+// Layout utilities
 .italic { font-style: italic; }
 .bold { font-weight: bold; }
 .center { text-align: center; }
 .pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-.chip-lg { padding: 8px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; }
-.spacer-16 { height: 16px; }
-.flex-spacer { flex: 1 1 auto; }
-.card-pad { padding: 16px; border-radius: 8px; }
-.gap-8 { gap: 8px; }
-.gap-16 { gap: 16px; }
-.mt-8 { margin-top: 8px; }
-.mt-16 { margin-top: 16px; }
-.mt-24 { margin-top: 24px; }
-.header-row { display: flex; justify-content: space-between; align-items: center; }
+
+// Form and layout specific
 .param-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .param-col { flex: 1 1 auto; }
 .param-grid { display: flex; flex-direction: column; gap: 8px; }
@@ -487,6 +401,8 @@ button:disabled {
 .mw-240 { max-width: 240px; width: 100%; }
 .mw-200 { max-width: 200px; width: 100%; }
 .mw-180 { max-width: 180px; width: 100%; }
+
+// Set selection specific
 .details-section { padding: 15px; }
 .set-info { margin-bottom: 15px; padding-bottom: 12px; }
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px; }
@@ -494,31 +410,175 @@ button:disabled {
 .stat-value { font-size: 18px; font-weight: bold; }
 .stat-label { font-size: 10px; }
 .status-box { padding: 8px 12px; border-radius: 0 4px 4px 0; }
+
+// Results display
 .results-scroll { max-height: 400px; overflow-y: auto; }
-.note-entry-pad { margin-top: 10px; padding: 10px; border-radius: 4px; }
-.section-head { border: 3px solid; border-radius: 8px; }
-.grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-.summary-card { padding: 20px; border-radius: 8px; text-align: center; }
-.summary-value { font-size: 2em; font-weight: bold; }
-.summary-label { font-size: 1.1em; margin-top: 5px; }
-.summary-subtext { font-size: 0.9em; margin-top: 5px; }
 .button-wrap { display: flex; gap: 10px; flex-wrap: wrap; }
 .action-row { display: flex; gap: 10px; align-items: center; justify-content: center; }
-.confirm-panel { margin-top: 10px; padding: 10px; border-radius: 6px; }
 .selected-note-type { margin-left: 10px; margin-bottom: 5px; font-weight: bold; }
-.job-configuration h3 { margin-top: 0; }
 
 // Empty list icon sizing
 #emptyList .uxf-icon { font-size: 3em; }
 
-// Replace custom progress with Material
-mat-progress-bar { border-radius: 4px; }
+// ProQuest UX Icon Guidelines Implementation
+// Source: https://ux.proquest.com/#/components#glyphicons
+// - Icon size: 16px
+// - Icon color: #4164A4
+// - Icon format: SVG responsive
+// - All icons need tooltips
+// - Edit and delete icons appear on right side
+// - Icons appear when hovering over an item
 
-/* Dense form mode: tighter Material components within this scope */
+// Base icon styling for all UXF icons
+.uxf-icon {
+  font-size: 16px !important;
+  color: #4164A4 !important;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  
+  // SVG responsive behavior
+  svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+  
+  // Hover effects
+  &:hover {
+    color: #2d4a7f !important; // Darker shade on hover
+    transform: scale(1.1);
+  }
+  
+  // Focus states for accessibility
+  &:focus {
+    outline: 2px solid #4164A4;
+    outline-offset: 2px;
+  }
+}
+
+// Action icons (edit, delete) - appear on right side and on hover
+.parameter-item {
+  position: relative;
+  
+  // Hide action icons by default
+  mat-card-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  // Show action icons on hover
+  &:hover mat-card-actions {
+    opacity: 1;
+  }
+  
+  // Style the eca-button icons
+  .eca-button {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.1);
+    }
+    
+    &:focus {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+  }
+}
+
+// Toggle icon specific styling (existing, but enhanced)
+.toggle-icon { 
+  font-size: 16px; 
+  transition: transform 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+}
+.toggle-icon.rotated { 
+  transform: rotate(180deg); 
+}
+
+// Tooltip styling for icons
+.icon-tooltip {
+  position: relative;
+  
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+    margin-bottom: 4px;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #333;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+  }
+  
+  &:hover::after,
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+// Remove parameter button icon styling (existing buttons with ✕)
+.button-small {
+  .uxf-icon {
+    font-size: 12px !important; // Slightly smaller for compact buttons
+  }
+}
+
+// Menu option icons
+.menu-option-button {
+  .uxf-icon {
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+}
+
+// Dense form mode: tighter Material components within this scope
 .dense {
-  .mat-mdc-form-field { margin-bottom: 8px; }
-  .mat-mdc-form-field-infix { padding-top: 10px; padding-bottom: 10px; }
-  .mat-mdc-form-field-subscript-wrapper { margin-top: 2px; }
-  .mat-mdc-checkbox, .mat-mdc-radio-button { margin-right: 8px; }
-  .inline-controls { gap: 8px; }
+  .mat-mdc-form-field { margin-bottom: 12px; } // Increased from 8px
+  .mat-mdc-form-field-infix { padding-top: 12px; padding-bottom: 12px; } // Increased padding
+  .mat-mdc-form-field-subscript-wrapper { margin-top: 4px; } // Increased from 2px
+  .mat-mdc-checkbox, .mat-mdc-radio-button { margin-right: 12px; } // Increased from 8px
+  .inline-controls { gap: 12px; } // Increased from 8px
+}
+
+// Fix for overlapping labels
+.mat-mdc-form-field {
+  &.mw-240 {
+    .mat-mdc-form-field-infix {
+      padding-top: 16px;
+    }
+    
+    .mat-mdc-floating-label {
+      transform: translateY(-1.28125em) scale(0.75);
+      color: rgba(0, 0, 0, 0.6);
+    }
+  }
 }
