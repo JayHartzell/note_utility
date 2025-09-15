@@ -47,9 +47,12 @@ export class NoteProcessingService {
   private normalizeForMatch(input: string | undefined, locale: string | undefined, caseSensitive: boolean, ignoreAccents: boolean): string {
     let s = (input ?? '').normalize('NFKD');
     if (ignoreAccents) {
+      // Remove all combining marks (diacritics)
       s = s.replace(/\p{M}+/gu, '');
     }
-    return caseSensitive ? s : (locale ? s.toLocaleLowerCase(locale) : s.toLowerCase());
+    // Apply case folding if not case sensitive
+    const result = caseSensitive ? s : (locale ? s.toLocaleLowerCase(locale) : s.toLowerCase());
+    return result;
   }
 
   private escapeRegExp(s: string): string {
@@ -70,8 +73,9 @@ export class NoteProcessingService {
       case 'exact':
         return text === q;
       case 'wholeWord': {
-        // Unicode-aware word boundary approximation using letter/number classes
-        const re = new RegExp(`(?<![\\p{L}\\p{N}])${this.escapeRegExp(q)}(?![\\p{L}\\p{N}])`, 'u');
+        // Unicode-aware word boundary using word characters (\w doesn't handle Unicode well)
+        // Use negative lookbehind/lookahead to ensure we're at word boundaries
+        const re = new RegExp(`(?<!\\p{L})${this.escapeRegExp(q)}(?!\\p{L})`, 'gu');
         return re.test(text);
       }
       case 'substring':
