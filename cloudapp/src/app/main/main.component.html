@@ -76,7 +76,7 @@
     <!-- Inline confirmation panel -->
     <mat-card *ngIf="showDeleteAllConfirm" class="confirm-panel">
       <mat-card-content>
-        <div class="secondary-title">Confirm Delete All Notes</div>
+        <div class="main-title">Confirm Delete All Notes</div>
         <div class="running-text">This will delete ALL notes for ALL users in the selected set. This action cannot be undone.</div>
       </mat-card-content>
       <mat-card-actions class="action-row mt-10">
@@ -424,6 +424,9 @@
     </mat-card-content>
   </mat-card>
 
+  <!-- Close job-configuration wrapper -->
+</div>
+
 <!-- Processing Logs -->
 <mat-card *ngIf="processLogs && processLogs.length > 0" class="processing-results mt-30">
   <mat-card-header>
@@ -467,26 +470,19 @@
     <mat-card *ngIf="processLogsWithChanges.length > 0" class="results-scroll">
       <mat-card-content>
         <div *ngFor="let log of processLogsWithChanges" class="user-change-card-consolidated mb-20">
-          <div class="user-header">
+          <div class="user-summary">
             <div class="user-id">User ID: {{ log.userId }}</div>
-            <div class="action-summary">
-              <div *ngIf="getUserSummary(log).action === 'deleted'" class="action-badge deleted">
-                🗑️ {{ getUserSummary(log).noteCount }} Note{{ getUserSummary(log).noteCount !== 1 ? 's' : '' }} Deleted
-              </div>
-              <div *ngIf="getUserSummary(log).action === 'modified'" class="action-badge modified">
-                ✏️ {{ getUserSummary(log).noteCount }} Note{{ getUserSummary(log).noteCount !== 1 ? 's' : '' }} Modified
-              </div>
+            <div *ngIf="getUserSummary(log).action === 'deleted'" class="action-info">
+              {{ getUserSummary(log).noteCount }} note{{ getUserSummary(log).noteCount !== 1 ? 's' : '' }} deleted
             </div>
-          </div>
-          
-          <!-- Modification Details -->
-          <div *ngIf="getUserSummary(log).modifications.length > 0" class="modification-details">
-            <div class="changes-label">Changes made:</div>
-            <ul class="modification-list">
-              <li *ngFor="let modification of getUserSummary(log).modifications">
-                {{ modification }}
-              </li>
-            </ul>
+            <div *ngIf="getUserSummary(log).action === 'modified'" class="action-info">
+              {{ getUserSummary(log).noteCount }} note{{ getUserSummary(log).noteCount !== 1 ? 's' : '' }} modified:
+              <ul class="modification-list">
+                <li *ngFor="let modification of getUserSummary(log).modifications">
+                  {{ modification }}
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </mat-card-content>
@@ -495,26 +491,12 @@
   </mat-card-content>
 </mat-card>
 
-  <!-- Close job-configuration wrapper -->
-</div>
-
-<!-- Browse New Set Button for Delete All Mode -->
-<div *ngIf="operationMode === 'deleteAll' && jobExecuted && !processingNotes" class="center mt-20">
-  <button 
-    (click)="clear()"
-    mat-flat-button
-    color="secondary"
-  >
-    Browse New Set
-  </button>
-</div>
-
 <!-- User display with note highlighting -->
 <div>
   <!-- Debugging section for when users should exist but don't show -->
   <mat-card *ngIf="selectedSet && setMembers && setMembers.length > 0 && (!users || users.length === 0) && !loading" class="mt-30" color="accent">
     <mat-card-header>
-      <mat-card-title class="mat-headline-5">⚠️ Debug: Users Not Loading</mat-card-title>
+      <mat-card-title class="mat-headline-5">Debug: Users Not Loading</mat-card-title>
     </mat-card-header>
     <mat-card-content>
     <p>Set is selected and members are found, but user details are not loading.</p>

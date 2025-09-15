@@ -46,7 +46,7 @@ p, div, span, label, .running-text {
 
 // job params background
 ::ng-deep .mb-24 {
-  background-color: #f2f2f2 !important;
+  background-color: #f5f5f5 !important;
 }
 
 // Unified Card System - Ex Libris Cloud Apps Style
@@ -64,7 +64,7 @@ p, div, span, label, .running-text {
 ::ng-deep .processing-results > mat-card,
 ::ng-deep mat-card.job-params-card,
 ::ng-deep mat-card.menu-options-card {
-  background-color: white !important;
+  background-color: #f5f5f5 !important;
   border: 1px solid #DCDCDC;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
