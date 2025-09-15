@@ -19,16 +19,18 @@ export class UserService {
   }
 
   /**
-   * Update a user's information
+   * Update a user's information - SAFE approach
    * @param userId The ID of the user to update
    * @param userData The updated user data
    */
   updateUser(userId: string, userData: UserData): Observable<any> {
+    // Create the request 
     const request = {
       url: `/users/${userId}`,
       method: HttpMethod.PUT,
-      requestBody: userData
+      requestBody: userData  // Send the entire user object as-is
     };
+    
     return this.restService.call(request);
   }
 

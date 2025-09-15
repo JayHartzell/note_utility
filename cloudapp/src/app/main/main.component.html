@@ -5,9 +5,9 @@
   <!-- Show instruction when no sets are available -->
   <div *ngIf="!hasValidSets && !loading" class="instruction-message">
     <div class="instruction-card">
-      <div class="mat-headline-5">Navigate to a Set Page</div>
+      <div class="mat-headline-5">Navigate to Admin > Manage Sets</div>
       <p>
-        Please navigate to a page that contains a set of users with notes. Once a Users set is selected, the list will populate with user records and you can configure your job parameters.
+        Please navigate to a set of users with notes you wish to modify or delete. Once a Users set is selected, the list will populate with user records and you can configure your job parameters.
       </p>
     </div>
   </div>
@@ -67,17 +67,17 @@
     <mat-card-title class="mat-headline-5">Select Operation</mat-card-title>
   </mat-card-header>
   <mat-card-content>
-    <button mat-raised-button color="primary" [disabled]="loading || processingNotes" (click)="onClickDeleteAll()">
+    <button mat-flat-button color="primary" [disabled]="loading || processingNotes" (click)="onClickDeleteAll()">
       Delete All Notes
     </button>
-    <div class="text-default mt-16 small-text">
+    <div class="running-text">
       <div class="mat-body-2">Delete All Notes: Removes every note from every user in the selected set. This cannot be undone.</div>
     </div>
     <!-- Inline confirmation panel -->
     <mat-card *ngIf="showDeleteAllConfirm" class="confirm-panel">
       <mat-card-content>
-        <div class="confirm-title">Confirm Delete All Notes</div>
-        <div class="mat-body-2">This will delete ALL notes for ALL users in the selected set. This action cannot be undone.</div>
+        <div class="secondary-title">Confirm Delete All Notes</div>
+        <div class="running-text">This will delete ALL notes for ALL users in the selected set. This action cannot be undone.</div>
       </mat-card-content>
       <mat-card-actions class="action-row mt-10">
         <button mat-flat-button color="secondary" [disabled]="processingNotes" (click)="cancelDeleteAll()" tabindex="0">Cancel</button>
@@ -88,10 +88,10 @@
     
     <div class="spacer-32"></div>
     
-    <button mat-raised-button color="primary" [disabled]="loading || processingNotes" (click)="chooseMenuFlow()">
+    <button mat-flat-button color="primary" [disabled]="loading || processingNotes" (click)="chooseMenuFlow()">
       Modify or Delete Specific Notes
     </button>
-    <div class="text-default mt-16 small-text">
+    <div class="running-text">
       <div class="mat-body-2">Modify or Delete Specific Notes: Configure filters and actions to target specific notes.</div>
     </div>
   </mat-card-content>
@@ -156,12 +156,16 @@
           <div class="param-fields">
             <mat-form-field class="search-input" appearance="outline" floatLabel="always">
               <mat-label>Search text</mat-label>
-              <input matInput 
-                     type="text" 
-                     [ngModel]="textSearchParam.value.text" 
-                     (ngModelChange)="updateJobParameter('textSearch', { text: $event, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents })" 
-                     placeholder="Enter text to search for" 
-                     [disabled]="jobExecuted">
+              <textarea matInput 
+                        cdkTextareaAutosize
+                        cdkAutosizeMinRows="1"
+                        cdkAutosizeMaxRows="8"
+                        maxlength="2000"
+                        [ngModel]="textSearchParam.value.text" 
+                        (ngModelChange)="updateJobParameter('textSearch', { text: $event, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents })" 
+                        placeholder="Enter text to search for (max 2000 characters)" 
+                        [disabled]="jobExecuted"></textarea>
+              <mat-hint align="end">{{(textSearchParam.value.text || '').length}}/2000</mat-hint>
             </mat-form-field>
             <div class="param-options">
               <mat-checkbox [ngModel]="textSearchParam.value.caseSensitive" 
@@ -205,18 +209,24 @@
               <mat-form-field class="date-input" appearance="outline" floatLabel="always">
                 <mat-label>From date</mat-label>
                 <input matInput 
-                       type="date" 
+                       [matDatepicker]="startPicker"
                        [ngModel]="dateRangeParam.value.startDate" 
                        (ngModelChange)="updateJobParameter('dateRange', { startDate: $event, endDate: dateRangeParam.value.endDate })" 
-                       [disabled]="jobExecuted">
+                       [disabled]="jobExecuted"
+                       readonly>
+                <mat-datepicker-toggle matSuffix [for]="startPicker" [disabled]="jobExecuted"></mat-datepicker-toggle>
+                <mat-datepicker #startPicker [disabled]="jobExecuted"></mat-datepicker>
               </mat-form-field>
               <mat-form-field class="date-input" appearance="outline" floatLabel="always">
                 <mat-label>To date</mat-label>
                 <input matInput 
-                       type="date" 
+                       [matDatepicker]="endPicker"
                        [ngModel]="dateRangeParam.value.endDate" 
                        (ngModelChange)="updateJobParameter('dateRange', { startDate: dateRangeParam.value.startDate, endDate: $event })" 
-                       [disabled]="jobExecuted">
+                       [disabled]="jobExecuted"
+                       readonly>
+                <mat-datepicker-toggle matSuffix [for]="endPicker" [disabled]="jobExecuted"></mat-datepicker-toggle>
+                <mat-datepicker #endPicker [disabled]="jobExecuted"></mat-datepicker>
               </mat-form-field>
             </div>
           </div>
@@ -307,9 +317,8 @@
       <!-- Execute Job Section -->
       <div class="center mt-20">
         <button *ngIf="!jobExecuted"
-                mat-raised-button
+                mat-flat-button
                 color="primary"
-                class="button-large"
                 [disabled]="!canExecuteJob || loading || processingNotes"
                 (click)="processUserNotes()">
           Execute Job
@@ -457,32 +466,28 @@
     <!-- Show only users with changes -->
     <mat-card *ngIf="processLogsWithChanges.length > 0" class="results-scroll">
       <mat-card-content>
-        <div *ngFor="let log of processLogsWithChanges" class="user-change-card border-bottom mb-15 pb-15">
-          <div class="mat-headline-6 text-primary mb-10">User ID: {{ log.userId }}</div>
-          
-          <!-- Summary Card -->
-          <mat-card class="note-summary-card">
-            <mat-card-content>
-          <div class="summary-header mb-10">
-            <div *ngIf="getUserSummary(log).action === 'deleted'" class="text-error bold">
-              🗑️ {{ getUserSummary(log).noteCount }} Note{{ getUserSummary(log).noteCount !== 1 ? 's' : '' }} Deleted
-            </div>
-            <div *ngIf="getUserSummary(log).action === 'modified'" class="text-warning bold">
-              ✏️ {{ getUserSummary(log).noteCount }} Note{{ getUserSummary(log).noteCount !== 1 ? 's' : '' }} Modified
+        <div *ngFor="let log of processLogsWithChanges" class="user-change-card-consolidated mb-20">
+          <div class="user-header">
+            <div class="user-id">User ID: {{ log.userId }}</div>
+            <div class="action-summary">
+              <div *ngIf="getUserSummary(log).action === 'deleted'" class="action-badge deleted">
+                🗑️ {{ getUserSummary(log).noteCount }} Note{{ getUserSummary(log).noteCount !== 1 ? 's' : '' }} Deleted
+              </div>
+              <div *ngIf="getUserSummary(log).action === 'modified'" class="action-badge modified">
+                ✏️ {{ getUserSummary(log).noteCount }} Note{{ getUserSummary(log).noteCount !== 1 ? 's' : '' }} Modified
+              </div>
             </div>
           </div>
           
           <!-- Modification Details -->
           <div *ngIf="getUserSummary(log).modifications.length > 0" class="modification-details">
-            <strong>Changes made:</strong>
-            <ul class="modification-list mt-5 mb-0">
-              <li *ngFor="let modification of getUserSummary(log).modifications" class="text-default">
+            <div class="changes-label">Changes made:</div>
+            <ul class="modification-list">
+              <li *ngFor="let modification of getUserSummary(log).modifications">
                 {{ modification }}
               </li>
             </ul>
           </div>
-            </mat-card-content>
-          </mat-card>
         </div>
       </mat-card-content>
     </mat-card>

@@ -282,4 +282,8 @@
       color: color-mix(in srgb, #{mat.get-theme-color($theme, primary)} 80%, black) !important;
     }
   }
+
+  .param-compact.action-param {
+    border-left: 4px solid mat.get-theme-color($theme, primary) !important;
+  } 
 }

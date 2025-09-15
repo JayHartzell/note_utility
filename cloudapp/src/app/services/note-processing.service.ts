@@ -164,68 +164,100 @@ export class NoteProcessingService {
   }
 
   /**
-   * Process note deletion
+   * Process note deletion 
    * @param user The user whose notes to delete
    * @param matchingNotes The notes to delete
    * @param userLog The log entry to update
    */
   private processNoteDeletion(user: UserData, matchingNotes: UserNote[], userLog: UserProcessLog): void {
-    const notesToDelete = new Set(matchingNotes);
+    // Create a map of notes to delete by their unique identifiers
+    const notesToDeleteMap = new Map<string, UserNote>();
     
-    // Log the deletion
     matchingNotes.forEach(note => {
+      const key = `${note.note_text}|${note.created_date}|${note['created_by']}`;
+      notesToDeleteMap.set(key, note);
+      
+      // Log the deletion
       userLog.notes.push({
-        before: {...note},
+        before: this.createSafeNoteCopy(note),
         deleted: true
       });
     });
     
-    user.user_note = user.user_note.filter((note: UserNote) => !notesToDelete.has(note));
+    // Filter out notes to delete, preserving all other notes exactly as they are
+    user.user_note = user.user_note.filter((note: UserNote) => {
+      const noteKey = `${note.note_text}|${note.created_date}|${note['created_by']}`;
+      return !notesToDeleteMap.has(noteKey);
+    });
   }
 
   /**
-   * Process note modification
+   * Process note modification 
    * @param user The user whose notes to modify
    * @param matchingNotes The notes to modify
    * @param options The modification options
    * @param userLog The log entry to update
    */
   private processNoteModification(user: UserData, matchingNotes: UserNote[], options: NoteModificationOptions, userLog: UserProcessLog): void {
-    const notesToModify = new Set(matchingNotes);
+    // Create a map of matching notes by their unique identifiers
+    const matchingNoteMap = new Map<string, UserNote>();
     
-  user.user_note.forEach((note: UserNote) => {
-      if (notesToModify.has(note)) {
-        // Create a copy of the note before modifications for logging
-        const noteBefore = {...note};
+    matchingNotes.forEach(note => {
+      // Create a unique key for each note using properties that shouldn't change
+      const key = `${note.note_text}|${note.created_date}|${note['created_by']}`;
+      matchingNoteMap.set(key, note);
+    });
+    
+    // Iterate through the actual user notes array and modify in place
+    user.user_note.forEach((note: UserNote, index: number) => {
+      const noteKey = `${note.note_text}|${note.created_date}|${note['created_by']}`;
+      
+      if (matchingNoteMap.has(noteKey)) {
+        // Create a deep copy for logging BEFORE any modifications
+        const noteBefore = this.createSafeNoteCopy(note);
         let noteChanged = false;
-        
-        // Only modify notes that match our criteria
-        if (options.makePopup && !note.popup_note) {
+
+        // Only modify specific fields
+
+        // Popup note modification
+        if (options.makePopup === true && note.popup_note !== true) {
           note.popup_note = true;
           noteChanged = true;
         }
-        if (options.disablePopup && note.popup_note) {
+        
+        if (options.disablePopup === true && note.popup_note !== false) {
           note.popup_note = false;
           noteChanged = true;
         }
+        
+        // Note type modification - preserve existing object structure
         if (options.noteType && this.shouldUpdateNoteType(note, options.noteType)) {
-          note.note_type = { value: options.noteType.value, desc: options.noteType.desc };
+          // Ensure note_type object exists
+          if (!note.note_type || !note.note_type.value) {
+            console.warn('Skipping note without valid note_type:', note);
+            return; // Skip this note modification
+          }
+          // Only modify the specific properties we need to change
+          note.note_type.value = options.noteType.value;
+          note.note_type.desc = options.noteType.desc;
           noteChanged = true;
         }
-        // Set user_viewable flag when requested
+        
+        // User viewable modification
         if (typeof (options as any).makeUserViewable === 'boolean') {
           const desired = (options as any).makeUserViewable as boolean;
-          if ((note as any).user_viewable !== desired) {
-            (note as any).user_viewable = desired;
+          if (note.user_viewable !== desired) {
+            note.user_viewable = desired;
             noteChanged = true;
           }
         }
         
-        // If note was changed, add to log
+        // Log changes if any were made
         if (noteChanged) {
+          const noteAfter = this.createSafeNoteCopy(note);
           userLog.notes.push({
             before: noteBefore,
-            after: {...note},
+            after: noteAfter,
             deleted: false
           });
         }
@@ -249,6 +281,15 @@ export class NoteProcessingService {
   private shouldUpdateNoteType(note: UserNote, newNoteType: NoteType): boolean {
     // Update if note has no type, or if the current type value is different
     return !note.note_type || note.note_type.value !== newNoteType.value;
+  }
+
+  /**
+   * Create a safe deep copy of a note for logging purposes
+   * This ensures we capture all properties including dynamic ones
+   */
+  private createSafeNoteCopy(note: UserNote): UserNote {
+    // Use JSON serialization for true deep copy
+    return JSON.parse(JSON.stringify(note));
   }
 
   /**
