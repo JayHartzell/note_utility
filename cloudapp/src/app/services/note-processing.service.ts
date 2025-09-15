@@ -105,6 +105,17 @@ export class NoteProcessingService {
     // Start with all notes
     let matchingNotes: UserNote[] = [...user.user_note];
     
+    // Filter by segment type first - ONLY process Internal notes by default
+    const segmentFilter = criteria.segmentType || 'Internal'; // Default to Internal only
+    matchingNotes = matchingNotes.filter((note: UserNote) => {
+      // Check if note has segment property and matches the filter
+      const noteSegment = note['segment_type'];
+      if (!noteSegment ) {
+        return false; // Skip notes without segment information
+      }
+      return noteSegment === segmentFilter;
+    });
+    
     // Filter by text if text search is provided
     if (hasTextSearch) {
       matchingNotes = matchingNotes.filter((note: UserNote) => {

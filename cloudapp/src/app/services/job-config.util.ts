@@ -75,13 +75,15 @@ export class JobConfigUtil {
     const dateParam = params.find(p => (p as any).id === 'dateRange') as any;
     const searchText = textParam?.value?.text || '';
     const caseSensitive = textParam?.value?.caseSensitive || false;
-  const matchMode = textParam?.value?.matchMode || 'substring';
-  const ignoreAccents = (textParam?.value?.ignoreAccents ?? true) as boolean;
+    const matchMode = textParam?.value?.matchMode || 'substring';
+    const ignoreAccents = (textParam?.value?.ignoreAccents ?? true) as boolean;
     const startDate = dateParam?.value?.startDate || '';
     const endDate = dateParam?.value?.endDate || '';
     const searchByDate = !!dateParam && (!!startDate || !!endDate);
+    // Default to Internal segment filtering - only process Internal notes
+    const segmentType = 'Internal' as 'Internal' | 'External';
   // locale is assigned by caller (component) if needed
-  return { searchText, caseSensitive, matchMode, ignoreAccents, searchByDate, startDate, endDate } as NoteSearchCriteria;
+  return { searchText, caseSensitive, matchMode, ignoreAccents, searchByDate, startDate, endDate, segmentType } as NoteSearchCriteria;
   }
 
   static buildModificationOptions(

@@ -71,13 +71,13 @@
       Delete All Notes
     </button>
     <div class="running-text">
-      <div class="mat-body-2">Delete All Notes: Removes every note from every user in the selected set. This cannot be undone.</div>
+      <div class="mat-body-2">Delete All Notes: Removes every Internal segment note from every user in the selected set. External notes will not be affected. This cannot be undone.</div>
     </div>
     <!-- Inline confirmation panel -->
     <mat-card *ngIf="showDeleteAllConfirm" class="confirm-panel">
       <mat-card-content>
         <div class="main-title">Confirm Delete All Notes</div>
-        <div class="running-text">This will delete ALL notes for ALL users in the selected set. This action cannot be undone.</div>
+        <div class="running-text">This will delete ALL Internal segment notes for ALL users in the selected set. External notes will not be affected. This action cannot be undone.</div>
       </mat-card-content>
       <mat-card-actions class="action-row mt-10">
         <button mat-flat-button color="secondary" [disabled]="processingNotes" (click)="cancelDeleteAll()" tabindex="0">Cancel</button>
@@ -116,6 +116,13 @@
     </mat-card-header>
     
     <mat-card-content>
+      <!-- Segment Filter Information -->
+      <div class="info-banner mb-16 border-left-primary pad-10">
+        <div class="mat-body-2 text-primary">
+          <strong>Note:</strong> Only notes with "Internal" segment type will be processed. External notes will be ignored.
+        </div>
+      </div>
+      
       <div *ngIf="jobParameters.length === 0" class="empty-parameters mat-body-1 italic center pad-20">
         No parameters configured. Select options from the menu below to build your job.
       </div>

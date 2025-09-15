@@ -245,8 +245,14 @@ export class MainComponent implements OnInit, OnDestroy {
         }
         const userId = user.primary_id;
         const allNotes = Array.isArray(user.user_note) ? [...user.user_note] : [];
+        
+        // Filter to only Internal segment notes for delete all operation
+        const internalNotes = allNotes.filter(note => {
+          const noteSegment = note['segment_type'];
+          return noteSegment === 'Internal';
+        });
 
-        const userLog = this.noteProcessingService.processNoteModifications(user, allNotes, deleteAllOptions);
+        const userLog = this.noteProcessingService.processNoteModifications(user, internalNotes, deleteAllOptions);
         this.processLogs.push(userLog);
 
         if (this.noteProcessingService.wasUserModified(userLog)) {

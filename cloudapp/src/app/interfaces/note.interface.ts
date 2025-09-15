@@ -29,6 +29,8 @@ export interface NoteSearchCriteria {
   matchMode?: 'substring' | 'wholeWord' | 'exact';
   ignoreAccents?: boolean;
   locale?: string;
+  // Segment filtering
+  segmentType?: 'Internal' | 'External';
 }
 
 export interface NoteModificationOptions {
