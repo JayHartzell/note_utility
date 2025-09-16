@@ -133,10 +133,8 @@ export class MainComponent implements OnInit, OnDestroy {
     // Subscribe to entities to detect when sets are available
     this.entities$.subscribe({
       next: (entities) => {
-  // Entities detected
       },
       error: (error) => {
-  // Error in entities observable
       }
     });
   }
@@ -258,14 +256,19 @@ export class MainComponent implements OnInit, OnDestroy {
         if (this.noteProcessingService.wasUserModified(userLog)) {
           this.modifiedUsers.add(userId);
           return this.userService.updateUser(userId, user).pipe(
-            tap(() => this.processed++),
+            tap(() => {
+              userLog.updateSuccessful = true;
+              this.processed++;
+            }),
             catchError(error => {
-              this.alert.error(`Failed to update user ${userId}: ${error.message || 'Unknown error'}`);
+              userLog.updateError = error.message || 'Unknown error';
+              userLog.updateSuccessful = false;
               this.processed++;
               return of(null);
             })
           );
         } else {
+          userLog.updateSuccessful = true; // No changes needed, so "successful"
           this.processed++;
           return of(null);
         }
@@ -281,11 +284,18 @@ export class MainComponent implements OnInit, OnDestroy {
       complete: () => {
         this.processingNotes = false;
         this.jobEndTime = new Date();
-        if (this.modifiedUsers.size > 0) {
-          this.alert.success(`Successfully deleted notes for ${this.modifiedUsers.size} user${this.modifiedUsers.size !== 1 ? 's' : ''}`);
+        
+        // Calculate aggregated results
+        const summary = this.getJobSummary();
+        
+        if (summary.totalErrors > 0) {
+          this.alert.error(`Job completed with errors: ${summary.successfulUpdates} successful, ${summary.totalErrors} failed`);
+        } else if (summary.successfulUpdates > 0) {
+          this.alert.success(`Successfully processed ${summary.successfulUpdates} user${summary.successfulUpdates !== 1 ? 's' : ''}`);
         } else {
-          this.alert.info('No notes were deleted');
+          this.alert.info('No users were modified');
         }
+        
         // Auto-show results on completion for delete-all flow
         this.showResults = true;
       }
@@ -536,6 +546,24 @@ export class MainComponent implements OnInit, OnDestroy {
     return this.processLogs.filter(log => !log.noMatchingNotes && log.notes.length > 0);
   }
 
+  // Get aggregated job summary with error tracking
+  getJobSummary(): { successfulUpdates: number; totalErrors: number; errorDetails: Array<{userId: string, error: string}> } {
+    let successfulUpdates = 0;
+    let totalErrors = 0;
+    const errorDetails: Array<{userId: string, error: string}> = [];
+
+    this.processLogs.forEach(log => {
+      if (log.updateSuccessful === true) {
+        successfulUpdates++;
+      } else if (log.updateSuccessful === false && log.updateError) {
+        totalErrors++;
+        errorDetails.push({ userId: log.userId, error: log.updateError });
+      }
+    });
+
+    return { successfulUpdates, totalErrors, errorDetails };
+  }
+
   get availableNoteTypes(): NoteType[] {
     return this.noteProcessingService.getAvailableNoteTypes();
   }
@@ -699,14 +727,19 @@ export class MainComponent implements OnInit, OnDestroy {
         if (this.noteProcessingService.wasUserModified(userLog)) {
           this.modifiedUsers.add(userId);
           return this.userService.updateUser(userId, user).pipe(
-            tap(() => this.processed++),
+            tap(() => {
+              userLog.updateSuccessful = true;
+              this.processed++;
+            }),
             catchError(error => {
-              this.alert.error(`Failed to update user ${userId}: ${error.message || 'Unknown error'}`);
+              userLog.updateError = error.message || 'Unknown error';
+              userLog.updateSuccessful = false;
               this.processed++;
               return of(null);
             })
           );
         } else {
+          userLog.updateSuccessful = true; // No changes needed, so "successful"
           this.processed++;
           return of(null);
         }
@@ -722,8 +755,14 @@ export class MainComponent implements OnInit, OnDestroy {
       complete: () => {
         this.processingNotes = false;
         this.jobEndTime = new Date(); // Capture job completion time
-        if (this.modifiedUsers.size > 0) {
-          this.alert.success(`Successfully updated notes for ${this.modifiedUsers.size} user${this.modifiedUsers.size !== 1 ? 's' : ''}`);
+        
+        // Calculate aggregated results
+        const summary = this.getJobSummary();
+        
+        if (summary.totalErrors > 0) {
+          this.alert.error(`Job completed with errors: ${summary.successfulUpdates} successful, ${summary.totalErrors} failed`);
+        } else if (summary.successfulUpdates > 0) {
+          this.alert.success(`Successfully processed ${summary.successfulUpdates} user${summary.successfulUpdates !== 1 ? 's' : ''}`);
         } else {
           this.alert.info('No users were modified');
         }

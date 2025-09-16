@@ -53,6 +53,8 @@ export interface UserProcessLog {
   userId: string;
   noMatchingNotes: boolean;
   notes: NoteLogEntry[];
+  updateError?: string; // Track API update failures
+  updateSuccessful?: boolean; // Track whether the API update succeeded
 }
 
 // Define interface for set information

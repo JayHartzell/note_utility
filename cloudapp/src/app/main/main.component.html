@@ -446,6 +446,27 @@
     <div>Total users processed: {{ processLogs.length }}</div>
     <div>Users with changes: {{ processLogsWithChanges.length }}</div>
     <div>Users with no matching notes: {{ processLogs.length - processLogsWithChanges.length }}</div>
+    <div *ngIf="getJobSummary().successfulUpdates > 0" class="text-success">
+      Successful updates: {{ getJobSummary().successfulUpdates }}
+    </div>
+    <div *ngIf="getJobSummary().totalErrors > 0" class="text-error">
+      Failed updates: {{ getJobSummary().totalErrors }}
+    </div>
+  </div>
+
+  <!-- Error Details Section -->
+  <div *ngIf="getJobSummary().totalErrors > 0" class="error-details mb-20">
+    <mat-card class="error-card">
+      <mat-card-header>
+        <mat-card-title class="text-error">Update Errors ({{ getJobSummary().totalErrors }})</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngFor="let errorDetail of getJobSummary().errorDetails" class="error-item mb-10">
+          <div class="error-user">User ID: {{ errorDetail.userId }}</div>
+          <div class="error-message">Error: {{ errorDetail.error }}</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
   </div>
   
   <!-- Action Buttons -->
