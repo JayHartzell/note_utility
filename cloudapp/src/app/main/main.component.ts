@@ -1,8 +1,11 @@
 import { Component, OnDestroy, OnInit, Inject, LOCALE_ID } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   AlertService,
   CloudAppEventsService,
-  Entity
+  Entity,
+  MaterialModule
 } from '@exlibris/exl-cloudapp-angular-lib';
 import { Observable, of, from } from 'rxjs';
 import { tap, catchError, concatMap, filter } from 'rxjs/operators';
@@ -18,11 +21,27 @@ import { DateUtilService } from '../services/date-util.service';
 import { SetUsersService } from '../services/set-users.service';
 import { SetUtilService } from '../services/set-util.service';
 import { JobConfigUtil } from '../services/job-config.util';
+import { SetSelectorComponent } from './set-selector/set-selector.component';
+import { OperationSelectorComponent } from './operation-selector/operation-selector.component';
+import { JobParametersComponent } from './job-parameters/job-parameters.component';
+import { JobMenuComponent } from './job-menu/job-menu.component';
+import { ResultsDisplayComponent } from './results-display/results-display.component';
 
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
-  styleUrls: ['./main.component.scss']
+  styleUrls: ['./main.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MaterialModule,
+    SetSelectorComponent,
+    OperationSelectorComponent,
+    JobParametersComponent,
+    JobMenuComponent,
+    ResultsDisplayComponent,
+  ]
 })
 export class MainComponent implements OnInit, OnDestroy {
   loading = false;
@@ -285,16 +304,7 @@ export class MainComponent implements OnInit, OnDestroy {
         this.processingNotes = false;
         this.jobEndTime = new Date();
         
-        // Calculate aggregated results
-        const summary = this.getJobSummary();
-        
-        if (summary.totalErrors > 0) {
-          this.alert.error(`Job completed with errors: ${summary.successfulUpdates} successful, ${summary.totalErrors} failed`);
-        } else if (summary.successfulUpdates > 0) {
-          this.alert.success(`Successfully processed ${summary.successfulUpdates} user${summary.successfulUpdates !== 1 ? 's' : ''}`);
-        } else {
-          this.alert.info('No users were modified');
-        }
+        this.alert.success('Job completed.');
         
         // Auto-show results on completion for delete-all flow
         this.showResults = true;
@@ -538,31 +548,7 @@ export class MainComponent implements OnInit, OnDestroy {
       && !JobConfigUtil.hasModificationParameter(this.jobParameters);
   }
 
-  getMenuOptionsByCategory(category: string): MenuOption[] {
-    return this.availableMenuOptions.filter(option => option.category === category);
-  }
 
-  get processLogsWithChanges(): UserProcessLog[] {
-    return this.processLogs.filter(log => !log.noMatchingNotes && log.notes.length > 0);
-  }
-
-  // Get aggregated job summary with error tracking
-  getJobSummary(): { successfulUpdates: number; totalErrors: number; errorDetails: Array<{userId: string, error: string}> } {
-    let successfulUpdates = 0;
-    let totalErrors = 0;
-    const errorDetails: Array<{userId: string, error: string}> = [];
-
-    this.processLogs.forEach(log => {
-      if (log.updateSuccessful === true) {
-        successfulUpdates++;
-      } else if (log.updateSuccessful === false && log.updateError) {
-        totalErrors++;
-        errorDetails.push({ userId: log.userId, error: log.updateError });
-      }
-    });
-
-    return { successfulUpdates, totalErrors, errorDetails };
-  }
 
   get availableNoteTypes(): NoteType[] {
     return this.noteProcessingService.getAvailableNoteTypes();
@@ -588,7 +574,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
   // Public selector getters for template clarity
   get actionParam() {
-    return this.jobParameters.find(p => p.id === 'action') as Extract<typeof this.jobParameters[number], { id: 'action' }> | undefined;
+    return this.jobParameters.find(p => p.id === 'action') as Extract<JobParameter, { id: 'action' }> | undefined;
   }
 
   get textSearchParam() {
@@ -612,23 +598,23 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   private getTextParam() {
-  return JobConfigUtil.getTextParam(this.jobParameters) as Extract<typeof this.jobParameters[number], { id: 'textSearch' }> | undefined;
+    return JobConfigUtil.getTextParam(this.jobParameters) as Extract<JobParameter, { id: 'textSearch' }> | undefined;
   }
 
   private getDateParam() {
-  return JobConfigUtil.getDateParam(this.jobParameters) as Extract<typeof this.jobParameters[number], { id: 'dateRange' }> | undefined;
+    return JobConfigUtil.getDateParam(this.jobParameters) as Extract<JobParameter, { id: 'dateRange' }> | undefined;
   }
 
   private getPopupParam() {
-  return JobConfigUtil.getPopupParam(this.jobParameters) as Extract<typeof this.jobParameters[number], { id: 'popupSettings' }> | undefined;
+    return JobConfigUtil.getPopupParam(this.jobParameters) as Extract<JobParameter, { id: 'popupSettings' }> | undefined;
   }
 
   private getUserViewableParam() {
-  return JobConfigUtil.getUserViewableParam(this.jobParameters) as Extract<typeof this.jobParameters[number], { id: 'userViewable' }> | undefined;
+    return JobConfigUtil.getUserViewableParam(this.jobParameters) as Extract<JobParameter, { id: 'userViewable' }> | undefined;
   }
 
   private getNoteTypeParam() {
-  return JobConfigUtil.getNoteTypeParam(this.jobParameters) as Extract<typeof this.jobParameters[number], { id: 'noteType' }> | undefined;
+    return JobConfigUtil.getNoteTypeParam(this.jobParameters) as Extract<JobParameter, { id: 'noteType' }> | undefined;
   }
 
   private buildSearchCriteria(): NoteSearchCriteria {
@@ -645,7 +631,7 @@ export class MainComponent implements OnInit, OnDestroy {
     return this.noteProcessingService.findMatchingNotes(user, this.buildSearchCriteria());
   }
 
-  processUserNotes() {
+  executeJob() {
     if (!this.usersWithNotes || !this.usersWithNotes.length) {
       this.alert.error('No users with notes found in this set');
       return;
@@ -669,7 +655,7 @@ export class MainComponent implements OnInit, OnDestroy {
       return;
     }
     
-  const actionParam = this.jobParameters.find(p => p.type === 'action') as Extract<typeof this.jobParameters[number], { id: 'action' }> | undefined;
+    const actionParam = this.jobParameters.find(p => p.type === 'action') as Extract<JobParameter, { id: 'action' }> | undefined;
     
     // Set job as executed to hide menu options and user details
     this.jobExecuted = true;
@@ -756,16 +742,7 @@ export class MainComponent implements OnInit, OnDestroy {
         this.processingNotes = false;
         this.jobEndTime = new Date(); // Capture job completion time
         
-        // Calculate aggregated results
-        const summary = this.getJobSummary();
-        
-        if (summary.totalErrors > 0) {
-          this.alert.error(`Job completed with errors: ${summary.successfulUpdates} successful, ${summary.totalErrors} failed`);
-        } else if (summary.successfulUpdates > 0) {
-          this.alert.success(`Successfully processed ${summary.successfulUpdates} user${summary.successfulUpdates !== 1 ? 's' : ''}`);
-        } else {
-          this.alert.info('No users were modified');
-        }
+        this.alert.success('Job completed.');
       }
     });
   }
@@ -776,7 +753,7 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   // Export processing results to CSV
-  exportResultsToCSV() {
+  exportResultsToCsv() {
     if (!this.processLogs || this.processLogs.length === 0) {
       this.alert.error('No processing results to export');
       return;
@@ -866,70 +843,12 @@ export class MainComponent implements OnInit, OnDestroy {
   return DateUtilService.formatNoteDate(note, this.locale);
   }
 
-  // Helper methods for result summary display
-  getUserSummary(log: UserProcessLog): { action: 'deleted' | 'modified'; noteCount: number; modifications: string[] } {
-    const deletedCount = log.notes.filter(entry => entry.deleted).length;
-    const modifiedCount = log.notes.filter(entry => !entry.deleted).length;
-    
-    const action: 'deleted' | 'modified' = deletedCount > 0 ? 'deleted' : 'modified';
-    const noteCount = deletedCount + modifiedCount;
-    
-    const modifications = this.getModificationDescriptions(log);
-    
-    return { action, noteCount, modifications };
-  }
-
-  getModificationDescriptions(log: UserProcessLog): string[] {
-    const descriptions: string[] = [];
-    
-    // For deleted notes, just indicate deletion
-    const deletedCount = log.notes.filter(entry => entry.deleted).length;
-    if (deletedCount > 0) {
-      descriptions.push(`Deleted ${deletedCount} note${deletedCount !== 1 ? 's' : ''}`);
-      return descriptions; // For delete operations, that's the only description needed
-    }
-
-    // For modified notes, analyze what changed
-    const modifiedEntries = log.notes.filter(entry => !entry.deleted && entry.after);
-    
-    if (modifiedEntries.length > 0) {
-      // Check for popup changes
-      const popupChanges = modifiedEntries.filter(entry => 
-        entry.before.popup_note !== entry.after!.popup_note);
-      if (popupChanges.length > 0) {
-        const madePopup = popupChanges.filter(entry => entry.after!.popup_note).length;
-        const disabledPopup = popupChanges.filter(entry => !entry.after!.popup_note).length;
-        if (madePopup > 0) descriptions.push(`Made ${madePopup} note${madePopup !== 1 ? 's' : ''} popup`);
-        if (disabledPopup > 0) descriptions.push(`Disabled popup on ${disabledPopup} note${disabledPopup !== 1 ? 's' : ''}`);
-      }
-
-      // Check for user viewable changes
-      const userViewableChanges = modifiedEntries.filter(entry => 
-        entry.before['user_viewable'] !== entry.after!['user_viewable']);
-      if (userViewableChanges.length > 0) {
-        const madeViewable = userViewableChanges.filter(entry => entry.after!['user_viewable']).length;
-        const madeStaffOnly = userViewableChanges.filter(entry => !entry.after!['user_viewable']).length;
-        if (madeViewable > 0) descriptions.push(`Made ${madeViewable} note${madeViewable !== 1 ? 's' : ''} user-viewable`);
-        if (madeStaffOnly > 0) descriptions.push(`Made ${madeStaffOnly} note${madeStaffOnly !== 1 ? 's' : ''} staff-only`);
-      }
-
-      // Check for note type changes
-      const typeChanges = modifiedEntries.filter(entry => 
-        entry.before.note_type?.value !== entry.after!.note_type?.value);
-      if (typeChanges.length > 0) {
-        // Group by new note type
-        const typeGroups = new Map<string, number>();
-        typeChanges.forEach(entry => {
-          const newType = entry.after!.note_type?.desc || 'None';
-          typeGroups.set(newType, (typeGroups.get(newType) || 0) + 1);
-        });
-        
-        typeGroups.forEach((count, typeName) => {
-          descriptions.push(`Changed ${count} note${count !== 1 ? 's' : ''} to type: ${typeName}`);
-        });
-      }
-    }
-
-    return descriptions;
+  viewUserInAlma(userId: string) {
+    // This is a placeholder. You will need to replace 'your-alma-domain' with your actual Alma domain.
+    const almaBaseUrl = 'https://your-alma-domain';
+    this.eventsService.getAuthToken().subscribe(token => {
+      const url = `${almaBaseUrl}/users/${userId}`;
+      window.open(url, '_blank');
+    });
   }
 }

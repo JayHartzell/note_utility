@@ -1,0 +1,83 @@
+<mat-card *ngIf="processLogs && processLogs.length > 0" class="processing-results mt-30">
+  <mat-card-header>
+    <mat-card-title class="mat-headline-5">Processing Results</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+  <!-- Summary -->
+  <div class="summary-box border-left-success mb-20 pad-10">
+    <div class="text-tertiary bold">Summary:</div>
+    <div>Total users processed: {{ processLogs.length }}</div>
+    <div>Users with changes: {{ processLogsWithChanges.length }}</div>
+    <div>Users with no matching notes: {{ processLogs.length - processLogsWithChanges.length }}</div>
+    <div *ngIf="getJobSummary().successfulUpdates > 0" class="text-success">
+      Successful updates: {{ getJobSummary().successfulUpdates }}
+    </div>
+    <div *ngIf="getJobSummary().totalErrors > 0" class="text-error">
+      Failed updates: {{ getJobSummary().totalErrors }}
+    </div>
+  </div>
+
+  <!-- Error Details Section -->
+  <div *ngIf="getJobSummary().totalErrors > 0" class="error-details mb-20">
+    <mat-card class="error-card">
+      <mat-card-header>
+        <mat-card-title class="text-error">Update Errors ({{ getJobSummary().totalErrors }})</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngFor="let errorDetail of getJobSummary().errorDetails" class="error-item mb-10">
+          <div class="error-user">User ID: {{ errorDetail.userId }}</div>
+          <div class="error-message">Error: {{ errorDetail.error }}</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  
+  <!-- Action Buttons -->
+  <div class="action-row mb-20 center">
+    <button 
+      (click)="showResults = !showResults"
+      mat-flat-button
+      color="primary"
+    >
+      {{ showResults ? 'Hide Results' : 'View Results' }}
+    </button>
+    <button 
+      (click)="exportToCsv.emit()"
+      mat-flat-button
+      color="secondary"
+    >
+      Export to CSV
+    </button>
+  </div>
+  
+  <!-- Detailed Results (collapsible) -->
+  <div *ngIf="showResults">
+    <!-- Show message if no users had changes -->
+    <div *ngIf="processLogsWithChanges.length === 0" class="center italic pad-20 mat-body-1">
+      No users had notes that were modified or deleted.
+    </div>
+    
+    <!-- Show only users with changes -->
+    <mat-card *ngIf="processLogsWithChanges.length > 0" class="results-scroll">
+      <mat-card-content>
+        <div *ngFor="let log of processLogsWithChanges" class="user-change-card-consolidated mb-20">
+          <div class="user-summary">
+            <div class="user-id">User ID: {{ log.userId }}</div>
+            <div *ngIf="getUserSummary(log).action === 'deleted'" class="action-info">
+              {{ getUserSummary(log).noteCount }} note{{ getUserSummary(log).noteCount !== 1 ? 's' : '' }} deleted
+            </div>
+            <div *ngIf="getUserSummary(log).action === 'modified'" class="action-info">
+              {{ getUserSummary(log).noteCount }} note{{ getUserSummary(log).noteCount !== 1 ? 's' : '' }} modified:
+              <ul class="modification-list">
+                <li *ngFor="let modification of getUserSummary(log).modifications">
+                  {{ modification }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  </mat-card-content>
+</mat-card>

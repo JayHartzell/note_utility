@@ -1,0 +1,63 @@
+<mat-card *ngIf="!jobExecuted" class="menu-options">
+    <mat-card-header>
+      <mat-card-title class="mat-headline-5">Available Options</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+    <div *ngIf="availableMenuOptions.length === 0" class="center italic pad-20 mat-body-1">
+      All available options have been added to your job parameters.
+    </div>
+    
+    <div *ngIf="availableMenuOptions.length > 0" class="option-categories">
+      <!-- Action Options -->
+      <div *ngIf="getMenuOptionsByCategory('action').length > 0" class="option-category mb-24">
+        <div class="mat-headline-6 text-secondary mb-10">Actions</div>
+        <div class="button-wrap gap-8">
+          <button 
+            *ngFor="let option of getMenuOptionsByCategory('action')"
+            (click)="addJobParameter.emit(option.id)"
+            mat-flat-button
+            color="secondary"
+            class="menu-option-button"
+          >
+            {{ option.label }}
+            <small class="mat-body-2">{{ option.description }}</small>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Search Options -->
+      <div *ngIf="getMenuOptionsByCategory('search').length > 0" class="option-category mb-24">
+        <div class="mat-headline-6 text-primary mb-10">Filter Criteria</div>
+        <div class="button-wrap gap-8">
+          <button 
+            *ngFor="let option of getMenuOptionsByCategory('search')"
+            (click)="addJobParameter.emit(option.id)"
+            mat-flat-button
+            color="secondary"
+            class="menu-option-button"
+          >
+            {{ option.label }}
+            <small class="mat-body-2">{{ option.description }}</small>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Modification Options -->
+      <div *ngIf="getMenuOptionsByCategory('modification').length > 0" class="option-category mb-24">
+        <div class="mat-headline-6 text-tertiary mb-10">Modification Options</div>
+        <div class="button-wrap gap-8">
+          <button 
+            *ngFor="let option of getMenuOptionsByCategory('modification')"
+            (click)="addJobParameter.emit(option.id)"
+            mat-flat-button
+            color="secondary"
+            class="menu-option-button"
+          >
+            {{ option.label }}
+            <small class="mat-body-2">{{ option.description }}</small>
+          </button>
+        </div>
+      </div>
+    </div>
+    </mat-card-content>
+  </mat-card>

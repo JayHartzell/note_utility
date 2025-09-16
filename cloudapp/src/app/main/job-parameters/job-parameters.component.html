@@ -1,0 +1,264 @@
+<mat-card class="mb-24 job-params-compact">
+    <mat-card-header>
+      <mat-card-title class="mat-headline-5">Job Configuration</mat-card-title>
+      <mat-card-subtitle *ngIf="jobParameters.length > 0">{{ jobParameters.length }} parameter{{ jobParameters.length === 1 ? '' : 's' }} configured</mat-card-subtitle>
+      <div class="header-badges">
+        <div *ngIf="jobExecuted && !processingNotes" class="chip chip-tertiary pill">
+          ✓ EXECUTED
+        </div>
+        <div *ngIf="processingNotes" class="chip chip-secondary pill">
+          ⏳ PROCESSING...
+        </div>
+      </div>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <!-- Segment Filter Information -->
+      <div class="info-banner mb-16 border-left-primary pad-10">
+        <div class="mat-body-2 text-primary">
+          <strong>Note:</strong> Only notes with "Internal" segment type will be processed. External notes will be ignored.
+        </div>
+      </div>
+      
+      <div *ngIf="jobParameters.length === 0" class="empty-parameters mat-body-1 italic center pad-20">
+        No parameters configured. Select options from the menu below to build your job.
+      </div>
+      
+      <div *ngIf="jobParameters.length > 0" class="parameters-grid">
+        
+        <!-- Action Parameter -->
+        <div *ngIf="actionParam" class="param-compact action-param">
+          <div class="param-header">
+            <span class="param-label">{{ actionParam.label }}</span>
+            <button mat-icon-button 
+                    *ngIf="!jobExecuted" 
+                    (click)="removeJobParameter.emit(actionParam.id)" 
+                    class="remove-param-btn"
+                    title="Remove this parameter">
+              <i class="uxf-icon uxf-close"></i>
+            </button>
+          </div>
+          <div class="param-fields">
+            <div class="action-display">
+              {{ actionParam.value === 'modify' ? 'Modify matching notes' : 'Delete matching notes' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Text Search Parameter -->
+        <div *ngIf="textSearchParam" class="param-compact">
+          <div class="param-header">
+            <span class="param-label">{{ textSearchParam.label }}</span>
+            <button mat-icon-button 
+                    *ngIf="!jobExecuted" 
+                    (click)="removeJobParameter.emit(textSearchParam.id)" 
+                    class="remove-param-btn"
+                    title="Remove this parameter">
+              <i class="uxf-icon uxf-close"></i>
+            </button>
+          </div>
+          <div class="param-fields">
+            <mat-form-field class="search-input" appearance="outline" floatLabel="always">
+              <mat-label>Search text</mat-label>
+              <textarea matInput 
+                        cdkTextareaAutosize
+                        cdkAutosizeMinRows="1"
+                        cdkAutosizeMaxRows="8"
+                        maxlength="2000"
+                        [ngModel]="textSearchParam.value.text" 
+                        (ngModelChange)="updateJobParameter.emit({id: 'textSearch', value: { text: $event, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents }})" 
+                        placeholder="Enter text to search for (max 2000 characters)" 
+                        [disabled]="jobExecuted"></textarea>
+              <mat-hint align="end">{{(textSearchParam.value.text || '').length}}/2000</mat-hint>
+            </mat-form-field>
+            <div class="param-options">
+              <mat-checkbox [ngModel]="textSearchParam.value.caseSensitive" 
+                           (ngModelChange)="updateJobParameter.emit({id: 'textSearch', value: { text: textSearchParam.value.text, caseSensitive: $event, matchMode: textSearchParam.value.matchMode, ignoreAccents: textSearchParam.value.ignoreAccents }})" 
+                           [disabled]="jobExecuted">
+                Case sensitive
+              </mat-checkbox>
+              <mat-form-field class="match-select" appearance="outline" floatLabel="always">
+                <mat-label>Match type</mat-label>
+                <mat-select [ngModel]="textSearchParam.value.matchMode || 'substring'" 
+                           (ngModelChange)="updateJobParameter.emit({id: 'textSearch', value: { text: textSearchParam.value.text, caseSensitive: textSearchParam.value.caseSensitive, matchMode: $event, ignoreAccents: textSearchParam.value.ignoreAccents }})" 
+                           [disabled]="jobExecuted">
+                  <mat-option value="substring">Substring</mat-option>
+                  <mat-option value="wholeWord">Whole word</mat-option>
+                  <mat-option value="exact">Exact</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-checkbox [ngModel]="(textSearchParam.value.ignoreAccents ?? true)" 
+                           (ngModelChange)="updateJobParameter.emit({id: 'textSearch', value: { text: textSearchParam.value.text, caseSensitive: textSearchParam.value.caseSensitive, matchMode: textSearchParam.value.matchMode, ignoreAccents: $event }})" 
+                           [disabled]="jobExecuted">
+                Ignore accents (é ≈ e)
+              </mat-checkbox>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date Range Parameter -->
+        <div *ngIf="dateRangeParam" class="param-compact">
+          <div class="param-header">
+            <span class="param-label">{{ dateRangeParam.label }}</span>
+            <button mat-icon-button 
+                    *ngIf="!jobExecuted" 
+                    (click)="removeJobParameter.emit(dateRangeParam.id)" 
+                    class="remove-param-btn"
+                    title="Remove this parameter">
+              <i class="uxf-icon uxf-close"></i>
+            </button>
+          </div>
+          <div class="param-fields">
+            <div class="date-range">
+              <mat-form-field class="date-input" appearance="outline" floatLabel="always">
+                <mat-label>From date</mat-label>
+                <input matInput 
+                       [matDatepicker]="startPicker"
+                       [ngModel]="dateRangeParam.value.startDate" 
+                       (ngModelChange)="updateJobParameter.emit({id: 'dateRange', value: { startDate: $event, endDate: dateRangeParam.value.endDate }})" 
+                       [disabled]="jobExecuted"
+                       readonly>
+                <mat-datepicker-toggle matSuffix [for]="startPicker" [disabled]="jobExecuted"></mat-datepicker-toggle>
+                <mat-datepicker #startPicker [disabled]="jobExecuted"></mat-datepicker>
+              </mat-form-field>
+              <mat-form-field class="date-input" appearance="outline" floatLabel="always">
+                <mat-label>To date</mat-label>
+                <input matInput 
+                       [matDatepicker]="endPicker"
+                       [ngModel]="dateRangeParam.value.endDate" 
+                       (ngModelChange)="updateJobParameter.emit({id: 'dateRange', value: { startDate: dateRangeParam.value.startDate, endDate: $event }})" 
+                       [disabled]="jobExecuted"
+                       readonly>
+                <mat-datepicker-toggle matSuffix [for]="endPicker" [disabled]="jobExecuted"></mat-datepicker-toggle>
+                <mat-datepicker #endPicker [disabled]="jobExecuted"></mat-datepicker>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+
+        <!-- Popup Settings Parameter -->
+        <div *ngIf="popupParam" class="param-compact">
+          <div class="param-header">
+            <span class="param-label">{{ popupParam.label }}</span>
+            <button mat-icon-button 
+                    *ngIf="!jobExecuted" 
+                    (click)="removeJobParameter.emit(popupParam.id)" 
+                    class="remove-param-btn"
+                    title="Remove this parameter">
+              <i class="uxf-icon uxf-close"></i>
+            </button>
+          </div>
+          <div class="param-fields">
+            <div class="param-options">
+              <mat-radio-group [disabled]="jobExecuted"
+                              [value]="popupParam.value.makePopup ? 'make' : (popupParam.value.disablePopup ? 'disable' : null)"
+                              (change)="updateJobParameter.emit({id: 'popupSettings', value: $event.value === 'make' ? { makePopup: true, disablePopup: false } : { makePopup: false, disablePopup: true }})">
+                <mat-radio-button value="make">Make popup note</mat-radio-button>
+                <mat-radio-button value="disable">Disable popup</mat-radio-button>
+              </mat-radio-group>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Viewable Parameter -->
+        <div *ngIf="userViewableParam" class="param-compact">
+          <div class="param-header">
+            <span class="param-label">{{ userViewableParam.label }}</span>
+            <button mat-icon-button 
+                    *ngIf="!jobExecuted" 
+                    (click)="removeJobParameter.emit(userViewableParam.id)" 
+                    class="remove-param-btn"
+                    title="Remove this parameter">
+              <i class="uxf-icon uxf-close"></i>
+            </button>
+          </div>
+          <div class="param-fields">
+            <div class="param-options">
+              <mat-radio-group [disabled]="jobExecuted"
+                              [value]="userViewableParam.value.makeUserViewable === true ? 'true' : (userViewableParam.value.makeUserViewable === false ? 'false' : null)"
+                              (change)="updateJobParameter.emit({id: 'userViewable', value: { makeUserViewable: $event.value === 'true' }})">
+                <mat-radio-button value="true">Make user viewable</mat-radio-button>
+                <mat-radio-button value="false">Hide from user</mat-radio-button>
+              </mat-radio-group>
+            </div>
+          </div>
+        </div>
+
+        <!-- Note Type Parameter -->
+        <div *ngIf="noteTypeParam" class="param-compact">
+          <div class="param-header">
+            <span class="param-label">{{ noteTypeParam.label }}</span>
+            <button mat-icon-button 
+                    *ngIf="!jobExecuted" 
+                    (click)="removeJobParameter.emit(noteTypeParam.id)" 
+                    class="remove-param-btn"
+                    title="Remove this parameter">
+              <i class="uxf-icon uxf-close"></i>
+            </button>
+          </div>
+          <div class="param-fields">
+            <div class="note-type-selection">
+              <div *ngIf="noteTypeParam.value" class="selected-note-type">
+                Selected: {{ noteTypeParam.value.desc }}
+              </div>
+              <mat-form-field class="note-type-select" appearance="outline" floatLabel="always">
+                <mat-label>New note type</mat-label>
+                <mat-select [value]="noteTypeParam.value?.value || ''" 
+                           (selectionChange)="updateJobParameter.emit({id: 'noteType', value: getNoteTypeByValue($event.value)})" 
+                           [disabled]="jobExecuted">
+                  <mat-option value="">Select a note type...</mat-option>
+                  <mat-option *ngFor="let noteType of availableNoteTypes" [value]="noteType.value">
+                    {{ noteType.desc }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    
+      <!-- Execute Job Section -->
+      <div class="center mt-20">
+        <button *ngIf="!jobExecuted"
+                mat-flat-button
+                color="primary"
+                [disabled]="!canExecuteJob || loading || processingNotes"
+                (click)="executeJob.emit()">
+          Execute Job
+        </button>
+        
+        <!-- Reset Job Button (shown after job execution) -->
+        <button *ngIf="jobExecuted && !processingNotes"
+                mat-raised-button
+                color="primary"
+                class="button-large"
+                (click)="resetJob.emit()">
+          Configure New Job
+        </button>
+        
+        <div *ngIf="!canExecuteJob && !jobExecuted" class="mt-16">
+          <div *ngIf="!hasActionParameter" 
+               class="chip chip-secondary chip-lg mb-8">
+            ► Please select an action (modify or delete).
+          </div>
+          <div *ngIf="hasActionParameter && !hasSearchParameter" 
+               class="chip chip-secondary chip-lg mb-8">
+            ► Please add search criteria.
+          </div>
+          <div *ngIf="needsModificationOptions" 
+               class="chip chip-secondary chip-lg mb-8">
+            ► Please select modification options.
+          </div>
+        </div>
+      </div>
+      
+      <!-- Progress Bar -->
+      <div *ngIf="processingNotes" class="mt-15">
+        <mat-progress-bar mode="determinate" [value]="percentComplete"></mat-progress-bar>
+        <div class="center mt-5 text-default">
+          Processing {{ processed }} of {{ recordsToProcess }} users... ({{percentComplete}}%)
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>

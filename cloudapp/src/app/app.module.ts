@@ -11,8 +11,7 @@ import { MainComponent } from './main/main.component';
 
 @NgModule({
     declarations: [
-        AppComponent,
-        MainComponent
+        AppComponent
     ],
     bootstrap: [AppComponent],
     imports: [

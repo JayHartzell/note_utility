@@ -1,0 +1,59 @@
+<!-- Show instruction when no sets are available -->
+<div *ngIf="!hasValidSets && !loading" class="instruction-message">
+  <div class="instruction-card">
+    <div class="mat-headline-5">Navigate to Admin > Manage Sets</div>
+    <p>
+      Please navigate to a set of users with notes you wish to modify or delete. Once a Users set is selected, the list will populate with user records and you can configure your job parameters.
+    </p>
+  </div>
+</div>
+
+<!-- Show available sets for selection -->
+<div *ngIf="hasValidSets && !selectedSet" class="set-selection">
+  <div class="mat-headline-5">Available Sets on This Page</div>
+  <div>
+    <p>Select a set to load its user members:</p>
+    <div *ngFor="let set of availableSets" class="set-option">
+      <button class="set-button"
+              (click)="onSetSelected(set)"
+              [disabled]="loading">
+        <div class="set-info">
+          <div class="set-name">{{ set.description || 'Unnamed Set' }}</div>
+          <div class="set-id">Set ID: {{ set.id }}</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Show selected set info - Simplified -->
+<div *ngIf="selectedSet" class="selected-set-info">
+  <div class="selected-set-card">
+    <div class="selected-set-header">
+      <div class="set-title">
+        <div class="set-name">{{ selectedSet.description || 'Unnamed Set' }}</div>
+        <div class="set-id">Set ID: {{ selectedSet.id }}</div>
+      </div>
+      <button mat-button 
+              class="change-set-btn"
+              (click)="clearSelection()"
+              [disabled]="loading">
+        Change Set
+      </button>
+    </div>
+    
+    <div class="set-summary">
+      <div *ngIf="!loading" class="users-with-notes">
+        <!-- This will be handled by the main component -->
+        <!-- <div class="count">{{ usersWithNotes.length || 0 }}</div>
+        <div class="label">Users with notes</div> -->
+      </div>
+      
+      <div *ngIf="loading" class="loading-indicator">
+        <mat-spinner diameter="16"></mat-spinner>
+        <span>Loading user data...</span>
+      </div>
+    </div>
+  </div>
+</div>
+
