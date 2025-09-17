@@ -2,17 +2,41 @@
     <mat-card-header>
       <mat-card-title class="mat-headline-5">Job Configuration</mat-card-title>
       <mat-card-subtitle *ngIf="jobParameters.length > 0">{{ jobParameters.length }} parameter{{ jobParameters.length === 1 ? '' : 's' }} configured</mat-card-subtitle>
-      <div class="header-badges">
-        <div *ngIf="jobExecuted && !processingNotes" class="chip chip-tertiary pill">
-          ✓ EXECUTED
-        </div>
-        <div *ngIf="processingNotes" class="chip chip-secondary pill">
-          ⏳ PROCESSING...
-        </div>
-      </div>
     </mat-card-header>
     
+    <div class="eca-actions">
+      <button *ngIf="!jobExecuted"
+              mat-flat-button
+              color="primary"
+              [disabled]="!canExecuteJob || loading || processingNotes"
+              (click)="executeJob.emit()">
+        Execute Job
+      </button>
+
+      <button *ngIf="jobExecuted && !processingNotes"
+              mat-flat-button
+              color="primary"
+              (click)="resetJob.emit()">
+        Configure New Job
+      </button>
+    </div>
+    
     <mat-card-content>
+      <!-- Guidance chips when job cannot be executed yet -->
+      <div *ngIf="!canExecuteJob && !jobExecuted" class="mt-16">
+        <div *ngIf="!hasActionParameter" 
+             class="chip chip-secondary chip-lg mb-8">
+          ► Please select an action (modify or delete).
+        </div>
+        <div *ngIf="hasActionParameter && !hasSearchParameter" 
+             class="chip chip-secondary chip-lg mb-8">
+          ► Please add search criteria.
+        </div>
+        <div *ngIf="needsModificationOptions" 
+             class="chip chip-secondary chip-lg mb-8">
+          ► Please select modification options.
+        </div>
+      </div>
    
       <div *ngIf="jobParameters.length === 0" class="empty-parameters mat-body-1 italic center pad-20">
         No parameters configured. Select options from the menu below to build your job.
@@ -192,11 +216,7 @@
           </div>
           <div class="param-fields">
             <div class="note-type-selection">
-              <div *ngIf="noteTypeParam.value" class="selected-note-type">
-                Selected: {{ noteTypeParam.value.desc }}
-              </div>
-              <mat-form-field class="note-type-select" appearance="outline" floatLabel="always">
-                <mat-label>New note type</mat-label>
+              <mat-form-field class="note-type-select" appearance="outline">
                 <mat-select [value]="noteTypeParam.value?.value || ''" 
                            (selectionChange)="updateJobParameter.emit({id: 'noteType', value: getNoteTypeByValue($event.value)})" 
                            [disabled]="jobExecuted">
@@ -210,41 +230,6 @@
           </div>
         </div>
         
-      </div>
-    
-      <!-- Execute Job Section -->
-      <div class="center mt-20">
-        <button *ngIf="!jobExecuted"
-                mat-flat-button
-                color="primary"
-                [disabled]="!canExecuteJob || loading || processingNotes"
-                (click)="executeJob.emit()">
-          Execute Job
-        </button>
-        
-        <!-- Reset Job Button (shown after job execution) -->
-        <button *ngIf="jobExecuted && !processingNotes"
-                mat-raised-button
-                color="primary"
-                class="button-large"
-                (click)="resetJob.emit()">
-          Configure New Job
-        </button>
-        
-        <div *ngIf="!canExecuteJob && !jobExecuted" class="mt-16">
-          <div *ngIf="!hasActionParameter" 
-               class="chip chip-secondary chip-lg mb-8">
-            ► Please select an action (modify or delete).
-          </div>
-          <div *ngIf="hasActionParameter && !hasSearchParameter" 
-               class="chip chip-secondary chip-lg mb-8">
-            ► Please add search criteria.
-          </div>
-          <div *ngIf="needsModificationOptions" 
-               class="chip chip-secondary chip-lg mb-8">
-            ► Please select modification options.
-          </div>
-        </div>
       </div>
       
       <!-- Progress Bar -->

@@ -18,24 +18,24 @@
               (click)="onSetSelected(set)"
               [disabled]="loading">
         <div class="set-info">
-          <div class="set-name">{{ set.description || 'Unnamed Set' }}</div>
-          <div class="set-id">Set ID: {{ set.id }}</div>
+          <div class="mat-headline-5">{{ set.description || 'Unnamed Set' }}</div>
+          <div class="mat-headline-6">Set ID: {{ set.id }}</div>
         </div>
       </button>
     </div>
   </div>
 </div>
 
-<!-- Show selected set info - Simplified -->
+<!-- Show selected set info  -->
 <div *ngIf="selectedSet" class="selected-set-info">
   <div class="selected-set-card">
     <div class="selected-set-header">
       <div class="set-title">
-        <div class="set-name">{{ selectedSet.description || 'Unnamed Set' }}</div>
-        <div class="set-id">Set ID: {{ selectedSet.id }}</div>
+        <div class="mat-headline-5">{{ selectedSet.description || 'Unnamed Set' }}</div>
+        <div class="mat-headline-6">Set ID: {{ selectedSet.id }}</div>
       </div>
-      <button mat-button 
-              class="change-set-btn"
+      <button mat-flat-button 
+              class="eca actions"
               (click)="clearSelection()"
               [disabled]="loading">
         Change Set
@@ -52,6 +52,16 @@
       <div *ngIf="loading" class="loading-indicator">
         <mat-spinner diameter="16"></mat-spinner>
         <span>Loading user data...</span>
+      </div>
+    </div>
+
+    <!-- No users with notes found message -->
+    <div *ngIf="!loading && usersWithNotes && usersWithNotes.length === 0" class="instruction-message mt-16">
+      <div class="instruction-card">
+        <div class="mat-headline-6">No users with notes were found in this set</div>
+        <p>
+          Please choose a different Users set that contains Internal notes, then try again.
+        </p>
       </div>
     </div>
   </div>

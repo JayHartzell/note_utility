@@ -20,12 +20,10 @@ export class OperationSelectorComponent {
   @Output() cancelDeleteAll = new EventEmitter<void>();
 
   onDeleteAllClick() {
-    // Delegate state change to parent
     this.deleteAll.emit();
   }
 
   onCancelDeleteAll() {
-    // Delegate state change to parent
     this.cancelDeleteAll.emit();
   }
 

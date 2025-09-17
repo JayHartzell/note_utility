@@ -7,7 +7,7 @@
       All available options have been added to your job parameters.
     </div>
     
-    <div *ngIf="availableMenuOptions.length > 0" class="option-categories">
+    <div *ngIf="availableMenuOptions.length > 0" class="option-categories pad-20">
       <!-- Action Options -->
       <div *ngIf="getMenuOptionsByCategory('action').length > 0" class="option-category mb-24">
         <div class="mat-headline-6 text-secondary mb-10">Actions</div>
@@ -19,8 +19,8 @@
             color="secondary"
             class="menu-option-button"
           >
-            {{ option.label }}
-            <small class="mat-body-2">{{ option.description }}</small>
+           {{ option.label }}
+            <!-- <small class="mat-body-2">{{ option.description }}</small> -->
           </button>
         </div>
       </div>
@@ -37,7 +37,7 @@
             class="menu-option-button"
           >
             {{ option.label }}
-            <small class="mat-body-2">{{ option.description }}</small>
+            <!-- <small class="mat-body-2">{{ option.description }}</small> -->
           </button>
         </div>
       </div>
@@ -54,7 +54,7 @@
             class="menu-option-button"
           >
             {{ option.label }}
-            <small class="mat-body-2">{{ option.description }}</small>
+            <!-- <small class="mat-body-2">{{ option.description }}</small> -->
           </button>
         </div>
       </div>

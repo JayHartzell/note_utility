@@ -56,12 +56,13 @@
 
   // Buttons
   .btn { color: mat.get-theme-color($theme, on-surface); border: 1px solid mat.get-theme-color($theme, outline-variant); background-color: mat.get-theme-color($theme, surface); }
-  .btn-primary { background-color: mat.get-theme-color($theme, primary); color: mat.get-theme-color($theme, on-primary); border-color: mat.get-theme-color($theme, primary); }
+  .btn-primary { background-color: mat.get-theme-color($theme, primary); color: whitesmoke; border-color: mat.get-theme-color($theme, primary); }
   .btn-secondary { background-color: mat.get-theme-color($theme, secondary); color: mat.get-theme-color($theme, on-secondary); border-color: mat.get-theme-color($theme, secondary); }
   .btn-tertiary { background-color: mat.get-theme-color($theme, tertiary); color: mat.get-theme-color($theme, on-tertiary); border-color: mat.get-theme-color($theme, tertiary); }
   .btn-outline-primary { background-color: transparent; color: mat.get-theme-color($theme, primary); border-color: mat.get-theme-color($theme, primary); }
   .btn-outline-secondary { background-color: transparent; color: mat.get-theme-color($theme, secondary); border-color: mat.get-theme-color($theme, secondary); }
   .btn-outline-tertiary { background-color: transparent; color: mat.get-theme-color($theme, tertiary); border-color: mat.get-theme-color($theme, tertiary); }
+  .change-set-button { background-color: mat.get-theme-color($theme, primary);}
 
   // Ensure menu option descriptions are not bold
   .menu-option-button small {
@@ -71,7 +72,7 @@
   .btn-primary:hover:not(:disabled) { background-color: color-mix(in srgb, mat.get-theme-color($theme, primary) 88%, transparent); }
   .btn-secondary:hover:not(:disabled) { background-color: color-mix(in srgb, mat.get-theme-color($theme, secondary) 88%, transparent); }
   .btn-tertiary:hover:not(:disabled) { background-color: color-mix(in srgb, mat.get-theme-color($theme, tertiary) 88%, transparent); }
-  .btn-outline-primary:hover:not(:disabled) { background-color: mat.get-theme-color($theme, primary); color: mat.get-theme-color($theme, on-primary); }
+  .btn-outline-primary:hover:not(:disabled) { background-color: mat.get-theme-color($theme, primary); color: whitesmoke; }
   .btn-outline-secondary:hover:not(:disabled) { background-color: mat.get-theme-color($theme, secondary); color: mat.get-theme-color($theme, on-secondary); }
   .btn-outline-tertiary:hover:not(:disabled) { background-color: mat.get-theme-color($theme, tertiary); color: mat.get-theme-color($theme, on-tertiary); }
 
@@ -282,7 +283,7 @@
     }
   }
 
-  .param-compact.action-param {
+  .param-compact, .selected-set-card {
     border-left: 4px solid mat.get-theme-color($theme, primary) !important;
   } 
 }

@@ -2,33 +2,33 @@
   <mat-card-header>
     <mat-card-title class="mat-headline-5">Select Operation</mat-card-title>
   </mat-card-header>
-  <mat-card-content>
+  <div class="eca-actions mt-16">
     <button mat-flat-button color="primary" [disabled]="loading || processingNotes" (click)="onDeleteAllClick()">
       Delete All Notes
     </button>
-    <div class="running-text">
-      <div class="mat-body-2">Delete All Notes: Removes every Internal segment note from every user in the selected set. External notes will not be affected. This cannot be undone.</div>
+  </div>
+  <mat-card-content class="pad-16">
+    <div class="mat-headline-4 mb-24">
+      <div class="mat-headline-4"><b>Delete All Notes:</b> Removes every Internal segment note from every user in the selected set. External notes will not be affected. This cannot be undone.</div>
     </div>
-    <!-- Inline confirmation panel -->
-    <mat-card *ngIf="showDeleteAllConfirm" class="confirm-panel">
-      <mat-card-content>
-        <div class="main-title">Confirm Delete All Notes</div>
+    <mat-card *ngIf="showDeleteAllConfirm" class="confirm-panel mb-24">
+      <mat-card-content class="pad-16">
+        <div class="mat-headline-5 mb-10">Confirm Delete All Notes</div>
         <div class="running-text">This will delete ALL Internal segment notes for ALL users in the selected set. External notes will not be affected. This action cannot be undone.</div>
       </mat-card-content>
-      <mat-card-actions class="action-row mt-10">
+      <mat-card-actions class="action-row mt-16 pad-16">
         <button mat-flat-button color="secondary" [disabled]="processingNotes" (click)="onCancelDeleteAll()" tabindex="0">Cancel</button>
         <span class="flex-spacer"></span>
         <button mat-flat-button color="secondary" [disabled]="processingNotes" (click)="onExecuteDeleteAll()" tabindex="-1">Yes, Delete All Notes</button>
       </mat-card-actions>
     </mat-card>
-    
-    <div class="spacer-32"></div>
-    
-    <button mat-flat-button color="primary" [disabled]="loading || processingNotes" (click)="onChooseMenu()">
-      Modify or Delete Specific Notes
-    </button>
-    <div class="running-text">
-      <div class="mat-body-2">Modify or Delete Specific Notes: Configure filters and actions to target specific notes.</div>
+    </mat-card-content>
+    <div class="eca-actions mt-16">
+      <button mat-flat-button color="primary" [disabled]="loading || processingNotes" (click)="onChooseMenu()">
+        Modify or Delete Specific Notes
+      </button>
     </div>
-  </mat-card-content>
+    <div class="mat-headline-4 mb-24 pad-16">
+      <div class="mat-headline-4"><b>Modify or Delete Specific Notes:</b> Configure filters and actions to target specific notes.</div>
+    </div>
 </mat-card>

@@ -6,20 +6,36 @@
 }
 
 .job-params-compact {
+	/* Match card content inset for top-right actions */
+	.eca-actions {
+		padding: 0 16px; /* align with typical card/content padding */
+		display: flex;
+		justify-content: flex-end; /* safety: ensure right alignment */
+	}
+
 	.parameters-grid {
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
-        background: whitesmoke !important;
+        background: #f8f9fa !important;
+		border-radius: 8px;
+		padding: 16px;
+		border: 1px solid #e9ecef;
 	}
 
 	.param-compact {
 		border: 1px solid #E8E8E8;
-		border-radius: 4px;
+		border-radius: 6px;
 		padding: 16px;
 		background-color: white;
 		transition: all 0.2s ease;
 		margin-bottom: 16px;
+		box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+
+		&:hover {
+			border-color: #d0d7de;
+			box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+		}
 
 		.param-header {
 			display: flex;
@@ -120,15 +136,6 @@
 .chip-tertiary { background: #e6f0ea; color: #2d4a7f; }
 .chip-secondary { background: #fff4e6; color: #8a6d3b; }
 .chip-lg { padding: 8px 12px; }
-
-.center { text-align: center; }
-.mt-20 { margin-top: 20px; }
-.mt-16 { margin-top: 16px; }
-.mt-15 { margin-top: 15px; }
-.mb-8 { margin-bottom: 8px; }
-.mb-24 { margin-bottom: 24px; }
-.pad-20 { padding: 20px; }
-.pad-10 { padding: 10px; }
 
 /* Buttons */
 button[mat-flat-button], button[mat-raised-button] {

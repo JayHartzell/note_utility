@@ -32,3 +32,31 @@
   padding: 20px;
   background-color: #f5f5f5;
 }
+
+/* Job Configuration Container */
+.job-configuration {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 24px;
+
+  &.dense {
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+}
+
+/* Loading shade overlay */
+.loading-shade {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  
+  mat-progress-spinner {
+    margin: 0 auto;
+  }
+}
+
+/* Text utilities */
+.text-primary { color: #4164A4; }

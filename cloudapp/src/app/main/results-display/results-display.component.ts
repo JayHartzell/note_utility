@@ -61,12 +61,17 @@ export class ResultsDisplayComponent {
   }
 
   wasUserModified(log: UserProcessLog): boolean {
-    return log.notes.some(noteLog => noteLog.after && (
-      noteLog.before.note_text !== noteLog.after.note_text ||
-      noteLog.before.popup_note !== noteLog.after.popup_note ||
-      noteLog.before.user_viewable !== noteLog.after.user_viewable ||
-      noteLog.before.note_type?.value !== noteLog.after.note_type?.value
-    ));
+    return log.notes.some(noteLog =>
+      // Count deletions as changes
+      noteLog.deleted === true ||
+      // Or any field-level modification when 'after' exists
+      (noteLog.after && (
+        noteLog.before.note_text !== noteLog.after.note_text ||
+        noteLog.before.popup_note !== noteLog.after.popup_note ||
+        noteLog.before.user_viewable !== noteLog.after.user_viewable ||
+        noteLog.before.note_type?.value !== noteLog.after.note_type?.value
+      ))
+    );
   }
 
   exportResultsToCsv() {

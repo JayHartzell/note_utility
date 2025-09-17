@@ -21,11 +21,21 @@
 }
 
 .spacer-32 { margin: 32px 0; }
-.mt-10 { margin-top: 10px; }
 
 /* Button appearance tweaks used in the template */
 button[mat-flat-button] {
 	transition: all 0.15s ease;
+	font-family: 'Roboto', sans-serif !important;
+	font-weight: 500 !important;
+	text-transform: none !important;
+	
+	&[color="primary"] {
+		color: whitesmoke !important;
+		
+		&:hover:not(:disabled) {
+			color: white !important;
+		}
+	}
 }
 
 .flex-spacer { flex: 1 1 auto; }
