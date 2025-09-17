@@ -1,0 +1,152 @@
+
+/* Scoped styles for Job Parameters component derived from old.scss */
+
+:host {
+	display: block;
+}
+
+.job-params-compact {
+	.parameters-grid {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+        background: whitesmoke !important;
+	}
+
+	.param-compact {
+		border: 1px solid #E8E8E8;
+		border-radius: 4px;
+		padding: 16px;
+		background-color: white;
+		transition: all 0.2s ease;
+		margin-bottom: 16px;
+
+		.param-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 8px;
+			gap: 12px;
+
+			.param-label {
+				font-size: 14px;
+			}
+
+			.remove-param-btn {
+				opacity: 0;
+				pointer-events: none;
+				transition: opacity 0.2s ease;
+			}
+		}
+
+		&:hover,
+		&:focus-within {
+			.remove-param-btn {
+				opacity: 1;
+				pointer-events: auto;
+			}
+		}
+
+		.param-fields {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+
+			.action-display {
+				font-family: 'Roboto', sans-serif;
+				font-weight: 300;
+				color: #5E5E5E;
+			}
+
+			.param-options {
+				display: flex;
+				gap: 12px;
+				align-items: center;
+				flex-wrap: wrap;
+			}
+		}
+	}
+
+	&.action-param {
+		background-color: white;
+	}
+}
+
+.uxf-icon {
+  font-size: 16px !important;
+  color: #4164A4 !important;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  
+  // SVG responsive behavior
+  svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+  
+  // Hover effects
+  &:hover {
+    color: #2d4a7f !important; // Darker shade on hover
+    transform: scale(1.1);
+  }
+  
+  // Focus states for accessibility
+  &:focus {
+    outline: 2px solid #4164A4;
+    outline-offset: 2px;
+  }
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Form-field sizing helpers used in the template */
+.search-input { width: 100%; max-width: 100%; }
+.match-select { width: 220px; max-width: 100%; }
+.date-input { width: 200px; max-width: 100%; }
+.note-type-select { width: 280px; max-width: 100%; }
+
+
+
+.border-left-primary { border-left: 4px solid #4164A4; }
+
+.chip { display: inline-block; padding: 6px 10px; border-radius: 16px; background: #f1f3f5; }
+.chip-tertiary { background: #e6f0ea; color: #2d4a7f; }
+.chip-secondary { background: #fff4e6; color: #8a6d3b; }
+.chip-lg { padding: 8px 12px; }
+
+.center { text-align: center; }
+.mt-20 { margin-top: 20px; }
+.mt-16 { margin-top: 16px; }
+.mt-15 { margin-top: 15px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-24 { margin-bottom: 24px; }
+.pad-20 { padding: 20px; }
+.pad-10 { padding: 10px; }
+
+/* Buttons */
+button[mat-flat-button], button[mat-raised-button] {
+	transition: all 0.15s ease;
+}
+
+/* Progress area text */
+.text-default { color: #5E5E5E; }
+
+/* Ensure hover-to-reveal for action icon even if other styles conflict */
+.job-params-compact .param-compact .param-header .remove-param-btn {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.job-params-compact .param-compact:hover .param-header .remove-param-btn,
+.job-params-compact .param-compact:focus-within .param-header .remove-param-btn {
+	opacity: 1;
+	pointer-events: auto;
+}
+

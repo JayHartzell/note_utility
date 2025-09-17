@@ -1,0 +1,32 @@
+
+/* Scoped styles for Operation Selector component derived from old.scss */
+
+:host {
+	display: block;
+}
+
+.confirm-panel {
+	background-color: white !important;
+	margin-top: 24px;
+	border: 1px solid #DCDCDC;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	border-radius: 4px;
+}
+
+.action-row {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	justify-content: center;
+}
+
+.spacer-32 { margin: 32px 0; }
+.mt-10 { margin-top: 10px; }
+
+/* Button appearance tweaks used in the template */
+button[mat-flat-button] {
+	transition: all 0.15s ease;
+}
+
+.flex-spacer { flex: 1 1 auto; }
+

@@ -1,0 +1,78 @@
+
+/* Scoped styles for Set Selector component derived from old.scss */
+
+:host { display: block; }
+
+.instruction-message {
+	.instruction-card {
+		padding: 15px;
+		margin-bottom: 20px;
+		border-radius: 4px;
+		background-color: #eaf2f6;
+		border: 1px solid #DCDCDC;
+
+		.mat-headline-5 {
+			margin: 0 0 10px 0;
+			font-weight: 400;
+		}
+
+		p {
+			margin: 0;
+			line-height: 1.4;
+		}
+	}
+}
+
+.set-selection {
+	margin-bottom: 24px;
+
+	.set-option { margin-bottom: 8px; }
+
+	.set-button {
+		padding: 12px 16px;
+		border: 1px solid #DCDCDC;
+		border-radius: 4px;
+		cursor: pointer;
+		width: 100%;
+		text-align: left;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		transition: all 0.2s ease;
+		font-size: 14px;
+		background-color: whitesmoke;
+	}
+
+	.set-info { display: flex; flex-direction: column; }
+
+	.set-name { font-weight: 600; }
+	.set-id { font-size: 12px; color: #6b6b6b; }
+}
+
+.selected-set-info { width: 100%; margin-bottom: 24px; }
+
+.selected-set-card {
+	padding: 16px;
+	margin: 0;
+	border-radius: 4px;
+	width: 100%;
+	box-sizing: border-box;
+	border: 1px solid #DCDCDC;
+	background-color: #eaf2f6 !important;
+	overflow: hidden;
+
+	.selected-set-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 12px;
+		gap: 16px;
+
+		.set-title { display: flex; flex-direction: column; }
+
+		.change-set-btn { min-width: 90px; }
+	}
+
+	.loading-indicator { display: flex; gap: 8px; align-items: center; }
+}
+

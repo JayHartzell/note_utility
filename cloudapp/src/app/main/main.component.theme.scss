@@ -148,7 +148,6 @@
   .set-selection {
     .set-option {
       .set-button {
-        background-color: mat.get-theme-color($theme, primary);
         color: mat.get-theme-color($theme, on-primary);
         border: 1px solid mat.get-theme-color($theme, outline);
         

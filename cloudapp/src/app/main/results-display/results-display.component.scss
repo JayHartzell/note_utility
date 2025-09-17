@@ -1,0 +1,56 @@
+/* Scoped styles for Results Display component derived from old.scss */
+
+:host { display: block; }
+
+.processing-results {
+  .summary-box {
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  }
+
+  .note-summary-card {
+    background: #f8f9fa;
+    border-left: 4px solid #dee2e6;
+
+    .summary-header { font-size: 1.1em; }
+  }
+
+  .user-change-card-consolidated {
+    background-color: white;
+    border: 1px solid #DCDCDC;
+    border-radius: 4px;
+    padding: 16px;
+    border-left: 3px solid #4164A4;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+    &:hover {
+      border-left-color: #2d4a7f;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .user-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      gap: 16px;
+    }
+
+    .modification-details {
+      padding: 12px;
+      background-color: #eaf2f6;
+      border-radius: 4px;
+      margin-top: 8px;
+    }
+  }
+
+  .results-scroll { max-height: 400px; overflow-y: auto; }
+}
+
+.button-wrap { display: flex; gap: 10px; flex-wrap: wrap; }
+.action-row { display: flex; gap: 10px; align-items: center; justify-content: center; }
+
