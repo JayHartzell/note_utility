@@ -528,6 +528,10 @@ export class MainComponent implements OnInit, OnDestroy {
   return JobConfigUtil.hasValidSearchSelection(this.jobParameters);
   }
 
+  get dateRangeSelectedButIncomplete(): boolean {
+  return JobConfigUtil.dateRangeSelectedButIncomplete(this.jobParameters);
+  }
+
   get hasModificationParameter(): boolean {
   return JobConfigUtil.hasModificationParameter(this.jobParameters);
   }
@@ -648,6 +652,10 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     if (!this.hasValidSearchSelection) {
       this.alert.error('Please add search criteria (enter text or set a date range).');
+      return;
+    }
+    if (this.dateRangeSelectedButIncomplete) {
+      this.alert.error('Please select both a start and end date.');
       return;
     }
     if (this.isModifyAction && (!this.hasModificationParameter || !this.hasConcreteModificationSelection)) {

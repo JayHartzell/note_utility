@@ -46,11 +46,26 @@ export class JobConfigUtil {
     if (!dateParam) return false;
     const start = dateParam.value?.startDate;
     const end = dateParam.value?.endDate;
-    return !!(start || end);
+    // Both start and end must be provided to consider date filter valid
+    return !!(start && end);
   }
 
   static hasValidSearchSelection(params: JobParameter[]): boolean {
     return this.hasTextSearch(params) || this.hasDateRangeWithValue(params);
+  }
+
+  /**
+   * True when a date range parameter is selected but only one bound is provided.
+   * Used to guide the user to select both start and end dates.
+   */
+  static dateRangeSelectedButIncomplete(params: JobParameter[]): boolean {
+    const dateParam = params.find(p => (p as any).id === 'dateRange') as any;
+    if (!dateParam) return false;
+    const start = dateParam.value?.startDate;
+    const end = dateParam.value?.endDate;
+    const hasStart = !!start;
+    const hasEnd = !!end;
+    return (hasStart !== hasEnd); // exactly one provided
   }
 
   static hasModificationParameter(params: JobParameter[]): boolean {
@@ -77,9 +92,9 @@ export class JobConfigUtil {
     const caseSensitive = textParam?.value?.caseSensitive || false;
     const matchMode = textParam?.value?.matchMode || 'substring';
     const ignoreAccents = (textParam?.value?.ignoreAccents ?? true) as boolean;
-    const startDate = dateParam?.value?.startDate || '';
-    const endDate = dateParam?.value?.endDate || '';
-    const searchByDate = !!dateParam && (!!startDate || !!endDate);
+  const startDate = dateParam?.value?.startDate || '';
+  const endDate = dateParam?.value?.endDate || '';
+  const searchByDate = !!dateParam && !!startDate && !!endDate;
     // Default to Internal segment filtering - only process Internal notes
     const segmentType = 'Internal' as 'Internal' | 'External';
   // locale is assigned by caller (component) if needed
