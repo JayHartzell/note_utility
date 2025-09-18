@@ -99,11 +99,7 @@
     </ul>
   </section>
   
-  <!-- Show empty list template when nothing is available -->
-  <section *ngIf="selectedSet && (!setMembers || setMembers.length === 0) && !loading" class="mt-50">
-    <ng-container *ngTemplateOutlet="emptyList"></ng-container>
-  </section>
-  
+
   <!-- Loading indicator -->
   <section *ngIf="loading || processingNotes" class="mt-50">
     <div class="loading-shade">
@@ -111,11 +107,4 @@
     </div>
   </section>
   
-  <!-- Empty list template -->
-  <ng-template #emptyList>
-    <div id="emptyList">
-      <span class="uxf-icon uxf-list"></span>
-      <div>No items found for this set.</div>
-    </div>
-  </ng-template>
-</div>
+ 

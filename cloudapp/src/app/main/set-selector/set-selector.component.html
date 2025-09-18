@@ -33,6 +33,9 @@
       <div class="set-title">
         <div class="mat-headline-5">{{ selectedSet.description || 'Unnamed Set' }}</div>
         <div class="mat-headline-6">Set ID: {{ selectedSet.id }}</div>
+        <div *ngIf="!loading">
+        <div class="mat-headline-5">{{ usersWithNotes.length || 0 }} Users with notes</div>
+      </div>
       </div>
       <button mat-flat-button 
               class="eca actions"
@@ -43,11 +46,7 @@
     </div>
     
     <div class="set-summary">
-      <div *ngIf="!loading" class="users-with-notes">
-        <!-- This will be handled by the main component -->
-        <!-- <div class="count">{{ usersWithNotes.length || 0 }}</div>
-        <div class="label">Users with notes</div> -->
-      </div>
+      
       
       <div *ngIf="loading" class="loading-indicator">
         <mat-spinner diameter="16"></mat-spinner>
