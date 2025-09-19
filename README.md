@@ -66,7 +66,6 @@ A lightweight tool to bulk modify or delete user notes.
         
   - **Date match**
     - Select notes created within a specific date range
-    - Use start date, end date, or both to define the range
     - Dates are inclusive (notes created on the boundary dates are included)
     
 - Choose what to do with matches:
