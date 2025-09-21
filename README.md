@@ -67,6 +67,9 @@ A lightweight tool to bulk modify or delete user notes.
   - **Date match**
     - Select notes created within a specific date range
     - Dates are inclusive (notes created on the boundary dates are included)
+  
+  - **Creator match**
+    - Filter for specific note creators found on notes in the set. Can select one or more.
     
 - Choose what to do with matches:
   - Toggle popup (Yes/No)
