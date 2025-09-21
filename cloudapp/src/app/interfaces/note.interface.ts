@@ -31,6 +31,9 @@ export interface NoteSearchCriteria {
   locale?: string;
   // Segment filtering
   segmentType?: 'Internal' | 'External';
+  // Creator filtering
+  searchByCreator?: boolean;
+  selectedCreators?: string[];
 }
 
 export interface NoteModificationOptions {
@@ -87,6 +90,13 @@ export type JobParameter =
       type: 'dateRange';
       label: 'Date Range' | string;
       value: { startDate: string; endDate: string };
+      editable: boolean;
+    }
+  | {
+      id: 'creatorSearch';
+      type: 'search';
+      label: 'Creator Filter' | string;
+      value: { selectedCreators: string[] };
       editable: boolean;
     }
   | {

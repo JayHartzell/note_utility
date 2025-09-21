@@ -126,7 +126,25 @@
 .search-input { width: 100%; max-width: 100%; }
 .match-select { width: 220px; max-width: 100%; }
 .date-input { width: 200px; max-width: 100%; }
+.creator-select { width: 100%; max-width: 100%; }
 .note-type-select { width: 280px; max-width: 100%; }
+
+/* Creator filter specific styles */
+.selected-creators-info {
+  margin-bottom: 12px;
+  
+  .selected-creators-text {
+    font-size: 14px;
+    color: #5E5E5E;
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
+    word-wrap: break-word;
+  }
+}
 
 
 

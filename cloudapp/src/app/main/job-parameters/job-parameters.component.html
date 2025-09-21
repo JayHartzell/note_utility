@@ -154,6 +154,42 @@
           </div>
         </div>
 
+        <!-- Creator Search Parameter -->
+        <div *ngIf="creatorSearchParam" class="param-compact">
+          <div class="param-header">
+            <span class="param-label">{{ creatorSearchParam.label }}</span>
+            <button mat-icon-button 
+                    *ngIf="!jobExecuted" 
+                    (click)="removeJobParameter.emit(creatorSearchParam.id)" 
+                    class="remove-param-btn"
+                    title="Remove this parameter">
+              <i class="uxf-icon uxf-close"></i>
+            </button>
+          </div>
+          <div class="param-fields">
+            <!-- Selected creators display -->
+            <div *ngIf="creatorSearchParam.value.selectedCreators.length > 0" class="selected-creators-info">
+              <div class="selected-creators-text">
+                Selected creators: {{ creatorSearchParam.value.selectedCreators.join(', ') }}
+              </div>
+            </div>
+            
+            <!-- Creator selection dropdown -->
+            <mat-form-field class="creator-select" appearance="outline" floatLabel="always">
+              <mat-label>Select creators</mat-label>
+              <mat-select [ngModel]="creatorSearchParam.value.selectedCreators" 
+                          (ngModelChange)="updateJobParameter.emit({id: 'creatorSearch', value: { selectedCreators: $event }})"
+                          [disabled]="jobExecuted"
+                          multiple>
+                <mat-option *ngFor="let creator of availableCreators" [value]="creator">
+                  {{ creator }}
+                </mat-option>
+              </mat-select>
+              <mat-hint>{{ creatorSearchParam.value.selectedCreators.length }} creator(s) selected</mat-hint>
+            </mat-form-field>
+          </div>
+        </div>
+
         <!-- Popup Settings Parameter -->
         <div *ngIf="popupParam" class="param-compact">
           <div class="param-header">

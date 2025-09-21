@@ -24,6 +24,7 @@
   <app-job-parameters
     [jobParameters]="jobParameters"
     [availableNoteTypes]="availableNoteTypes"
+    [availableCreators]="availableCreators"
     [jobExecuted]="jobExecuted"
     [processingNotes]="processingNotes"
     [loading]="loading"
@@ -59,7 +60,6 @@
     [jobEndTime]="jobEndTime"
     [jobConfiguration]="jobConfiguration"
     (exportToCsv)="exportResultsToCsv()"
-    (viewUserInAlma)="viewUserInAlma($event)"
 ></app-results-display>
 
 <!-- User display with note highlighting -->

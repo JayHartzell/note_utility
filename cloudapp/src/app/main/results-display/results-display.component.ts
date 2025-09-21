@@ -25,7 +25,6 @@ export class ResultsDisplayComponent {
   @Input() jobConfiguration: any = null;
 
   @Output() exportToCsv = new EventEmitter<void>();
-  @Output() viewUserInAlma = new EventEmitter<string>();
 
   get processLogsWithChanges() {
     return this.processLogs.filter(log => this.wasUserModified(log));
@@ -76,9 +75,5 @@ export class ResultsDisplayComponent {
 
   exportResultsToCsv() {
     this.exportToCsv.emit();
-  }
-
-  viewUser(userId: string) {
-    this.viewUserInAlma.emit(userId);
   }
 }

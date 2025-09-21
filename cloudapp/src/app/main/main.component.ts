@@ -57,6 +57,9 @@ export class MainComponent implements OnInit, OnDestroy {
   usersWithNotes: Array<UserData> = [];
   usersWithoutNotes: Array<UserData> = [];
 
+  // Available creators for filtering
+  availableCreators: string[] = [];
+
   // Job parameters
   jobParameters: JobParameter[] = [];
   menuOptions: MenuOption[] = [
@@ -86,6 +89,13 @@ export class MainComponent implements OnInit, OnDestroy {
       category: 'search',
       label: 'Date Range',
       description: 'Filter notes by creation date',
+      available: true
+    },
+    {
+      id: 'search-creator',
+      category: 'search',
+      label: 'Creator Filter',
+      description: 'Filter notes by creator',
       available: true
     },
     {
@@ -167,6 +177,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.userDetails = [];
     this.usersWithNotes = [];
     this.usersWithoutNotes = [];
+    this.availableCreators = [];
     this.processed = 0;
     this.recordsToProcess = 0;
     this.modifiedUsers = new Set();
@@ -376,6 +387,15 @@ export class MainComponent implements OnInit, OnDestroy {
           editable: true
         };
         break;
+      case 'search-creator':
+        parameter = {
+          id: 'creatorSearch',
+          type: 'search',
+          label: 'Creator Filter',
+          value: { selectedCreators: [] },
+          editable: true
+        };
+        break;
       case 'modification-popup':
         parameter = {
           id: 'popupSettings',
@@ -443,6 +463,7 @@ export class MainComponent implements OnInit, OnDestroy {
       const optionMap: { [key: string]: string } = {
         'textSearch': 'search-text',
         'dateRange': 'search-date',
+        'creatorSearch': 'search-creator',
         'popupSettings': 'modification-popup',
         'noteType': 'modification-type',
         'userViewable': 'modification-user-viewable'
@@ -532,6 +553,16 @@ export class MainComponent implements OnInit, OnDestroy {
   return JobConfigUtil.dateRangeSelectedButIncomplete(this.jobParameters);
   }
 
+  //  require creator search to have at least one selected creator
+  get hasCreatorSearch(): boolean {
+  return JobConfigUtil.hasCreatorSearch(this.jobParameters);
+  }
+
+  //  whether creator search parameter is present but empty (invalid)
+  get creatorSearchSelectedButEmpty(): boolean {
+  return JobConfigUtil.creatorSearchSelectedButEmpty(this.jobParameters);
+  }
+
   get hasModificationParameter(): boolean {
   return JobConfigUtil.hasModificationParameter(this.jobParameters);
   }
@@ -589,6 +620,10 @@ export class MainComponent implements OnInit, OnDestroy {
     return this.getDateParam();
   }
 
+  get creatorSearchParam() {
+    return this.getCreatorParam();
+  }
+
   get popupParam() {
     return this.getPopupParam();
   }
@@ -607,6 +642,10 @@ export class MainComponent implements OnInit, OnDestroy {
 
   private getDateParam() {
     return JobConfigUtil.getDateParam(this.jobParameters) as Extract<JobParameter, { id: 'dateRange' }> | undefined;
+  }
+
+  private getCreatorParam() {
+    return JobConfigUtil.getCreatorParam(this.jobParameters) as Extract<JobParameter, { id: 'creatorSearch' }> | undefined;
   }
 
   private getPopupParam() {
@@ -678,6 +717,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.jobStartTime = new Date();
     const textParam = this.getTextParam();
     const dateParam = this.getDateParam();
+    const creatorParam = this.getCreatorParam();
     const popupParam = this.getPopupParam();
     const uvParam = this.getUserViewableParam();
     const noteTypeParam = this.getNoteTypeParam();
@@ -686,7 +726,8 @@ export class MainComponent implements OnInit, OnDestroy {
       action: actionParam?.value || 'modify',
       searchCriteria: {
         textSearch: textParam?.value || null,
-        dateRange: dateParam?.value || null
+        dateRange: dateParam?.value || null,
+        creatorSearch: creatorParam?.value || null
       },
       modificationOptions: {
         popup: popupParam?.value || null,
@@ -828,6 +869,9 @@ export class MainComponent implements OnInit, OnDestroy {
   const categorized = SetUsersService.categorize(this.userDetails);
   this.usersWithNotes = categorized.usersWithNotes;
   this.usersWithoutNotes = categorized.usersWithoutNotes;
+
+  // Extract unique creators from all notes
+  this.extractAvailableCreators();
         
         this.loading = false;
       },
@@ -846,17 +890,25 @@ export class MainComponent implements OnInit, OnDestroy {
     return this.userDetails;
   }
 
+  // Extract unique creators from all notes in the set
+  extractAvailableCreators() {
+    const creators = new Set<string>();
+    
+    for (const user of this.userDetails) {
+      if (user.user_note && Array.isArray(user.user_note)) {
+        for (const note of user.user_note) {
+          if (note.created_by && note.created_by.trim()) {
+            creators.add(note.created_by.trim());
+          }
+        }
+      }
+    }
+    
+    this.availableCreators = Array.from(creators).sort();
+  }
+
   // Helper method to format note creation date (locale-aware, local timezone)
   formatNoteDate(note: UserNote): string {
   return DateUtilService.formatNoteDate(note, this.locale);
-  }
-
-  viewUserInAlma(userId: string) {
-    // This is a placeholder. You will need to replace 'your-alma-domain' with your actual Alma domain.
-    const almaBaseUrl = 'https://your-alma-domain';
-    this.eventsService.getAuthToken().subscribe(token => {
-      const url = `${almaBaseUrl}/users/${userId}`;
-      window.open(url, '_blank');
-    });
   }
 }
