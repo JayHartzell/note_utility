@@ -26,6 +26,8 @@ import { OperationSelectorComponent } from './operation-selector/operation-selec
 import { JobParametersComponent } from './job-parameters/job-parameters.component';
 import { JobMenuComponent } from './job-menu/job-menu.component';
 import { ResultsDisplayComponent } from './results-display/results-display.component';
+import { IntakeMethodSelectorComponent } from './intake-method-selector/intake-method-selector.component';
+import { FileUploadComponent } from './file-upload/file-upload.component';
 
 @Component({
   selector: 'app-main',
@@ -41,6 +43,8 @@ import { ResultsDisplayComponent } from './results-display/results-display.compo
     JobParametersComponent,
     JobMenuComponent,
     ResultsDisplayComponent,
+    IntakeMethodSelectorComponent,
+    FileUploadComponent,
   ]
 })
 export class MainComponent implements OnInit, OnDestroy {
@@ -126,6 +130,17 @@ export class MainComponent implements OnInit, OnDestroy {
   // Inline confirmation for delete-all flow
   showDeleteAllConfirm: boolean = false;
   
+  // Intake method state: 'select' to choose method, 'set' for set-based, 'file' for file-based, 'completed' after loading
+  intakeMethod: 'select' | 'set' | 'file' | 'completed' = 'select';
+  // Track which method was used to load users
+  usedIntakeMethod: 'set' | 'file' | null = null;
+  loadingUsers: boolean = false;
+  
+  // File upload tracking
+  totalUsersLoaded: number = 0;
+  totalUsersFailed: number = 0;
+  failedUserIds: string[] = [];
+  
   // Job execution metadata for logging
   jobStartTime: Date | null = null;
   jobEndTime: Date | null = null;
@@ -143,7 +158,11 @@ export class MainComponent implements OnInit, OnDestroy {
     this.entities$ = this.eventsService.entities$.pipe(
       tap((entities) => {
         this.currentEntities = entities;
-        this.clear();
+        // Only clear if we have already loaded users or not in set selection mode
+        // This allows users to navigate to find sets without losing their intake method selection
+        if (this.intakeMethod === 'completed' || this.intakeMethod === 'select') {
+          this.clear();
+        }
       })
     );
   }
@@ -180,8 +199,18 @@ export class MainComponent implements OnInit, OnDestroy {
     this.jobStartTime = null;
     this.jobEndTime = null;
     this.jobConfiguration = null;
-  this.operationMode = 'choose';
-  this.showDeleteAllConfirm = false;
+    this.operationMode = 'choose';
+    this.showDeleteAllConfirm = false;
+    
+    // Reset intake method
+    this.intakeMethod = 'select';
+    this.usedIntakeMethod = null;
+    this.loadingUsers = false;
+    
+    // Reset file upload tracking
+    this.totalUsersLoaded = 0;
+    this.totalUsersFailed = 0;
+    this.failedUserIds = [];
   }
 
   // Reset job configuration but keep the set and users loaded
@@ -803,6 +832,119 @@ export class MainComponent implements OnInit, OnDestroy {
     this.loadSetData();
   }
 
+  // Intake method selection handlers
+  selectSetIntakeMethod() {
+    this.intakeMethod = 'set';
+  }
+
+  selectFileIntakeMethod() {
+    this.intakeMethod = 'file';
+  }
+
+  cancelFileUpload() {
+    this.intakeMethod = 'select';
+  }
+
+  // Reset job state when choosing a different file
+  resetJobFromFile() {
+    // Clear user data
+    this.userDetails = [];
+    this.usersWithNotes = [];
+    this.usersWithoutNotes = [];
+    
+    // Reset job state
+    this.processed = 0;
+    this.recordsToProcess = 0;
+    this.modifiedUsers = new Set();
+    this.processLogs = [];
+    this.jobParameters = [];
+    this.menuOptions.forEach(option => option.available = true);
+    this.jobExecuted = false;
+    this.showResults = false;
+    this.jobStartTime = null;
+    this.jobEndTime = null;
+    this.jobConfiguration = null;
+    this.operationMode = 'choose';
+    this.showDeleteAllConfirm = false;
+    
+    // Reset file upload tracking
+    this.totalUsersLoaded = 0;
+    this.totalUsersFailed = 0;
+    this.failedUserIds = [];
+    
+    // Stay in file intake mode
+    this.intakeMethod = 'file';
+  }
+
+  // Load users from file-provided user IDs
+  loadUsersFromFile(userIds: string[]) {
+    if (!userIds || userIds.length === 0) {
+      this.alert.error('No user IDs provided');
+      return;
+    }
+
+    this.loadingUsers = true;
+    this.loading = true;
+    this.userDetails = [];
+    this.usersWithNotes = [];
+    this.usersWithoutNotes = [];
+    this.failedUserIds = [];
+
+    let successCount = 0;
+    let failCount = 0;
+    const totalUsers = userIds.length;
+
+    from(userIds).pipe(
+      concatMap((userId: string) => {
+        return this.userService.fetchUserDetails(userId).pipe(
+          tap((user: UserData) => {
+            successCount++;
+            this.userDetails.push(user);
+          }),
+          catchError(error => {
+            failCount++;
+            this.failedUserIds.push(userId);
+            console.error(`Error loading user ${userId}:`, error);
+            return of(null);
+          })
+        );
+      })
+    ).subscribe({
+      next: () => {},
+      error: (error) => {
+        this.loadingUsers = false;
+        this.loading = false;
+        this.alert.error('Error loading users: ' + (error.message || 'Unknown error'));
+      },
+      complete: () => {
+        // Categorize users based on note availability
+        const categorized = SetUsersService.categorize(this.userDetails);
+        this.usersWithNotes = categorized.usersWithNotes;
+        this.usersWithoutNotes = categorized.usersWithoutNotes;
+        
+        this.totalUsersLoaded = successCount;
+        this.totalUsersFailed = failCount;
+        
+        this.loadingUsers = false;
+        this.loading = false;
+        this.intakeMethod = 'completed';
+        this.usedIntakeMethod = 'file';
+        
+        if (this.usersWithNotes.length === 0) {
+          // Don't show alert, let the UI handle displaying the message
+          console.log(`Loaded ${successCount} users, but none have notes`);
+        } else {
+          let message = `Successfully loaded ${successCount} of ${totalUsers} users. ${this.usersWithNotes.length} have notes.`;
+          if (failCount > 0) {
+            this.alert.warn(message + ` ${failCount} user(s) failed to load.`);
+          } else {
+            this.alert.success(message);
+          }
+        }
+      }
+    });
+  }
+
   // Load set data using the selected entity
   loadSetData() {
     if (!this.selectedSet) {
@@ -813,6 +955,7 @@ export class MainComponent implements OnInit, OnDestroy {
   // Loading set data for selected set
     
     this.loading = true;
+    this.loadingUsers = true;
     this.userDetails = [];
     this.setMembers = [];
     this.usersWithNotes = [];
@@ -830,9 +973,13 @@ export class MainComponent implements OnInit, OnDestroy {
   this.usersWithoutNotes = categorized.usersWithoutNotes;
         
         this.loading = false;
+        this.loadingUsers = false;
+        this.intakeMethod = 'completed';
+        this.usedIntakeMethod = 'set';
       },
       error: (error) => {
         this.loading = false;
+        this.loadingUsers = false;
         this.alert.error(error.message || 'Failed to retrieve set data');
       }
     });

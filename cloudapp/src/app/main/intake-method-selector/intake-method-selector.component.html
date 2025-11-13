@@ -1,0 +1,25 @@
+<mat-card class="mt-20">
+  <mat-card-header>
+    <mat-card-title class="mat-headline-5">Select Intake Method</mat-card-title>
+  </mat-card-header>
+  <div class="eca-actions mt-16">
+    <button mat-flat-button color="primary" [disabled]="loading || processingNotes" (click)="onSelectSetMethod()">
+      Load Users From Set
+    </button>
+  </div>
+  <mat-card-content class="pad-16">
+    <div class="mat-headline-4 mb-24">
+      <div class="mat-headline-4"><b>Load Users From Set:</b> Navigate to a Users set page and select a set to load its members.</div>
+    </div>
+  </mat-card-content>
+  <div class="eca-actions mt-16">
+    <button mat-flat-button color="primary" [disabled]="loading || processingNotes" (click)="onSelectFileMethod()">
+      Load Users From File
+    </button>
+  </div>
+  <mat-card-content class="pad-16">
+    <div class="mat-headline-4 mb-24">
+      <div class="mat-headline-4"><b>Load Users From File:</b> Upload an Excel file containing a column with header "PRIMARYIDENTIFIER" to load users directly.</div>
+    </div>
+  </mat-card-content>
+</mat-card>

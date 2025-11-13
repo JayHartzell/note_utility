@@ -1,0 +1,141 @@
+<mat-card class="mt-20" *ngIf="!usersHaveBeenLoaded || (usersHaveBeenLoaded && usersWithNotes && usersWithNotes.length === 0)">
+  <mat-card-header>
+    <mat-card-title class="mat-headline-5">Load Users From File</mat-card-title>
+  </mat-card-header>
+  <mat-card-content class="pad-16">
+    <div class="instruction-message mb-16">
+      <div class="instruction-card">
+        <div class="mat-headline-6">Upload an Excel file</div>
+        <p>
+          Your file must contain a column with the header <strong>"PRIMARYIDENTIFIER"</strong> containing user IDs.
+          Supported formats: .xlsx, .xls, .csv
+        </p>
+      </div>
+    </div>
+
+    <!-- File input -->
+    <div *ngIf="!showPreview" class="file-input-container">
+      <input 
+        type="file" 
+        id="fileInput" 
+        accept=".xlsx,.xls,.csv" 
+        (change)="onFileSelected($event)"
+        [disabled]="loading || processingNotes"
+        class="file-input-hidden"
+      />
+      <div class="eca-actions mt-16">
+      <button mat-flat-button 
+              color="primary"
+              (click)="triggerFileInput()" 
+              [disabled]="loading || processingNotes">
+        <mat-icon>upload_file</mat-icon>
+        Choose File
+      </button>
+      </div>
+      <div *ngIf="fileName" class="file-name-display mt-10">
+        <span class="file-name">{{ fileName }}</span>
+      </div>
+    </div>
+
+    <!-- Error message -->
+    <div *ngIf="parseError" class="error-message mt-16">
+      <mat-icon color="warn">error</mat-icon>
+      <span>{{ parseError }}</span>
+    </div>
+
+    <!-- Preview -->
+    <div *ngIf="showPreview && !parseError && !usersHaveBeenLoaded" class="preview-section mt-16">
+      <div class="mat-headline-6 mb-10">Preview</div>
+      <div class="preview-info mb-10">
+        <strong>File:</strong> {{ fileName }}<br>
+        <strong>Total User IDs Found:</strong> {{ userIds.length }}
+      </div>
+      
+      <div class="preview-list">
+        <div class="mat-headline-6 mb-5">User IDs (showing first {{ previewUserIds.length }}):</div>
+        <ul class="user-id-list">
+          <li *ngFor="let userId of previewUserIds">{{ userId }}</li>
+        </ul>
+        <div *ngIf="hasMoreUsers" class="more-users">
+          ...and {{ userIds.length - 10 }} more
+        </div>
+      </div>
+
+      <div class="action-row mt-16">
+        <button mat-flat-button 
+                (click)="clearFile()" 
+                [disabled]="loading || processingNotes">
+          Choose Different File
+        </button>
+        <span class="flex-spacer"></span>
+        <button mat-flat-button 
+                color="primary" 
+                (click)="onConfirmLoad()" 
+                [disabled]="loading || processingNotes">
+          Load {{ userIds.length }} Users
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div *ngIf="loading" class="loading-indicator mt-16">
+      <mat-spinner diameter="32"></mat-spinner>
+      <span>Loading users...</span>
+    </div>
+
+    <!-- No users with notes found message -->
+    <div *ngIf="usersHaveBeenLoaded && !loading && usersWithNotes && usersWithNotes.length === 0" class="instruction-message mt-16">
+      <div class="instruction-card">
+        <div class="mat-headline-6">No users with notes were found</div>
+        <p>
+          The file was loaded successfully, but none of the users have Internal notes. Please choose a different file that contains users with notes, then try again.
+        </p>
+      </div>
+      <div class="eca-actions mt-16">
+        <button mat-flat-button 
+                color="primary"
+                (click)="clearFile()" 
+                [disabled]="loading || processingNotes">
+          Choose Different File
+        </button>
+      </div>
+    </div>
+  </mat-card-content>
+
+  <div class="eca-actions mt-16">
+    <button mat-flat-button 
+            class="eca actions"
+            (click)="onCancel()" 
+            [disabled]="loading || processingNotes">
+      Back to Intake Method Selection
+    </button>
+  </div>
+</mat-card>
+
+<!-- Selected file info (shown after successful load with users) -->
+<div *ngIf="usersHaveBeenLoaded && !loading && usersWithNotes && usersWithNotes.length > 0" class="selected-file-info">
+  <div class="selected-file-card">
+    <div class="selected-file-header">
+      <div class="file-title">
+        <div class="mat-headline-5">{{ fileName }}</div>
+        <div class="mat-headline-6">{{ totalUsersLoaded }} of {{ userIds.length }} users loaded successfully</div>
+        <div class="mat-headline-5">{{ usersWithNotes.length }} Users with notes</div>
+        <div *ngIf="totalUsersFailed > 0" class="mat-headline-6 error-text">{{ totalUsersFailed }} user(s) failed to load</div>
+      </div>
+      <button mat-flat-button 
+              class="eca actions"
+              (click)="clearFile()"
+              [disabled]="loading || processingNotes">
+        Choose Different File
+      </button>
+    </div>
+    
+    <!-- Show failed user IDs if any -->
+    <div *ngIf="totalUsersFailed > 0 && failedUserIds.length > 0" class="failed-users-section mt-16">
+      <div class="mat-headline-6">Failed User IDs:</div>
+      <ul class="failed-user-list">
+        <li *ngFor="let userId of failedUserIds">{{ userId }}</li>
+      </ul>
+    </div>
+  </div>
+</div>

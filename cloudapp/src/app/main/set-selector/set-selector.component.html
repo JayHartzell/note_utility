@@ -6,6 +6,11 @@
       Please navigate to a set of users with notes you wish to modify or delete. Once a Users set is selected, the list will populate with user records and you can configure your job parameters.
     </p>
   </div>
+  <div class="eca-actions mt-16">
+    <button mat-flat-button class="eca actions" (click)="goBack()">
+      Back to Intake Method Selection
+    </button>
+  </div>
 </div>
 
 <!-- Show available sets for selection -->
@@ -23,6 +28,11 @@
         </div>
       </button>
     </div>
+  </div>
+  <div class="eca-actions mt-16">
+    <button mat-flat-button class="eca actions" (click)="goBack()" [disabled]="loading">
+      Back to Intake Method Selection
+    </button>
   </div>
 </div>
 

@@ -22,6 +22,7 @@ export class SetSelectorComponent {
 
   @Output() selectSet = new EventEmitter<Entity>();
   @Output() clearSet = new EventEmitter<void>();
+  @Output() backToIntakeMethod = new EventEmitter<void>();
 
   onSetSelected(set: Entity) {
     this.selectSet.emit(set);
@@ -29,6 +30,10 @@ export class SetSelectorComponent {
 
   clearSelection() {
     this.clearSet.emit();
+  }
+
+  goBack() {
+    this.backToIntakeMethod.emit();
   }
 }
 

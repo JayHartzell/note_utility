@@ -1,0 +1,40 @@
+/* Scoped styles for Intake Method Selector component derived from operation-selector.scss */
+
+:host {
+	display: block;
+}
+
+.confirm-panel {
+	background-color: white !important;
+	margin-top: 24px;
+	border: 1px solid #DCDCDC;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	border-radius: 4px;
+}
+
+.action-row {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	justify-content: center;
+}
+
+.spacer-32 { margin: 32px 0; }
+
+/* Button appearance tweaks used in the template */
+button[mat-flat-button] {
+	transition: all 0.15s ease;
+	font-family: 'Roboto', sans-serif !important;
+	font-weight: 500 !important;
+	text-transform: none !important;
+	
+	&[color="primary"] {
+		color: whitesmoke !important;
+		
+		&:hover:not(:disabled) {
+			color: white !important;
+		}
+	}
+}
+
+.flex-spacer { flex: 1 1 auto; }

@@ -1,4 +1,15 @@
+<!-- Intake Method Selector (shown first) -->
+<app-intake-method-selector
+  *ngIf="intakeMethod === 'select'"
+  [loading]="loading"
+  [processingNotes]="processingNotes"
+  (selectSetMethod)="selectSetIntakeMethod()"
+  (selectFileMethod)="selectFileIntakeMethod()"
+></app-intake-method-selector>
+
+<!-- Set Selector (shown when set method is chosen or when completed via set method) -->
 <app-set-selector
+  *ngIf="intakeMethod === 'set' || (intakeMethod === 'completed' && usedIntakeMethod === 'set')"
   [hasValidSets]="hasValidSets"
   [loading]="loading"
   [processingNotes]="processingNotes"
@@ -7,10 +18,26 @@
   [usersWithNotes]="usersWithNotes"
   (selectSet)="selectSet($event)"
   (clearSet)="clear()"
+  (backToIntakeMethod)="clear()"
 ></app-set-selector>
 
+<!-- File Upload Component (shown when file method is chosen, hide after successful load with notes) -->
+<app-file-upload
+  *ngIf="intakeMethod === 'file' || (intakeMethod === 'completed' && usedIntakeMethod === 'file')"
+  [loading]="loadingUsers"
+  [processingNotes]="processingNotes"
+  [usersWithNotes]="usersWithNotes"
+  [totalUsersLoaded]="totalUsersLoaded"
+  [totalUsersFailed]="totalUsersFailed"
+  [failedUserIds]="failedUserIds"
+  (usersLoaded)="loadUsersFromFile($event)"
+  (cancel)="cancelFileUpload()"
+  (resetJob)="resetJobFromFile()"
+></app-file-upload>
+
+<!-- Operation Selector (shown after users are loaded) -->
 <app-operation-selector
-  *ngIf="usersWithNotes && usersWithNotes.length > 0 && operationMode === 'choose'"
+  *ngIf="usersWithNotes && usersWithNotes.length > 0 && operationMode === 'choose' && intakeMethod === 'completed'"
   [loading]="loading"
   [processingNotes]="processingNotes"
   [showDeleteAllConfirm]="showDeleteAllConfirm"
@@ -20,7 +47,7 @@
   (chooseMenu)="chooseMenuFlow()"
 ></app-operation-selector>
 
-<div *ngIf="usersWithNotes && usersWithNotes.length > 0 && operationMode === 'menu'" class="job-configuration dense">
+<div *ngIf="usersWithNotes && usersWithNotes.length > 0 && operationMode === 'menu' && intakeMethod === 'completed'" class="job-configuration dense">
   <app-job-parameters
     [jobParameters]="jobParameters"
     [availableNoteTypes]="availableNoteTypes"
