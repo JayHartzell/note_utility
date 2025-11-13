@@ -963,6 +963,9 @@ export class MainComponent implements OnInit, OnDestroy {
         this.usersWithNotes = categorized.usersWithNotes;
         this.usersWithoutNotes = categorized.usersWithoutNotes;
         
+        // Extract unique creators from all notes
+        this.extractAvailableCreators();
+        
         this.totalUsersLoaded = successCount;
         this.totalUsersFailed = failCount;
         
