@@ -13,6 +13,7 @@ export class JobConfigUtil {
   static getActionParam(params: JobParameter[]) { return this.getParam(params, 'action'); }
   static getTextParam(params: JobParameter[]) { return this.getParam(params, 'textSearch'); }
   static getDateParam(params: JobParameter[]) { return this.getParam(params, 'dateRange'); }
+  static getCreatorParam(params: JobParameter[]) { return this.getParam(params, 'creatorSearch'); }
   static getPopupParam(params: JobParameter[]) { return this.getParam(params, 'popupSettings'); }
   static getUserViewableParam(params: JobParameter[]) { return this.getParam(params, 'userViewable'); }
   static getNoteTypeParam(params: JobParameter[]) { return this.getParam(params, 'noteType'); }
@@ -26,6 +27,19 @@ export class JobConfigUtil {
 
   static hasSearchParameter(params: JobParameter[]): boolean {
     return params.some(p => p.type === 'search' || p.type === 'dateRange');
+  }
+
+  static hasCreatorSearch(params: JobParameter[]): boolean {
+    const creatorParam = params.find(p => (p as any).id === 'creatorSearch') as any;
+    const selectedCreators = creatorParam?.value?.selectedCreators ?? [];
+    return Array.isArray(selectedCreators) && selectedCreators.length > 0;
+  }
+
+  static creatorSearchSelectedButEmpty(params: JobParameter[]): boolean {
+    const creatorParam = params.find(p => (p as any).id === 'creatorSearch') as any;
+    if (!creatorParam) return false;
+    const selectedCreators = creatorParam.value?.selectedCreators ?? [];
+    return Array.isArray(selectedCreators) && selectedCreators.length === 0;
   }
 
   static hasTextSearch(params: JobParameter[]): boolean {
@@ -51,7 +65,7 @@ export class JobConfigUtil {
   }
 
   static hasValidSearchSelection(params: JobParameter[]): boolean {
-    return this.hasTextSearch(params) || this.hasDateRangeWithValue(params);
+    return this.hasTextSearch(params) || this.hasDateRangeWithValue(params) || this.hasCreatorSearch(params);
   }
 
   /**
@@ -86,19 +100,45 @@ export class JobConfigUtil {
 
   // Builders
   static buildSearchCriteria(params: JobParameter[]): NoteSearchCriteria {
-    const textParam = params.find(p => (p as any).id === 'textSearch') as any;
-    const dateParam = params.find(p => (p as any).id === 'dateRange') as any;
+    const textParam = this.getTextParam(params);
+    const dateParam = this.getDateParam(params);
+    const creatorParam = this.getCreatorParam(params);
+
+    // Extract search text
     const searchText = textParam?.value?.text || '';
-    const caseSensitive = textParam?.value?.caseSensitive || false;
-    const matchMode = textParam?.value?.matchMode || 'substring';
-    const ignoreAccents = (textParam?.value?.ignoreAccents ?? true) as boolean;
-  const startDate = dateParam?.value?.startDate || '';
-  const endDate = dateParam?.value?.endDate || '';
-  const searchByDate = !!dateParam && !!startDate && !!endDate;
-    // Default to Internal segment filtering - only process Internal notes
-    const segmentType = 'Internal' as 'Internal' | 'External';
-  // locale is assigned by caller (component) if needed
-  return { searchText, caseSensitive, matchMode, ignoreAccents, searchByDate, startDate, endDate, segmentType } as NoteSearchCriteria;
+    
+    // Extract date range - Convert Date objects to YYYY-MM-DD strings
+    const startDateObj = dateParam?.value?.startDate;
+    const endDateObj = dateParam?.value?.endDate;
+    
+    // Convert Date objects to YYYY-MM-DD format strings
+    const startDate = startDateObj instanceof Date ? 
+      startDateObj.toISOString().split('T')[0] : 
+      (typeof startDateObj === 'string' ? startDateObj : '');
+      
+    const endDate = endDateObj instanceof Date ? 
+      endDateObj.toISOString().split('T')[0] : 
+      (typeof endDateObj === 'string' ? endDateObj : '');
+    
+    const searchByDate = !!dateParam && !!startDate && !!endDate;
+
+    // Extract creator search - Fixed: properly extract selectedCreators array
+    const selectedCreators = creatorParam?.value?.selectedCreators || [];
+    const searchByCreator = !!creatorParam && Array.isArray(selectedCreators) && selectedCreators.length > 0;
+
+    return {
+      searchText,
+      searchByDate,
+      startDate,
+      endDate,
+      searchByCreator,
+      selectedCreators,
+      // Text search options from textParam
+      caseSensitive: textParam?.value?.caseSensitive || false,
+      matchMode: textParam?.value?.matchMode || 'substring',
+      ignoreAccents: textParam?.value?.ignoreAccents !== false,
+      segmentType: 'Internal' // Default segment filter
+    };
   }
 
   static buildModificationOptions(

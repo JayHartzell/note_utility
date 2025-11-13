@@ -36,6 +36,7 @@ import { JobParameter, NoteType } from '../../interfaces/note.interface';
 export class JobParametersComponent {
   @Input() jobParameters: JobParameter[] = [];
   @Input() availableNoteTypes: NoteType[] = [];
+  @Input() availableCreators: string[] = [];
   @Input() jobExecuted: boolean = false;
   @Input() processingNotes: boolean = false;
   @Input() loading: boolean = false;
@@ -85,6 +86,10 @@ export class JobParametersComponent {
 
   get dateRangeParam() {
     return this.jobParameters.find(p => p.id === 'dateRange');
+  }
+
+  get creatorSearchParam() {
+    return this.jobParameters.find(p => p.id === 'creatorSearch');
   }
 
   get popupParam() {

@@ -96,9 +96,10 @@ export class NoteProcessingService {
     
     // Check if we have any search criteria at all
     const hasTextSearch = criteria.searchText && criteria.searchText.trim() !== '';
-    const hasDateSearch = criteria.searchByDate && (criteria.startDate || criteria.endDate);
+    const hasDateSearch = criteria.searchByDate && criteria.startDate && criteria.endDate;
+    const hasCreatorSearch = criteria.searchByCreator && Array.isArray(criteria.selectedCreators) && criteria.selectedCreators.length > 0;
     
-    if (!hasTextSearch && !hasDateSearch) {
+    if (!hasTextSearch && !hasDateSearch && !hasCreatorSearch) {
       return []; // No search criteria provided
     }
     
@@ -106,12 +107,11 @@ export class NoteProcessingService {
     let matchingNotes: UserNote[] = [...user.user_note];
     
     // Filter by segment type first - ONLY process Internal notes by default
-    const segmentFilter = criteria.segmentType || 'Internal'; // Default to Internal only
+    const segmentFilter = criteria.segmentType || 'Internal';
     matchingNotes = matchingNotes.filter((note: UserNote) => {
-      // Check if note has segment property and matches the filter
       const noteSegment = note['segment_type'];
-      if (!noteSegment ) {
-        return false; // Skip notes without segment information
+      if (!noteSegment) {
+        return false;
       }
       return noteSegment === segmentFilter;
     });
@@ -124,18 +124,18 @@ export class NoteProcessingService {
       });
     }
     
-    // Additionally filter by date if enabled
-    if (criteria.searchByDate && (criteria.startDate || criteria.endDate)) {
+    // Filter by date if enabled
+    if (hasDateSearch) {
       // Pre-compute LOCAL bounds for criteria to avoid recomputing per note
       const startBounds = criteria.startDate ? this.getLocalBoundsForDateOnly(criteria.startDate) : null;
       const endBounds = criteria.endDate ? this.getLocalBoundsForDateOnly(criteria.endDate) : null;
 
       matchingNotes = matchingNotes.filter((note: UserNote) => {
         const dateField = note.created_date;
-        if (!dateField) return false; 
+        if (!dateField) return false;
 
         const noteMs = this.parseNoteDateToMs(dateField);
-        if (noteMs === null) return false; // Skip invalid dates
+        if (noteMs === null) return false;
 
         let matchesRange = true;
         if (startBounds) {
@@ -144,7 +144,17 @@ export class NoteProcessingService {
         if (endBounds) {
           matchesRange = matchesRange && (noteMs <= endBounds.endMs);
         }
+        
         return matchesRange;
+      });
+    }
+
+    // Filter by creator if creator search is provided
+    if (hasCreatorSearch && criteria.selectedCreators) {
+      matchingNotes = matchingNotes.filter((note: UserNote) => {
+        const noteCreator = note.created_by;
+        if (!noteCreator) return false;
+        return criteria.selectedCreators!.includes(noteCreator);
       });
     }
     
