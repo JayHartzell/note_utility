@@ -58,7 +58,7 @@ export class FileUploadComponent {
     reader.onload = (e: ProgressEvent<FileReader>) => {
       try {
         const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
+        const workbook = XLSX.read(data, { type: 'array' });
         
         // Get the first sheet
         const firstSheetName = workbook.SheetNames[0];
@@ -111,7 +111,7 @@ export class FileUploadComponent {
       this.parseError = 'Error reading file';
     };
 
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   }
 
   onConfirmLoad() {
