@@ -77,12 +77,6 @@
       </div>
     </div>
 
-    <!-- Loading indicator -->
-    <div *ngIf="loading" class="loading-indicator mt-16">
-      <mat-spinner diameter="32"></mat-spinner>
-      <span>Loading users...</span>
-    </div>
-
     <!-- No users with notes found message -->
     <div *ngIf="usersHaveBeenLoaded && !loading && usersWithNotes && usersWithNotes.length === 0" class="instruction-message mt-16">
       <div class="instruction-card">

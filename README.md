@@ -13,16 +13,26 @@ A lightweight tool to bulk modify or delete user notes.
 
 1) Open the Cloud App
 - Click the Pin button at the top-right of the screen so that the window doesn't minimize.
-  
-1) Navigate to a Valid User Set
-- Navigate to *Admin* > *Manage Sets* and locate the Users set you want to modify. You'll probably use Analytics to build the set.
 
-2) Select the Set
-- In the utility, choose the target User set.
-- Verify the set name, ID, and size of the set is correct.
+2) Choose How to Load Users
+- You have two options for loading users:
+  
+  **Option A: Load from a Set**
+  - Navigate to *Admin* > *Manage Sets* and locate the Users set you want to modify. You'll probably use Analytics to build the set.
+  - In the utility, choose "Load users from a set"
+  - Select the target User set
+  - Verify the set name, ID, and size of the set is correct
+  
+  **Option B: Load from a File**
+  - In the utility, choose "Load users from a file"
+  - Upload an Excel (.xlsx) or CSV (.csv) file
+  - **Important**: The file must have a header row with a column named `PRIMARYIDENTIFIER`
+  - The `PRIMARYIDENTIFIER` column should contain user IDs (one per row)
+  - Preview the user IDs before loading
+  - Confirm to load the users
 
 3) Choose a Meta Action
-- Delete All: Permanently delete all notes for users in the selected set.
+- Delete All: Permanently delete all notes for users in the loaded set.
 - Modify/Delete: Proceed to menu-based options to selectively modify or delete matching notes.
 
 4) Menu-Based Modification (when using Modify/Delete)
