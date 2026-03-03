@@ -12,7 +12,7 @@ describe('NoteProcessingService - text matching', () => {
 	function makeUser(notes: Array<Partial<UserNote>>): UserData {
 		return {
 			primary_id: 'u1',
-			user_note: notes.map(n => ({ note_text: '', ...n })) as UserNote[]
+			user_note: notes.map(n => ({ note_text: '', segment_type: 'Internal', ...n })) as UserNote[]
 		} as UserData;
 	}
 
@@ -23,7 +23,8 @@ describe('NoteProcessingService - text matching', () => {
 			searchByDate: false,
 			startDate: '',
 			endDate: '',
-			locale: 'en', // Use 'locale' to match the service implementation
+			locale: 'en',
+			segmentType: 'Internal', 
 			...partial,
 		} as NoteSearchCriteria;
 	}
@@ -318,15 +319,12 @@ describe('NoteProcessingService - text matching', () => {
 		});
 
 		it('handles notes with null or undefined text gracefully', () => {
-			const user = {
-				primary_id: 'u1',
-				user_note: [
-					{ note_text: null } as any,
-					{ note_text: undefined } as any,
-					{ note_text: 'Valid note' } as any,
-					{ note_text: '' } as any,
-				]
-			} as UserData;
+			const user = makeUser([
+				{ note_text: null as any },
+				{ note_text: undefined as any },
+				{ note_text: 'Valid note' },
+				{ note_text: '' },
+			]);
 
 			const c = criteria({ searchText: 'valid' });
 			const matches = service.findMatchingNotes(user, c);

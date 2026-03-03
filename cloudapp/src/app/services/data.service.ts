@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin, of } from 'rxjs';
-import { finalize, catchError } from 'rxjs/operators';
+import { Observable, forkJoin, of, EMPTY } from 'rxjs';
+import { finalize, catchError, switchMap, map, expand, reduce } from 'rxjs/operators';
 import { UserService } from './user.service';
 import { SetService } from './set.service';
 import { UserData, SetMember } from '../interfaces/user.interface';
@@ -21,46 +21,21 @@ export class DataService {
    * @param setID The ID of the set to fetch
    */
   fetchSetData(setID: string): Observable<{setInfo: SetInfo, members: SetMember[], users: UserData[]}> {
-    return new Observable(observer => {
-      // First get set information
-      this.setService.fetchSetInfo(setID).subscribe({
-        next: (setInfo) => {
-          // Set info retrieved
-          
-          // Check if the set contains users
-          if (!this.setService.isUserSet(setInfo)) {
-            observer.error(new Error(`This set contains ${setInfo.content?.desc || 'unknown'} records. Only USER sets are supported.`));
-            return;
-          }
-          
-          // After getting set info, fetch all members
-          this.fetchAllSetMembers(setID).subscribe({
-            next: (members) => {
-              // All members fetched
-              
-              // Fetch user details for all members
-              this.fetchUserDetailsForMembers(members).subscribe({
-                next: (users) => {
-                  // All user details fetched
-                  observer.next({ setInfo, members, users });
-                  observer.complete();
-                },
-                error: (error) => {
-                  observer.error(error);
-                }
-              });
-            },
-            error: (error) => {
-              observer.error(error);
-            }
-          });
-        },
-        error: (error) => {
-          // Error fetching set info
-          observer.error(new Error('Failed to retrieve set information'));
+    return this.setService.fetchSetInfo(setID).pipe(
+      switchMap(setInfo => {
+        if (!this.setService.isUserSet(setInfo)) {
+          throw new Error(`This set contains ${setInfo.content?.desc || 'unknown'} records. Only USER sets are supported.`);
         }
-      });
-    });
+        return this.fetchAllSetMembers(setID).pipe(
+          switchMap(members => this.fetchUserDetailsForMembers(members).pipe(
+            map(users => ({ setInfo, members, users }))
+          ))
+        );
+      }),
+      catchError(error => {
+        throw error.message ? error : new Error('Failed to retrieve set information');
+      })
+    );
   }
 
   /**
@@ -68,49 +43,29 @@ export class DataService {
    * @param setID The ID of the set
    */
   private fetchAllSetMembers(setID: string): Observable<SetMember[]> {
-    return new Observable(observer => {
-      const fetchPage = (offset: number, allMembers: SetMember[] = []) => {
-        this.setService.fetchSetMembers(setID, offset).subscribe({
-          next: (response) => {
-            // Received members page response
-            
-            if (Array.isArray(response.member)) {
-              const currentPageMembers = response.member.map((member: any) => ({
-                id: member.id,
-                name: member.name,
-                description: member.description,
-                link: member.link
-              }));
-              
-              const updatedMembers = [...allMembers, ...currentPageMembers];
-              // Page members added
-              
-              // Check if we need to fetch more pages
-              if (response.member.length === 100) {
-                // If we got a full page, there might be more - fetch next page
-                // Full page, fetching next page
-                fetchPage(offset + 100, updatedMembers);
-              } else {
-                // We've fetched all pages
-                // Fetched all member pages
-                observer.next(updatedMembers);
-                observer.complete();
-              }
-            } else {
-              // No members in current page
-              observer.next(allMembers);
-              observer.complete();
-            }
-          },
-          error: (error) => {
-            // Error fetching set members page
-            observer.error(new Error(`Failed to fetch set members page (offset ${offset})`));
-          }
-        });
-      };
-      
-      fetchPage(0);
-    });
+    // Use expand for recursive pagination — automatically cancelled on unsubscribe
+    return this.setService.fetchSetMembers(setID, 0).pipe(
+      expand((response, index) => {
+        if (Array.isArray(response.member) && response.member.length === 100) {
+          const nextOffset = (index + 1) * 100;
+          return this.setService.fetchSetMembers(setID, nextOffset);
+        }
+        return EMPTY; // No more pages
+      }),
+      map(response => {
+        if (!Array.isArray(response.member)) return [];
+        return response.member.map((member: any) => ({
+          id: member.id,
+          name: member.name,
+          description: member.description,
+          link: member.link
+        }));
+      }),
+      reduce((allMembers: SetMember[], pageMembers: SetMember[]) => [...allMembers, ...pageMembers], []),
+      catchError(error => {
+        throw new Error(`Failed to fetch set members: ${error.message || 'Unknown error'}`);
+      })
+    );
   }
 
   /**

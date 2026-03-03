@@ -7,8 +7,8 @@ import {
   Entity,
   MaterialModule
 } from '@exlibris/exl-cloudapp-angular-lib';
-import { Observable, of, from } from 'rxjs';
-import { tap, catchError, concatMap, filter } from 'rxjs/operators';
+import { Observable, of, from, Subject, Subscription } from 'rxjs';
+import { tap, catchError, concatMap, filter, takeUntil } from 'rxjs/operators';
 
 // Import interfaces and services
 import { UserData, UserNote, SetMember } from '../interfaces/user.interface';
@@ -48,6 +48,9 @@ import { FileUploadComponent } from './file-upload/file-upload.component';
   ]
 })
 export class MainComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  private activeSubscription: Subscription | null = null;
+
   loading = false;
   processingNotes = false;
   entities$: Observable<Entity[]>;
@@ -179,7 +182,9 @@ export class MainComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Subscribe to entities to detect when sets are available
-    this.entities$.subscribe({
+    this.entities$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (entities) => {
       },
       error: (error) => {
@@ -187,9 +192,32 @@ export class MainComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    // Signal all takeUntil-guarded subscriptions to complete
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    // Cancel any in-flight job/load operation
+    this.activeSubscription?.unsubscribe();
+    this.activeSubscription = null;
+
+    // Release large data structures
+    this.userDetails = [];
+    this.usersWithNotes = [];
+    this.usersWithoutNotes = [];
+    this.setMembers = [];
+    this.processLogs = [];
+    this.modifiedUsers.clear();
+    this.availableCreators = [];
+    this.currentEntities = [];
+    this.jobConfiguration = null;
+  }
 
   clear() {
+    // Cancel any in-flight load or job operation
+    this.activeSubscription?.unsubscribe();
+    this.activeSubscription = null;
+
     this.setID = '';
     this.selectedSet = null;
     this.setMembers = [];
@@ -226,6 +254,10 @@ export class MainComponent implements OnInit, OnDestroy {
 
   // Reset job configuration but keep the set and users loaded
   resetJob() {
+    // Cancel any in-flight job operation
+    this.activeSubscription?.unsubscribe();
+    this.activeSubscription = null;
+
     this.processed = 0;
     this.recordsToProcess = 0;
     this.modifiedUsers = new Set();
@@ -294,7 +326,9 @@ export class MainComponent implements OnInit, OnDestroy {
       deleteMatchingNotes: true
     };
 
-    from(this.usersWithNotes).pipe(
+    this.activeSubscription?.unsubscribe();
+    this.activeSubscription = from(this.usersWithNotes).pipe(
+      takeUntil(this.destroy$),
       concatMap((user: UserData) => {
         if (!user || user.error) {
           this.processed++;
@@ -770,7 +804,9 @@ export class MainComponent implements OnInit, OnDestroy {
   const modificationOptions = this.buildModificationOptions(actionParam?.value || 'modify');
     
     // Process each user (only those with notes)
-    from(this.usersWithNotes).pipe(
+    this.activeSubscription?.unsubscribe();
+    this.activeSubscription = from(this.usersWithNotes).pipe(
+      takeUntil(this.destroy$),
       concatMap((user: UserData) => {
         if (!user || user.error) {
           this.processed++;
@@ -888,6 +924,10 @@ export class MainComponent implements OnInit, OnDestroy {
 
   // Reset job state when choosing a different file
   resetJobFromFile() {
+    // Cancel any in-flight load or job operation
+    this.activeSubscription?.unsubscribe();
+    this.activeSubscription = null;
+
     // Clear user data
     this.userDetails = [];
     this.usersWithNotes = [];
@@ -935,7 +975,9 @@ export class MainComponent implements OnInit, OnDestroy {
     let failCount = 0;
     const totalUsers = userIds.length;
 
-    from(userIds).pipe(
+    this.activeSubscription?.unsubscribe();
+    this.activeSubscription = from(userIds).pipe(
+      takeUntil(this.destroy$),
       concatMap((userId: string) => {
         return this.userService.fetchUserDetails(userId).pipe(
           tap((user: UserData) => {
@@ -1006,7 +1048,10 @@ export class MainComponent implements OnInit, OnDestroy {
     this.usersWithoutNotes = [];
     
     // Use the data service to fetch all set data
-    this.dataService.fetchSetData(this.selectedSet.id).subscribe({
+    this.activeSubscription?.unsubscribe();
+    this.activeSubscription = this.dataService.fetchSetData(this.selectedSet.id).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (setData) => {
         this.setMembers = setData.members;
         this.userDetails = setData.users;
